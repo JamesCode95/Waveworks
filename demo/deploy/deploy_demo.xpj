@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<XPJ version="4">
+
+<template file="${xpjdir}/../../build/makefiles/xpj/WaveWorks-common.xpjt"/>
+<template file="${xpjdir}/../../build/makefiles/xpj/WaveWorks-templates.xpjt"/>
+
+<apply-template name="common-template"/>
+
+<!-- Platform tag can contain a version identifier to disaumbiguate the platform SDK against
+     which the lib is built, this comes from the library build config...
+     -->
+<var name="platform_tag" value="${platform_tag}"/>
+
+<Project name="demo_1_3_${xpj:PLATFORM}_vc2012">
+
+	<Export platform="win32">.</Export>
+	<Export platform="win64">.</Export>
+
+	<Target name="demo_1_3_${xpj:PLATFORM}_vc2012">
+
+		<Export platform="win32">.</Export>
+		<Export platform="win64">.</Export>
+	
+		<var name="vcproj2root" value="..${env:sep}"/>
+		<var name="xpj2app_root" value=".${env:sep}"/>
+		<var name="vcproj2app_root" value=".${env:sep}"/>
+
+		<apply-template name="app-target-contents-template">
+			<define key="xpj2app_root" value="${user:xpj2app_root}"/>
+			<define key="vcproj2app_root" value="${user:vcproj2app_root}"/>
+			<define key="gfx_api" value="d3d11"/>
+			<define key="target_name" value="demo_1_3"/>
+			<define key="effects11_path" value=".${env:sep}Effects11${env:sep}"/>
+			<define key="vcproj2media_out" value="${user:vcproj2app_root}media${env:sep}"/>
+			<define key="cfg_type" value="app"/>
+			<define key="vcproj2root" value="${user:vcproj2root}"/>
+			<define key="shippable_vcproj" value="true"/>
+		</apply-template>
+
+		<apply-template name="demo_1_3-contents-template">
+			<define key="xpj2app_root" value="${user:xpj2app_root}"/>
+			<define key="vcproj2app_root" value="${user:vcproj2app_root}"/>
+      <define key="shippable" value="true"/>
+		</apply-template>
+
+		<Libraries>gfsdk_waveworks.${user:platform_tag}.lib</Libraries>
+
+	</Target>
+
+</Project>
+
+</XPJ>

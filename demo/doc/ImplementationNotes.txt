@@ -1,0 +1,305 @@
+// This code contains NVIDIA Confidential Information and is disclosed 
+// under the Mutual Non-Disclosure Agreement. 
+// 
+// Notice 
+// ALL NVIDIA DESIGN SPECIFICATIONS AND CODE ("MATERIALS") ARE PROVIDED "AS IS" NVIDIA MAKES 
+// NO REPRESENTATIONS, WARRANTIES, EXPRESSED, IMPLIED, STATUTORY, OR OTHERWISE WITH RESPECT TO 
+// THE MATERIALS, AND EXPRESSLY DISCLAIMS ANY IMPLIED WARRANTIES OF NONINFRINGEMENT, 
+// MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE. 
+// 
+// NVIDIA Corporation assumes no responsibility for the consequences of use of such 
+// information or for any infringement of patents or other rights of third parties that may 
+// result from its use. No license is granted by implication or otherwise under any patent 
+// or patent rights of NVIDIA Corporation. No third party distribution is allowed unless 
+// expressly authorized by NVIDIA.  Details are subject to change without notice. 
+// This code supersedes and replaces all information previously supplied. 
+// NVIDIA Corporation products are not authorized for use as critical 
+// components in life support devices or systems without express written approval of 
+// NVIDIA Corporation. 
+// 
+// Copyright © 2008- 2013 NVIDIA Corporation. All rights reserved.
+//
+// NVIDIA Corporation and its licensors retain all intellectual property and proprietary
+// rights in and to this software and related documentation and any modifications thereto.
+// Any use, reproduction, disclosure or distribution of this software and related
+// documentation without an express license agreement from NVIDIA Corporation is
+// strictly prohibited.
+//
+
+
+
+/ *
+  * WaveWorks 1.3 demo - explanatory implementation notes
+  *
+  */
+
+The WaveWorks 1.3 demo was first shown at GTC in 2013 to demonstrate the capabilities of the
+WaveWorks library.
+
+The demo is a 'vanilla' client of WaveWorks (in the sense that it uses a stock distribution,
+with no back doors etc.), however there is interesting additional functionality implemented
+in the application and layered on top of the WaveWorks library. The goal of this document is
+to call out and explain the main points of interest in the additional functionality.
+
+Note that the source code for the demo is not normally shared outside NVIDIA, and it is possible
+that elements of the app-side functionality will be incorporated as library features at some
+future time, so please take extra care to protect this source from disclosure.
+
+
+
+/ *
+  * Hull sensors
+  *
+  */
+
+Hull sensors are used for vessel physics and vessel spray.
+
+Conceptually, a hull sensor is a device located at some fixed point on the hull of the vessel which
+is capable of reporting the displacement of the water surface at its current location.
+
+Hull sensors are implemented on the CPU using the readback feature in WaveWorks.
+
+There are two kinds of hull sensor:
+
+- a 'generic' hull sensor, which is located at some point on the skin of the main hull of the vessel
+
+- a rim sensor, which is located at the free edge of the hull, near where it meets the deck
+
+Generic sensors are used to report relative water depth for vessel physics, and also to detect when
+the relative motion of the hull and the ocean surface might trigger the generation of spray.
+
+Rim sensors are used to detect when the ocean surface has over-topped the deck, which allows additional
+spray to be generated to simulate the resulting extreme churn, and also to disguise the vertical wall of water
+that would otherwise be revealed.
+
+
+
+/ *
+  * Hull sensors setup
+  *
+  */
+
+Hull sensor locations are initialized in OceanHullSensors::init() from the vessel's mesh data. The
+locations are initialized using jittered area-based stratified sampling, in order to ensure unbiased
+sampling with minimal aliasing.
+
+The initialization code is somewhat tailored expediently to known properties of the vessel's mesh data.
+(In a production implementation, it is expected that fine-tuning of sensor locations would be done at
+authoring time as part of the asset pipeline)
+
+The hull sensor implementation is hard-coded to generate ~20K generic sensors and ~2K rim sensors.
+
+Classes of interest: OceanHullSensors, BoatMesh
+
+
+
+/ *
+  * Hull sensor updates
+  *
+  */
+
+Conceptually, the hull sensor update pipeline is very simple:
+
+   1: transform sensor positions to world space and calculate world-space coords for displacement lookup
+   2: query the displacements from the simulation
+
+However, the query step is complicated by the fact that the WaveWorks simulation is parameterized
+over *undisplaced* coordinates. In other words, the displaced coordinates are calculated as follows:
+
+   xyDisplaced = xyUndisplaced + displacement(xyUndisplaced)
+
+A simple re-arrangement of the above equation gives us:
+
+   xyUndisplaced = xyDisplaced - displacement(xyUndisplaced)
+
+In other words: to look up the height displacement for some world-space xy location, we need to know
+the equivalent undisplaced xy location from which the ocean surface was displaced.
+
+Within the demo, this job is done by the OceanSurfaceHeights class. OceanSurfaceHeights uses iterative
+refinement to build a cache of world-space to displacement lookups over some specified region of world
+space, each frame. This is done in OceanSurfaceHeights::updateHeights().
+
+OceanSurfaceHeights also builds a conceptually-equivalent dataset on the GPU, so that world-space to
+height lookups can be performed from inside shaders. This dataset is generated by simply rendering
+a patch of ocean surface into a texture mapped onto world space, with each texel taking the value
+of the xyz displacement at the equivalent world location. This is done in
+OceanSurfaceHeights::updateGPUHeights().
+
+Classes of interest: OceanHullSensors, OceanSurfaceHeights
+
+
+
+/ *
+  * Vessel physics
+  *
+  */
+
+The demo uses a bespoke physics implementation which takes a few minor liberties and makes minor
+simplifications in order to achieve the desired results in the most straightforward way.
+
+The main physics update is done in OceanVessel::updateVesselMotion(), and the high-level order of
+operation is:
+
+1: calculate pitch, roll and displacement forces by summing pressure contributions over the wet hull
+area (i.e. by sampling only from sensors with a positive head of water)
+
+2: calculate displacements at bow and stern, and by comparing with values from previous frame calculate
+the yaw-axis shear rate of the ocean surface
+
+3: evolve the physics state of the vessel using pseudo-dynamics ('pseudo' because there is no coupling
+between pitch/roll/yaw axes). Height is simulated using a simple buoyancy vs drag model. Roll and pitch
+use additional moments due to the eccentricity of the centre of pressure relative to the centre of mass
+(in the case of roll, this is the familiar righting moment). Yaw is simulated using an ad-hoc spring-mass
+system
+
+4: update vessel matrices
+
+5: calculate motion of vessel-mounted camera
+
+6: ensure wake is kept stable with respect to nominal heading
+
+Classes of interest: OceanVessel
+
+
+
+/ *
+  * Vessel spray
+  *
+  */
+
+Hull sensor results are used to calculate the likelihood of a spray particle being emitted. This is done
+using a 'spray generator' per hull sensor. A spray generator can emit zero to many spray particles in any
+one frame. Spray generation is updated once per frame in OceanSpray::updateSprayGenerators().
+
+The implementation uses a stochastic model in order to avoid the aliasing that can arise when large
+coherent particle batches are emitted simultaneously from many sensors. Each frame, each spray generator
+calculates the mean number of spray particles that the generator would expect to emit over the current
+frametime interval (this is in general a non-integer quantity). This expected emission count is then
+used to parameterize a randomized Poission process to produce an actual integer number of particles to
+be emitted from a particular generator in a particular frame.
+
+Generic spray generators are implemented to emit the most spray when the waterline is nearby *and* the
+hull-normal component of the relative hull-water velocity is high.
+
+Rim generators are implemented to implement the most spray when the waterline is high above the location
+of the generator.
+
+When generic spray is being emitted, the spray velocity is calculate as follows:
+
+1: the velocity of the contact line is calculated and used as the starting point for the spray velocity
+calculation. The goal here is to capture the squeezing rate of a wedge of water between the ocean surface
+and a falling hull. For example, the contact line in a nearly flat-to-flat interaction will move very
+quickly indeed, and hence will produce high-velocity spray.
+
+2: a hypothetical spray direction is calculated based on the direction of the contact line and the hull
+normal
+
+3: this hypothetical spray direction is compared by dot product with an 'nominal' spray direction up and
+along the hull. The goal here is to discard longitudinal or lateral velocity components
+
+4: the resulting value is used to modulate the spray velocity that is calculated from the motion of the
+contact line alone. 
+
+5: finally, the actual spray direction is randomized over the wedge of space between the hull and the
+ocean surface
+
+Rim spray is emitted from a random location between the rim spray generator and the waterline directly
+above, with initial velocity randomized within limits to follow the hull motion at the moment of emission.
+
+Once a spray particle has been emitted, it is added to a collection of active spray particles, and these
+are added to a GPU particle system once per frame using the InitSprayParticlesCS to initialize their state
+on the GPU. The entire set of simulated GPU particles is evolved using SimulateSprayParticlesCS, which
+handles killing of particles by lifetime or else when they fall to the ocean surface. Surviving particles
+are driven by a simple wind/gravity model, with some additional acceleration added to penalise vessel
+intersections.
+
+Classes of interest: OceanSpray
+
+
+
+/ *
+  * Vessel wake and spray recycling
+  *
+  */
+
+The basic wake of the vessel is implemented using a simple lookup into a pair of maps relative to the
+nominal (un-yaw'd) vessel location, one map supplying perturbed normals, the other foam density.
+
+This is augmented by a local foam map, which is used to capture and 'recycle' falling spray particles.
+
+Each frame, all the spray particles are rendered into this foam map by OceanSpray::renderToFoam().
+This pass uses a geometry shader - RenderParticlesToFoamGS- to efficiently reject any particles that
+are not currently participating in an interaction with the ocean surface.
+
+Surviving particles are expanded to quads and progressively accumulated in the local foam match each
+frame, to give the impression of spray smoothly and progressively building up on the ocean surface
+at the landing location.
+
+Classes of interest: OceanSpray, OceanSurface
+
+
+
+/ *
+  * Vessel imprints and variable tessellation rate
+  *
+  */
+
+If the ocean surface were rendered using the unmodified output from the WaveWorks simulation, it would
+produce results that make the vessels appear to be full of water! In the demo, we avoid this by generating
+a hull profile for each vessel which can then be sampled by the ocean surface shader to modify ocean
+surface displacements in places where there would otherwise be an intersection.
+
+The effect of this is to create 'imprints' of each vessel in the ocean surface. This works well because
+it is a good approximation to physical reality and therefore it does not suffer from any of the artefacts
+or corner-cases that might affect, say, a depth-based or stencil-based alternative.
+
+Hull profiles are generated by rendering each vessel to a depth texture from directly above, each frame,
+in order to accuratelty take account of changes in vessel attitude. This is done in
+OceanVessel::renderVesselToHullProfile().
+
+Hull profiles are also used to determine vessel proximity in the hull shader ('hull' meant in the DirectX
+pipeline stage sense, here). Areas of the ocean under or near a vessel are tessellated more densely than
+areas of open water - this has 2 benefits: 1/ gives a tighter fit between the vessel imprint and the hull
+of the vessel; 2/ generates smooth intersection profiles between open-water waves and the hull (aliasing
+on these intersection profiles shows up more clearly than for open-water waves).
+
+Classes of interest: OceanVessel, OceanSurface
+
+
+
+/ *
+  * Funnel smoke simulation and rendering
+  *
+  */
+
+The funnel smoke comprises two interesting implementation aspects:
+
+1: a GPU noise-based advection scheme to give plausible shape and structure to the particles that make up the
+plume of smoke.
+
+2: particle shadow mapping to generate self-shadowing information for the plume. The plume is lit entirely
+using this self-shadowing information - there is no artistic element, other than the usual particle opacity
+map. For more details, see:
+https://developer.nvidia.com/sites/default/files/akamai/BAVOIL_ParticleShadowsAndCacheEfficientPost.pdf
+
+The design intent of the GPU particle system is for the CPU to manage the number of particles that are
+active in the simulation, with the goal of expressing the simulation workload in a way that is maximally
+GPU-friendly. This is done by emitting particles into the simulation at a constant rate, with new particles
+replacing old particles on a FIFO basis (this is accomplished by simply wrapping the emission index
+each time it runs off the end of the simulation buffer).
+
+The physical model for particle simulation is composed of a buoyancy term (which dimihishes gradually
+over time as the plume loses its heat), and a term driven by the drag of a turbulent 'wind' velocity
+field on the particle motion. The turbulent velocity field is the key to the quality of the results,
+since all of the complexity and detailed structure in the plume is determined by the influence of this
+field.
+
+We use a curl noise field for this (curl noise is a divergence-free noise field derived from some
+field potential. See: http://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph2007-curlnoise.pdf).
+The underlying potential field is a 4D 3-octave Perlin noise field. The fourth dimension allows
+the noise field to itself evolve over time, this contributes significantly to the sense of roll
+and churn in the plume.
+
+Finally, the particles are depth-sorted on the GPU each frame in order to give correct rendering results.
+
+Classes of interest: OceanSmoke

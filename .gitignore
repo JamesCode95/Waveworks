@@ -1,0 +1,14 @@
+*.pdb
+test/d3d9/win64/
+test/serverapp/intermediate/
+test/serverapp/win64/
+test/d3d10/intermediate/
+test/d3d11/intermediate/
+test/d3d11/win64/
+build/
+sample/opengl/intermediate/
+sample/d3d11/intermediate/
+intermediate/
+output/
+test/d3d10/win64/
+test/gl2/win64/debug/cudart64_55.dll
