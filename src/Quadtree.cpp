@@ -51,7 +51,7 @@ namespace {
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wunused-variable"
 	#endif
-	#include "Quadtree_map.h"
+//	#include "Quadtree_map.h"
 		#ifdef __GNUC__
 		#pragma GCC diagnostic pop
 	#endif
@@ -111,38 +111,38 @@ enum ShaderInputsGL2
 // NB: These should be kept synchronised with the shader source
 #if WAVEWORKS_ENABLE_D3D9
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputD3D9Descs[NumShaderInputsD3D9] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, nvsf_g_matLocalWorld, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, nvsf_g_vsEyePos,      3 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, nvsf_g_MorphParam,    4 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_matLocalWorld", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_vsEyePos",      3 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_MorphParam",    4 }
 };
 #endif
 
 #if WAVEWORKS_ENABLE_D3D10
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputD3D10Descs[NumShaderInputsD3D10] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, nvsf_geom_buffer, 0 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_geom_buffer", 0 }
 };
 #endif
 
 #if WAVEWORKS_ENABLE_D3D11
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputD3D11Descs[NumShaderInputsD3D11] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, nvsf_geom_buffer, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::HullShader_ConstantBuffer, nvsf_eyepos_buffer, 0 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_geom_buffer", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::HullShader_ConstantBuffer, "nvsf_eyepos_buffer", 0 }
 };
 #endif
 
 #if WAVEWORKS_ENABLE_GNM
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputGnmDescs[NumShaderInputsGnm] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, nvsf_geom_buffer, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::HullShader_ConstantBuffer, nvsf_eyepos_buffer, 0 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_geom_buffer", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::HullShader_ConstantBuffer, "nvsf_eyepos_buffer", 0 }
 };
 #endif
 
 #if WAVEWORKS_ENABLE_GL
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputGL2Descs[NumShaderInputsGL2] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, nvsf_g_matLocalWorld, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, nvsf_g_vsEyePos,      0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, nvsf_g_MorphParam,    0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_AttribLocation,               nvsf_vPos,            0 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_matLocalWorld", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_vsEyePos",      0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_MorphParam",    0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_AttribLocation,               "nvsf_vPos",            0 }
 };
 #endif
 struct vs_cbuffer

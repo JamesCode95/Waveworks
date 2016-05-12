@@ -27,7 +27,7 @@
  * strictly prohibited.
  */
 
-#include "GFSDK_WaveWorks_Common.fxh"
+#include "Common.fxh"
 
 /*
  *

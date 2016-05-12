@@ -37,9 +37,9 @@
 #define GFSDK_WAVEWORKS_BEGIN_GEOM_HS_CBUFFER(Label) cbuffer Label {
 #define GFSDK_WAVEWORKS_END_GEOM_HS_CBUFFER };
 
-#include "GFSDK_WaveWorks_Quadtree.fxh"
+#include "Quadtree.fxh"
 
 float4 GFSDK_WAVEWORKS_VERTEX_INPUT_Sig(GFSDK_WAVEWORKS_VERTEX_INPUT In) : SV_Position
 {
-	return In.nv_waveworks_quad7;
+	return In.nvsf_vPos;
 }
