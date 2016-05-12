@@ -75,6 +75,7 @@ if (WIN32)
     # See also:
     # - http://msdn.microsoft.com/en-us/library/windows/desktop/ee663275.aspx
     if (DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
+		MESSAGE(Using WINSDK Headers)
         set (USE_WINSDK_HEADERS TRUE)
     endif ()
 
@@ -199,6 +200,7 @@ if (WIN32)
 
         find_winsdk_header  (D3D11   d3d11.h)
         find_winsdk_library (D3D11   d3d11)
+		find_winsdk_library (DXGUID	 dxguid)
         find_combined       (D3D11   D3D11 D3D11)
         find_winsdk_header  (D3D11_1 d3d11_1.h)
         find_combined       (D3D11_1 D3D11_1 D3D11)
@@ -219,7 +221,8 @@ if (WIN32)
     endif ()
 
     find_program (DirectX_FXC_EXECUTABLE fxc
-        HINTS ${DirectX_BIN_SEARCH_PATH}
+        HINTS "${ProgramFiles}/Windows Kits/8.1/bin/x86" "${ProgramFiles}/Windows Kits/8.0/bin/x86" ${DirectX_BIN_SEARCH_PATH} 
+		
         DOC "Path to fxc.exe executable."
     )
 

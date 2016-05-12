@@ -147,15 +147,75 @@ SET(CUDA_FILES
 	${WW_SOURCE_DIR}/FFT_Simulation_CUDA_kernel.cu
 )
 
+SET(FX_FILES
+	${SHADER_SRC_DIR}/Quadtree_SM4_sig.fx
+	${SHADER_SRC_DIR}/Quadtree_SM5_sig.fx
+	${SHADER_SRC_DIR}/FoamGeneration_SM4.fx
+	${SHADER_SRC_DIR}/FoamGeneration_SM3.fx
+	
+	${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl
+)
+
+SET(GENERATED_HLSL_FILES
+	${GEN_SRC_DIR}/Quadtree_SM4_sig.h
+	${GEN_SRC_DIR}/Quadtree_SM5_sig.h
+	${GEN_SRC_DIR}/FoamGeneration_vs_4_0.h
+	${GEN_SRC_DIR}/FoamGeneration_ps_4_0.h
+	${GEN_SRC_DIR}/FoamGeneration_vs_3_0.h
+	${GEN_SRC_DIR}/FoamGeneration_ps_3_0.h
+	${GEN_SRC_DIR}/ComputeH0_cs_5_0.h
+	${GEN_SRC_DIR}/ComputeRows_cs_5_0.h
+	${GEN_SRC_DIR}/ComputeColumns_cs_5_0.h
+)
+
 
 INCLUDE(cmake/CompileFXToH.cmake)
 
 #ADD_CUSTOM_TARGET(fx ALL)
 
-#FUNCTION(CompileFXToH FILE OUTPUT_DIR TARGET INCLUDE_DIR ENTRYPOINT OPTIONS)
+#FUNCTION(CompileFXToH FILE OUTPUT_FILE TARGET INCLUDE_DIR ENTRYPOINT OPTIONS)
 
-CompileFXToH(${SHADER_SRC_DIR}/Quadtree_SM4_sig.fx ${GEN_SRC_DIR} fx1 ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} GFSDK_WAVEWORKS_VERTEX_INPUT_Sig /Tvs_4_0)
-CompileFXToH(${SHADER_SRC_DIR}/Quadtree_SM5_sig.fx ${GEN_SRC_DIR} fx2 ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} GFSDK_WAVEWORKS_VERTEX_INPUT_Sig /Tvs_5_0)
+# Compile the .fx files to .h files so they can be loaded easily.
+ADD_CUSTOM_TARGET(fx ALL)
+
+CompileFXToH(${SHADER_SRC_DIR}/Quadtree_SM4_sig.fx ${GEN_SRC_DIR}/Quadtree_SM4_sig.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} GFSDK_WAVEWORKS_VERTEX_INPUT_Sig /Tvs_4_0)
+CompileFXToH(${SHADER_SRC_DIR}/Quadtree_SM5_sig.fx ${GEN_SRC_DIR}/Quadtree_SM5_sig.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} GFSDK_WAVEWORKS_VERTEX_INPUT_Sig /Tvs_5_0)
+
+# NOTE: This does a weird thing. Only the PS command invocation will show in VS. The other one is there, but is in some sort of hidden file.
+#  It can still be seen in the project xml.
+CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM4.fx ${GEN_SRC_DIR}/FoamGeneration_ps_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_4_0)
+CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM4.fx ${GEN_SRC_DIR}/FoamGeneration_vs_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_4_0)
+
+CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM3.fx ${GEN_SRC_DIR}/FoamGeneration_ps_3_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_3_0)
+CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM3.fx ${GEN_SRC_DIR}/FoamGeneration_vs_3_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_3_0)
+
+CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM4.fx ${GEN_SRC_DIR}/CalcGradient_ps_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_4_0)
+CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM4.fx ${GEN_SRC_DIR}/CalcGradient_vs_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_4_0)
+
+CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM3.fx ${GEN_SRC_DIR}/CalcGradient_ps_3_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_3_0)
+CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM3.fx ${GEN_SRC_DIR}/CalcGradient_vs_3_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_3_0)
+
+CompileFXToH(${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl ${GEN_SRC_DIR}/ComputeH0_cs_5_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ComputeH0 /Tcs_5_0 /Vng_ComputeH0)
+CompileFXToH(${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl ${GEN_SRC_DIR}/ComputeRows_cs_5_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ComputeRows /Tcs_5_0 /Vng_ComputeRows)
+CompileFXToH(${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl ${GEN_SRC_DIR}/ComputeColumns_cs_5_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ComputeColumns /Tcs_5_0 /Vng_ComputeColumns)
+
+
+# Now the CUDA file
+# CUDA!
+SET(CUDA_NVCC_FLAGS "-G -g -DWIN32 -D_WINDOWS -D_UNICODE -DUNICODE -D_LIB -gencode arch=compute_30,code=compute_30 -gencode arch=compute_20,code=sm_20")
+
+CUDA_INCLUDE_DIRECTORIES(
+	${CUDA_INCLUDE_DIRS}
+)
+
+SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+
+SET(CUDA_NVCC_FLAGS_DEBUG   "--compiler-options=/Zi,/W4,/nologo,/Od,/MTd")
+SET(CUDA_NVCC_FLAGS_RELEASE "-use_fast_math -DNDEBUG --compiler-options=/W4,/nologo,/O2,/GF,/GS-,/Gy,/fp:fast,/GR-,/MT")
+
+CUDA_COMPILE(GENERATED_CUDA_FILES_1
+	${WW_SOURCE_DIR}/FFT_Simulation_CUDA_kernel.cu
+)
 
 ADD_LIBRARY(WaveWorks ${WW_LIBTYPE}
 	${WW_PLATFORM_SRC_FILES}
@@ -164,18 +224,19 @@ ADD_LIBRARY(WaveWorks ${WW_LIBTYPE}
 	${H_FILES}
 	${DISTRO_INCLUDE_FILES}
 	
-	${WW_SOURCE_DIR}/generated/Quadtree_SM4_sig.h
-	${SHADER_SRC_DIR}/Quadtree_SM4_sig.fx
-
-	${WW_SOURCE_DIR}/generated/Quadtree_SM5_sig.h
-	${SHADER_SRC_DIR}/Quadtree_SM5_sig.fx
-
+	${FX_FILES}
+	${GENERATED_HLSL_FILES}
+	
+	${GENERATED_CUDA_FILES_1}
+	
 #	${HLSL_FILES}
 #	${CUDA_FILES}
 )
 
 SOURCE_GROUP("src" FILES ${CPP_FILES} ${H_FILES})
 SOURCE_GROUP("include" FILES ${DISTRO_INCLUDE_FILES})
+SOURCE_GROUP("generated" FILES ${GENERATED_HLSL_FILES})
+SOURCE_GROUP("fx" FILES ${FX_FILES})
 #SOURCE_GROUP("header" FILES ${H_FILES})
 #SOURCE_GROUP("hlsl" FILES ${HLSL_FILES})
 #SOURCE_GROUP("cuda" FILES ${CUDA_FILES})
@@ -206,7 +267,7 @@ TARGET_COMPILE_DEFINITIONS(WaveWorks
 
 IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 	# Add linked libraries
-#	TARGET_LINK_LIBRARIES(WaveWorks PUBLIC ${NVTOOLSEXT_LIBRARIES} LowLevel LowLevelAABB LowLevelCloth LowLevelDynamics LowLevelParticles WaveWorksCommon WaveWorksGpu PxFoundation PxPvdSDK PxTask SceneQuery SimulationController)
+	TARGET_LINK_LIBRARIES(WaveWorks PUBLIC ${CUDA_LIBRARIES} ${DirectX_DXGUID_LIBRARY})
 
 	IF(CMAKE_CL_64)
 		SET(LIBPATH_SUFFIX "win64")
@@ -215,8 +276,8 @@ IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 	ENDIF(CMAKE_CL_64)				
 
 	SET_TARGET_PROPERTIES(WaveWorks PROPERTIES 
-		LINK_FLAGS_DEBUG "/DELAYLOAD:nvcuda.dll /MAP /DELAYLOAD:PxFoundationDEBUG_${LIBPATH_SUFFIX}.dll /DELAYLOAD:WaveWorks3CommonDEBUG_${LIBPATH_SUFFIX}.dll /DEBUG"
-		LINK_FLAGS_RELEASE "/DELAYLOAD:nvcuda.dll /MAP /DELAYLOAD:WaveWorks3Common_${LIBPATH_SUFFIX}.dll /DELAYLOAD:PxFoundation_${LIBPATH_SUFFIX}.dll /INCREMENTAL:NO"
+		LINK_FLAGS_DEBUG "/MAP /DEBUG"
+		LINK_FLAGS_RELEASE "/MAP /INCREMENTAL:NO"
 	)
 
 ELSEIF(TARGET_BUILD_PLATFORM STREQUAL "PS4")

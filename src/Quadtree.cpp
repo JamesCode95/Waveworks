@@ -1169,7 +1169,7 @@ int GFSDK_WaveWorks_Quadtree::buildNodeList(	QuadNode& quad_node,
 
 	// Estimate the min grid coverage
 	float min_coverage = estimateGridCoverage(quad_node, m_params, matProj, NumPixelsInViewport, eyePoint);
-	float geomorphing_degree = max(0.f,min(m_params.geomorphing_degree,1.f));
+	//float geomorphing_degree = max(0.f,min(m_params.geomorphing_degree,1.f));
 
 	// Recursively attatch sub-nodes.
 	bool visible = true;

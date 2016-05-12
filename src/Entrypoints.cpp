@@ -431,8 +431,9 @@ const char* GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_GetBuildString()
 #elif defined(TARGET_PLATFORM_ANDROID)
     return "ANDROID_TEST";
 	// TIMT: TODO!!!
-#else    
-	extern const char* kNVWaveWorks_build_string;
+#else   
+	//TODO: Fix this build string thing.
+	const char* kNVWaveWorks_build_string = "FixBuildString!";
 	return kNVWaveWorks_build_string;
 #endif
 }
