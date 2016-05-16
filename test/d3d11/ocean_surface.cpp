@@ -274,7 +274,7 @@ HRESULT OceanSurface::init(const OceanSurfaceParameters& params)
 	if(NULL == m_pCubeMap)
 	{
 		TCHAR path[MAX_PATH];
-		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\reflect_cube.dds")));
+		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("reflect_cube.dds")));
 		ID3D11Resource* pD3D11Resource = NULL;
 
 		
@@ -286,7 +286,7 @@ HRESULT OceanSurface::init(const OceanSurfaceParameters& params)
 	if(NULL == m_pFoamIntensityMap)
 	{
 		TCHAR path[MAX_PATH];
-		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\foam_intensity_perlin2.dds")));
+		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("foam_intensity_perlin2.dds")));
 		ID3D11Resource* pD3D11Resource = NULL;
 		V_RETURN(DirectX::CreateDDSTextureFromFile(m_pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &m_pFoamIntensityMap));
 //		V_RETURN(m_pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &m_pFoamIntensityMap));
@@ -296,7 +296,7 @@ HRESULT OceanSurface::init(const OceanSurfaceParameters& params)
 	if(NULL == m_pFoamDiffuseMap)
 	{
 		TCHAR path[MAX_PATH];
-		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\foam.dds")));
+		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("foam.dds")));
 		ID3D11Resource* pD3D11Resource = NULL;
 		V_RETURN(DirectX::CreateDDSTextureFromFile(m_pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &m_pFoamDiffuseMap));
 //		V_RETURN(m_pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &m_pFoamDiffuseMap));
@@ -398,7 +398,8 @@ void OceanSurface::renderShaded(ID3D11DeviceContext* pDC, const XMMATRIX& matVie
 	m_pRenderSurfaceWaterColorVariable->SetFloatVector((FLOAT*)&m_params.waterbody_color);
 
 	// Matrices
-	XMMATRIX matVP = matView * matProj;
+	XMFLOAT4X4 matVP;
+	XMStoreFloat4x4(&matVP, matView * matProj);
 	m_pRenderSurfaceMatViewProjVariable->SetMatrix((FLOAT*)&matVP);
 
 	D3D11_VIEWPORT vp;

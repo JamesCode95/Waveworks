@@ -46,6 +46,9 @@
 #include <tchar.h>
 #include "DDSTextureLoader.h"
 
+#include <locale>
+#include <codecvt>
+#include <xlocbuf>
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
@@ -92,7 +95,7 @@ GFSDK_WaveWorks_Simulation_Stats    g_ocean_stats_simulation;
 GFSDK_WaveWorks_Simulation_Stats    g_ocean_stats_simulation_filtered;
 int   g_max_detail_level;
 
-bool g_RenderWireframe = false;
+bool g_RenderWireframe = true;
 bool g_RenderWater = true;
 bool g_SimulateWater = true;
 bool g_ForceKick = false;
@@ -253,6 +256,10 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
 #endif
 
 	g_pTestParams = new TestParams(cmdline);
+
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+	DXUTSetMediaSearchPath(converter.from_bytes(g_pTestParams->MediaDirectory).c_str());
 
     // Set the callback functions. These functions allow DXUT to notify
     // the application about device changes, user input, and windows messages.  The 

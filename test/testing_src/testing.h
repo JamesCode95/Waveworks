@@ -53,6 +53,7 @@ struct TestParams
 	bool UseReadbacks;
 	GFSDK_WaveWorks_Simulation_DetailLevel QualityMode;
 	std::string ScreenshotDirectory;
+	std::string MediaDirectory;
 
 	explicit TestParams(std::string strCommandLine)
 		: UseReadbacks(false)
@@ -107,6 +108,10 @@ struct TestParams
 				{
 					m_shouldTakeScreen = true;
 					ScreenshotDirectory = std::string(keyValuePair[1]);
+				}
+				else if (keyValuePair[0] == "mediadir")
+				{
+					MediaDirectory = std::string(keyValuePair[1]);
 				}
 				else if( keyValuePair[0] == "noaa" )
 				{
