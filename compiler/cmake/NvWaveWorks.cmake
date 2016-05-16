@@ -2,8 +2,6 @@
 # Build NvWaveWorks (PROJECT not SOLUTION)
 #
 
-SET(GW_DEPS_ROOT $ENV{GW_DEPS_ROOT})
-
 FIND_PACKAGE(CUDA REQUIRED)
 
 
@@ -122,12 +120,13 @@ SET(DISTRO_INCLUDE_FILES
 	${DISTRO_INCLUDE_DIR}/GFSDK_WaveWorks_D3D_Util.h
 	${DISTRO_INCLUDE_DIR}/GFSDK_WaveWorks_GUID.h
 	${DISTRO_INCLUDE_DIR}/GFSDK_WaveWorks_Types.h
+
+	${DISTRO_INCLUDE_DIR}/GFSDK_WaveWorks_Quadtree.fxh
+	${DISTRO_INCLUDE_DIR}/GFSDK_WaveWorks_Attributes.fxh
+	${DISTRO_INCLUDE_DIR}/GFSDK_WaveWorks_Common.fxh
 )
 
 SET(HLSL_FILES
-	${SHADER_SRC_DIR}/Attributes.fxh
-	${SHADER_SRC_DIR}/Common.fxh
-	${SHADER_SRC_DIR}/Quadtree.fxh
 	
 	${SHADER_SRC_DIR}/CalcGradient.fx
 	${SHADER_SRC_DIR}/CalcGradient_SM3.fx
@@ -183,11 +182,11 @@ CompileFXToH(${SHADER_SRC_DIR}/Quadtree_SM5_sig.fx ${GEN_SRC_DIR}/Quadtree_SM5_s
 
 # NOTE: This does a weird thing. Only the PS command invocation will show in VS. The other one is there, but is in some sort of hidden file.
 #  It can still be seen in the project xml.
-CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM4.fx ${GEN_SRC_DIR}/FoamGeneration_ps_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_4_0)
-CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM4.fx ${GEN_SRC_DIR}/FoamGeneration_vs_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_4_0)
+CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM4.fx ${GEN_SRC_DIR}/FoamGeneration_ps_4_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} ps /Tps_4_0)
+CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM4.fx ${GEN_SRC_DIR}/FoamGeneration_vs_4_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} vs /Tvs_4_0)
 
-CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM3.fx ${GEN_SRC_DIR}/FoamGeneration_ps_3_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_3_0)
-CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM3.fx ${GEN_SRC_DIR}/FoamGeneration_vs_3_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_3_0)
+CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM3.fx ${GEN_SRC_DIR}/FoamGeneration_ps_3_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} ps /Tps_3_0)
+CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM3.fx ${GEN_SRC_DIR}/FoamGeneration_vs_3_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} vs /Tvs_3_0)
 
 CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM4.fx ${GEN_SRC_DIR}/CalcGradient_ps_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_4_0)
 CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM4.fx ${GEN_SRC_DIR}/CalcGradient_vs_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_4_0)
@@ -225,6 +224,9 @@ ADD_LIBRARY(WaveWorks ${WW_LIBTYPE}
 	${DISTRO_INCLUDE_FILES}
 	
 	${FX_FILES}
+	
+#	${HLSL_FILES}
+	
 	${GENERATED_HLSL_FILES}
 	
 	${GENERATED_CUDA_FILES_1}

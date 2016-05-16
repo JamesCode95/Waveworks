@@ -28,10 +28,10 @@
  
 #include "DXUT.h"
 
-HRESULT LoadFile(LPCTSTR FileName, ID3DXBuffer** ppBuffer)
+HRESULT LoadFile(LPCTSTR FileName, ID3DBlob** ppBuffer)
 {
 	FILE* pF = NULL;
-    ID3DXBuffer* pBuffer = NULL;
+	ID3DBlob* pBuffer = NULL;
 
 	if(_wfopen_s(&pF, FileName, L"rb"))
 		goto error;
@@ -44,7 +44,7 @@ HRESULT LoadFile(LPCTSTR FileName, ID3DXBuffer** ppBuffer)
     if(fseek(pF,0,SEEK_SET))
         goto error;
 
-    if(FAILED(D3DXCreateBuffer(fileSize, &pBuffer)))
+    if(FAILED(D3DCreateBlob(fileSize, &pBuffer)))
         goto error;
 
     if(fileSize != fread(pBuffer->GetBufferPointer(), 1, fileSize, pF))

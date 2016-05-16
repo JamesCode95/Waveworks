@@ -31,28 +31,30 @@
 
 #include <GFSDK_WaveWorks_Types.h>
 
+using namespace DirectX;
+
 // Convenience functions for converting between DX and NV types when using the WaveWorks API
 // This header should be #included *AFTER* d3d and d3dx headers
 
 ////////////////////////////////////////////////////////////////////////////////
 // Conversion helpers
 ////////////////////////////////////////////////////////////////////////////////
-__GFSDK_INLINE__ D3DXVECTOR2 NvToDX(const gfsdk_float2& rhs) {
-	D3DXVECTOR2 result;
+__GFSDK_INLINE__ XMFLOAT2 NvToDX(const gfsdk_float2& rhs) {
+	XMFLOAT2 result;
 	result.x = rhs.x;
 	result.y = rhs.y;
 	return result;
 }
 
-__GFSDK_INLINE__ gfsdk_float2 NvFromDX(const D3DXVECTOR2& rhs) {
+__GFSDK_INLINE__ gfsdk_float2 NvFromDX(const XMFLOAT2& rhs) {
 	gfsdk_float2 result;
 	result.x = rhs.x;
 	result.y = rhs.y;
 	return result;
 }
 
-__GFSDK_INLINE__ D3DXVECTOR4 NvToDX(const gfsdk_float4& rhs) {
-	D3DXVECTOR4 result;
+__GFSDK_INLINE__ XMFLOAT4 NvToDX(const gfsdk_float4& rhs) {
+	XMFLOAT4 result;
 	result.x = rhs.x;
 	result.y = rhs.y;
 	result.z = rhs.z;
@@ -60,7 +62,7 @@ __GFSDK_INLINE__ D3DXVECTOR4 NvToDX(const gfsdk_float4& rhs) {
 	return result;
 }
 
-__GFSDK_INLINE__ gfsdk_float4 NvFromDX(const D3DXVECTOR4& rhs) {
+__GFSDK_INLINE__ gfsdk_float4 NvFromDX(const XMFLOAT4& rhs) {
 	gfsdk_float4 result;
 	result.x = rhs.x;
 	result.y = rhs.y;
@@ -69,56 +71,20 @@ __GFSDK_INLINE__ gfsdk_float4 NvFromDX(const D3DXVECTOR4& rhs) {
 	return result;
 }
 
-__GFSDK_INLINE__ D3DXMATRIX NvToDX(const gfsdk_float4x4& rhs) {
+__GFSDK_INLINE__ XMMATRIX NvToDX(const gfsdk_float4x4& rhs) {
 
-	D3DXMATRIX result;
-
-	result._11 = rhs._11;
-	result._12 = rhs._12;
-	result._13 = rhs._13;
-	result._14 = rhs._14;
-
-	result._21 = rhs._21;
-	result._22 = rhs._22;
-	result._23 = rhs._23;
-	result._24 = rhs._24;
-
-	result._31 = rhs._31;
-	result._32 = rhs._32;
-	result._33 = rhs._33;
-	result._34 = rhs._34;
-
-	result._41 = rhs._41;
-	result._42 = rhs._42;
-	result._43 = rhs._43;
-	result._44 = rhs._44;
-
-	return result;
+	return XMMATRIX(rhs._11, rhs._12, rhs._13, rhs._14,
+					rhs._21, rhs._22, rhs._23, rhs._24,
+					rhs._31, rhs._32, rhs._33, rhs._34,
+					rhs._41, rhs._42, rhs._43, rhs._44);
 }
 
-__GFSDK_INLINE__ gfsdk_float4x4 NvFromDX(const D3DXMATRIX& rhs) {
+__GFSDK_INLINE__ gfsdk_float4x4 NvFromDX(const XMMATRIX& rhs) {
 
 	gfsdk_float4x4 result;
 
-	result._11 = rhs._11;
-	result._12 = rhs._12;
-	result._13 = rhs._13;
-	result._14 = rhs._14;
-
-	result._21 = rhs._21;
-	result._22 = rhs._22;
-	result._23 = rhs._23;
-	result._24 = rhs._24;
-
-	result._31 = rhs._31;
-	result._32 = rhs._32;
-	result._33 = rhs._33;
-	result._34 = rhs._34;
-
-	result._41 = rhs._41;
-	result._42 = rhs._42;
-	result._43 = rhs._43;
-	result._44 = rhs._44;
+	//NOTE: Not happy with using a reinterpret_cast here.
+	XMStoreFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&result), rhs);
 
 	return result;
 }

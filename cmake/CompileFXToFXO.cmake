@@ -1,0 +1,20 @@
+FUNCTION(CompileFXToFXO FILE OUTPUT_FILE TARGET INCLUDE_DIR OPTIONS)
+
+	GET_FILENAME_COMPONENT(FILE_WE ${FILE} NAME_WE)
+		
+#fxc /nologo /O3 /Tfx_5_0 /Fo..\..\..\test\media\skybox_d3d11.fxo /I..\..\..\output\distro\win-public\shader ..\..\..\test\d3d11\skybox.fx		
+	
+	
+	ADD_CUSTOM_COMMAND(
+		PRE_BUILD
+#		TARGET ${TARGET}
+		OUTPUT ${OUTPUT_FILE}
+		COMMAND ${DirectX_FXC_EXECUTABLE} /I${INCLUDE_DIR} ${FILE} /Fo ${OUTPUT_FILE} ${OPTIONS} ${ARGV5} ${ARGV6}
+		MAIN_DEPENDENCY ${FILE}
+		COMMENT "FXC Compile ${FILE}"
+		VERBATIM
+	)
+	
+	#ADD_DEPENDENCIES(${TARGET} ${OUTPUT_DIR}/generated/${FILE_WE}.h)
+
+ENDFUNCTION(CompileFXToFXO)

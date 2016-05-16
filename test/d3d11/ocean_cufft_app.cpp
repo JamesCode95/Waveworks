@@ -44,6 +44,7 @@
 #include "message_types.h"
 #include <shlwapi.h>
 #include <tchar.h>
+#include "DDSTextureLoader.h"
 
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
@@ -52,7 +53,7 @@
 // Disable warning "conditional expression is constant"
 #pragma warning(disable:4127)
 
-extern HRESULT LoadFile(LPCTSTR FileName, ID3DXBuffer** ppBuffer);
+extern HRESULT LoadFile(LPCTSTR FileName, ID3DBlob** ppBuffer);
 
 
 //--------------------------------------------------------------------------------------
@@ -182,7 +183,7 @@ const FLOAT kWaterScale = 50.f;
 //--------------------------------------------------------------------------------------
 // Forward declarations 
 //--------------------------------------------------------------------------------------
-bool    CALLBACK IsD3D9DeviceAcceptable( D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext );
+//bool    CALLBACK IsD3D9DeviceAcceptable( D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext );
 bool    CALLBACK IsD3D11DeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo, DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext );
 bool    CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext );
 HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext );
@@ -266,7 +267,7 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
     DXUTSetCallbackKeyboard( KeyboardProc );
     DXUTSetCallbackFrameMove( OnFrameMove );
 
-	DXUTSetCallbackD3D9DeviceAcceptable( IsD3D9DeviceAcceptable );
+//	DXUTSetCallbackD3D9DeviceAcceptable( IsD3D9DeviceAcceptable );
     DXUTSetCallbackD3D11DeviceAcceptable( IsD3D11DeviceAcceptable );
     DXUTSetCallbackD3D11DeviceCreated( OnD3D11CreateDevice );
     DXUTSetCallbackD3D11SwapChainResized( OnD3D11ResizedSwapChain );
@@ -322,7 +323,7 @@ void InitApp()
 
 	g_ocean_simulation_param.time_scale				= 0.5f;
 	g_ocean_simulation_param.wave_amplitude			= 1.0f;
-	g_ocean_simulation_param.wind_dir					= NvFromDX(D3DXVECTOR2(0.8f, 0.6f));
+	g_ocean_simulation_param.wind_dir					= NvFromDX(XMFLOAT2(0.8f, 0.6f));
 	g_ocean_simulation_param.wind_speed				= 9.0f;
 	g_ocean_simulation_param.wind_dependency			= 0.98f;
 	g_ocean_simulation_param.choppy_scale				= 1.f;
@@ -344,8 +345,8 @@ void InitApp()
 	g_ocean_simulation_settings.enable_gfx_timers				= true;
 	g_ocean_simulation_settings.enable_CPU_timers				= true;
 	
-	g_ocean_surface_param.sky_color			= D3DXVECTOR4(0.38f, 0.45f, 0.56f, 0);
-	g_ocean_surface_param.waterbody_color		= D3DXVECTOR4(0.07f, 0.15f, 0.2f, 0);
+	g_ocean_surface_param.sky_color			= XMFLOAT4(0.38f, 0.45f, 0.56f, 0);
+	g_ocean_surface_param.waterbody_color = XMFLOAT4(0.07f, 0.15f, 0.2f, 0);
 	g_ocean_surface_param.sky_blending		= 100.0f;
 
 	memset(&g_ocean_stats_simulation_filtered, 0, sizeof(g_ocean_stats_simulation_filtered));
@@ -441,11 +442,11 @@ void AddGUISet()
 // Called during device initialization, this code checks the device for some 
 // minimum set of capabilities, and rejects those that don't pass by returning E_FAIL.
 //--------------------------------------------------------------------------------------
-bool CALLBACK IsD3D9DeviceAcceptable(	D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, 
-										D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
-{
-	return false;
-}
+// bool CALLBACK IsD3D9DeviceAcceptable(	D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, 
+// 										D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
+// {
+// 	return false;
+// }
 
 bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
                                        DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
@@ -529,8 +530,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	//D3DXVECTOR3 vecEye(1358.16f, 441.017f, -1558.43f);
 	//D3DXVECTOR3 vecAt (881.419f, 340.248f, -1670.25f);
 
-	D3DXVECTOR3 vecEye(0.f, 1210.534f, 0.f);
-	D3DXVECTOR3 vecAt (4490.944f, 0.f, -3000.f);
+	XMVECTOR vecEye = DirectX::XMVectorSet(0.f, 1210.534f, 0.f, 0.f);
+	XMVECTOR vecAt = DirectX::XMVectorSet(4490.944f, 0.f, -3000.f, 0.f);
 
 	//D3DXVECTOR3 vecEye(1511.21f, 559.553f, -1164.19f);//(1691.43f, 503.88f, -1382.71f);
 	//D3DXVECTOR3 vecAt (1821.63f, 429.548f, -1533.82f);
@@ -540,7 +541,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	//D3DXVECTOR3 vecAt (1732.75f, 429.646f, -1875.57f);
 	//D3DXVECTOR3 vecEye(-1700, 1200, 1700);
 	//D3DXVECTOR3 vecAt (-200, 0, 200);
-	g_Camera.SetViewParams(&vecEye, &vecAt);
+	g_Camera.SetViewParams(vecEye, vecAt);
 
 	GFSDK_WaveWorks_Malloc_Hooks malloHooks;
 	malloHooks.pMalloc = myMalloc;
@@ -575,7 +576,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     {
 		TCHAR path[MAX_PATH];
 		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\skybox_d3d11.fxo")));
-        ID3DXBuffer* pEffectBuffer = NULL;
+        ID3DBlob* pEffectBuffer = NULL;
         V_RETURN(LoadFile(path, &pEffectBuffer));
         V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pSkyboxFX));
         pEffectBuffer->Release();
@@ -602,17 +603,18 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	TCHAR path[MAX_PATH];
 	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\sky_cube.dds")));
 	ID3D11Resource* pD3D11Resource = NULL;
-	V_RETURN(D3DX11CreateTextureFromFile(pd3dDevice, path, NULL, NULL, &pD3D11Resource, NULL));
-	V_RETURN(pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &g_pSkyCubeMap));
-	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\nvidia_logo.dds")));
+	V_RETURN(DirectX::CreateDDSTextureFromFile(pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &g_pSkyCubeMap));
+//	V_RETURN(pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &g_pSkyCubeMap));
 	SAFE_RELEASE(pD3D11Resource);
-	V_RETURN(D3DX11CreateTextureFromFile(pd3dDevice, path, NULL, NULL, &pD3D11Resource, NULL));
-	V_RETURN(pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &g_pLogoTex));
+
+	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\nvidia_logo.dds")));
+	V_RETURN(DirectX::CreateDDSTextureFromFile(pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &g_pLogoTex));
+//	V_RETURN(pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &g_pLogoTex));
 	SAFE_RELEASE(pD3D11Resource);
 
 	{
 		D3D11_BUFFER_DESC vBufferDesc;
-		vBufferDesc.ByteWidth = 4 * sizeof(D3DXVECTOR4);
+		vBufferDesc.ByteWidth = 4 * sizeof(XMFLOAT4);
 		vBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 		vBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -624,7 +626,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     {
 		TCHAR path[MAX_PATH];
 		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\ocean_marker_d3d11.fxo")))
-        ID3DXBuffer* pEffectBuffer = NULL;
+        ID3DBlob* pEffectBuffer = NULL;
         V_RETURN(LoadFile(path, &pEffectBuffer));
         V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pMarkerFX));
         pEffectBuffer->Release();
@@ -648,7 +650,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
 	{
 		D3D11_BUFFER_DESC vBufferDesc;
-		vBufferDesc.ByteWidth = 5 * sizeof(D3DXVECTOR4);
+		vBufferDesc.ByteWidth = 5 * sizeof(XMFLOAT4);
 		vBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 		vBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -690,7 +692,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 
 	// Setup the camera's projection parameters
 	float fAspectRatio = pBackBufferSurfaceDesc->Width / (FLOAT)pBackBufferSurfaceDesc->Height;
-	g_Camera.SetProjParams(D3DX_PI/4, fAspectRatio, g_NearPlane, g_FarPlane);
+	g_Camera.SetProjParams(DirectX::XMVectorGetX(g_XMPi/4), fAspectRatio, g_NearPlane, g_FarPlane);
 	//g_Camera.SetWindow(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
 
 	// UI
@@ -901,8 +903,8 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
 	if(g_RenderWater)
 	{
-		const D3DXMATRIX matView = D3DXMATRIX(kWaterScale,0,0,0,0,0,kWaterScale,0,0,kWaterScale,0,0,0,0,0,1) * *g_Camera.GetViewMatrix();
-		const D3DXMATRIX matProj = *g_Camera.GetProjMatrix();
+		const XMMATRIX matView = XMMATRIX(kWaterScale, 0, 0, 0, 0, 0, kWaterScale, 0, 0, kWaterScale, 0, 0, 0, 0, 0, 1) *g_Camera.GetViewMatrix();
+		const XMMATRIX matProj = g_Camera.GetProjMatrix();
 
 		if (g_RenderWireframe)
 			g_pOceanSurf->renderWireframe(pDC, matView,matProj,g_hOceanSimulation, g_hOceanSavestate, g_DebugCam);
@@ -939,7 +941,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 			wchar_t* buf = new wchar_t[len];
 			MultiByteToWideChar(CP_ACP, 0, g_pTestParams->ScreenshotDirectory.c_str(), slength, buf, len);
 
-			DXUTSnapD3D11Screenshot( buf, D3DX11_IFF_BMP );
+			DXUTSnapD3D11Screenshot( buf, false );
 			delete[] buf;
 
 			DXUTShutdown();
@@ -956,7 +958,7 @@ void RenderText( double fTime )
     // Output statistics
     g_pTxtHelper->Begin();
     g_pTxtHelper->SetInsertionPos( 2, 0 );
-    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 0.9f, 0.9f, 0.9f, 1.0f ) );
+	g_pTxtHelper->SetForegroundColor(XMFLOAT4(0.9f, 0.9f, 0.9f, 1.0f));
     g_pTxtHelper->DrawTextLine( DXUTGetFrameStats(true) );
     g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );
 
@@ -965,14 +967,14 @@ void RenderText( double fTime )
 	swprintf_s(buffer, buffer_len, L"Quad patches drawn: %d\n", g_ocean_stats_quadtree.num_patches_drawn);
 	g_pTxtHelper->DrawTextLine(buffer);
     
-    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
+    g_pTxtHelper->SetForegroundColor( XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
     
     // Draw help
     if( g_bShowHelp )
     {
         const DXGI_SURFACE_DESC* pd3dsdBackBuffer = DXUTGetDXGIBackBufferSurfaceDesc();
         g_pTxtHelper->SetInsertionPos( 2, pd3dsdBackBuffer->Height-15*6 );
-        g_pTxtHelper->SetForegroundColor( D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f ) );
+		g_pTxtHelper->SetForegroundColor(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
         g_pTxtHelper->DrawTextLine( L"Controls:" );
 
         g_pTxtHelper->SetInsertionPos( 20, pd3dsdBackBuffer->Height-15*5 );
@@ -985,7 +987,7 @@ void RenderText( double fTime )
     }
     else
     {
-        g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
+		g_pTxtHelper->SetForegroundColor(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
         g_pTxtHelper->DrawTextLine( L"Press F1 for help" );
 		swprintf_s(buffer,buffer_len,L"                    GPU_gfx_time : %3.3f msec",g_ocean_stats_simulation_filtered.GPU_gfx_time);
 		g_pTxtHelper->DrawTextLine(buffer);
@@ -1085,11 +1087,11 @@ void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUse
 				GFSDK_WaveWorks_Quadtree_SetFrustumCullMargin(g_pOceanSurf->m_hOceanQuadTree, GFSDK_WaveWorks_Simulation_GetConservativeMaxDisplacementEstimate(g_hOceanSimulation));
 				break;
 			case VK_OEM_COMMA:
-				g_ocean_param_quadtree.mesh_dim = max(g_ocean_param_quadtree.mesh_dim >> 1, 4);
+				g_ocean_param_quadtree.mesh_dim = std::max(g_ocean_param_quadtree.mesh_dim >> 1, 4);
 				g_pOceanSurf->initQuadTree(g_ocean_param_quadtree);
 				break;
 			case VK_OEM_PERIOD:
-				g_ocean_param_quadtree.mesh_dim = min(g_ocean_param_quadtree.mesh_dim << 1, 256);
+				g_ocean_param_quadtree.mesh_dim = std::min(g_ocean_param_quadtree.mesh_dim << 1, 256);
 				g_pOceanSurf->initQuadTree(g_ocean_param_quadtree);
 				break;
 			case 'c':
@@ -1320,40 +1322,42 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
 	SAFE_DELETE(g_pTxtHelper);
 }
 
-void RenderMarkers(ID3D11DeviceContext* pDC, const gfsdk_float4* pMarkerPositions, int num_markers, const D3DXVECTOR4& color)
+void RenderMarkers(ID3D11DeviceContext* pDC, const gfsdk_float4* pMarkerPositions, int num_markers, const XMFLOAT4& color)
 {
 	g_pMarkerColor->SetFloatVector((FLOAT*)&color);
 
 	const UINT vbOffset = 0;
-	const UINT vertexStride = sizeof(D3DXVECTOR4);
+	const UINT vertexStride = sizeof(XMFLOAT4);
 	pDC->IASetInputLayout(g_pMarkerLayout);
     pDC->IASetVertexBuffers(0, 1, &g_pMarkerVB, &vertexStride, &vbOffset);
 	pDC->IASetIndexBuffer(g_pMarkerIB, DXGI_FORMAT_R16_UINT, 0);
 
 	pDC->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	D3DXMATRIX matView = /*D3DXMATRIX(1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,1) **/ *g_Camera.GetViewMatrix();
-	D3DXMATRIX matProj = *g_Camera.GetProjMatrix();
-	D3DXMATRIX matVP = matView * matProj;
+	XMMATRIX matView = /*D3DXMATRIX(1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,1) **/ g_Camera.GetViewMatrix();
+	XMMATRIX matProj = g_Camera.GetProjMatrix();
+	XMMATRIX matVP = matView * matProj;
 	g_pMarkerMatViewProjVariable->SetMatrix((FLOAT*)&matVP);
 
 	g_pMarkerTechnique->GetPassByIndex(0)->Apply(0,pDC);
 	for(int i = 0; i != num_markers; ++i)
 	{
-		D3DXVECTOR4 transformedMarkerPosition = D3DXVECTOR4(pMarkerPositions[i].x,pMarkerPositions[i].z + g_ocean_param_quadtree.sea_level,pMarkerPositions[i].y,1.f);
-		transformedMarkerPosition.x *= kWaterScale;
-		transformedMarkerPosition.y *= kWaterScale;
-		transformedMarkerPosition.z *= kWaterScale;
+		XMVECTOR transformedMarkerPosition = DirectX::XMVectorSet(pMarkerPositions[i].x, pMarkerPositions[i].z + g_ocean_param_quadtree.sea_level, pMarkerPositions[i].y, 1.f) * kWaterScale;
+		DirectX::XMVectorSetW(transformedMarkerPosition, 1.0f);
+// 		transformedMarkerPosition.x *= kWaterScale;
+// 		transformedMarkerPosition.y *= kWaterScale;
+// 		transformedMarkerPosition.z *= kWaterScale;
 
 		D3D11_MAPPED_SUBRESOURCE msr;
 		pDC->Map(g_pMarkerVB, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-		D3DXVECTOR4* marker_verts = (D3DXVECTOR4*)msr.pData;
+		XMFLOAT4* marker_verts = (XMFLOAT4*)msr.pData;
 
-		marker_verts[0] = transformedMarkerPosition;
-		marker_verts[1] = transformedMarkerPosition + D3DXVECTOR4( 20.f, 20.f, 20.f, 0.f);
-		marker_verts[2] = transformedMarkerPosition + D3DXVECTOR4( 20.f, 20.f,-20.f, 0.f);
-		marker_verts[3] = transformedMarkerPosition + D3DXVECTOR4(-20.f, 20.f,-20.f, 0.f);
-		marker_verts[4] = transformedMarkerPosition + D3DXVECTOR4(-20.f, 20.f, 20.f, 0.f);
+		DirectX::XMStoreFloat4(&marker_verts[0], transformedMarkerPosition);
+		DirectX::XMStoreFloat4(&marker_verts[1], transformedMarkerPosition + DirectX::XMVectorSet(20.f, 20.f, 20.f, 0.f));
+		DirectX::XMStoreFloat4(&marker_verts[2], transformedMarkerPosition + DirectX::XMVectorSet(20.f, 20.f, -20.f, 0.f));
+		DirectX::XMStoreFloat4(&marker_verts[3], transformedMarkerPosition + DirectX::XMVectorSet(-20.f, 20.f, -20.f, 0.f));
+		DirectX::XMStoreFloat4(&marker_verts[4], transformedMarkerPosition + DirectX::XMVectorSet(-20.f, 20.f, 20.f, 0.f));
+
 		pDC->Unmap(g_pMarkerVB, 0);
 
 		pDC->DrawIndexed(12, 0, 0);
@@ -1368,7 +1372,7 @@ gfsdk_float4 g_local_marker_positions[NumMarkers];
 
 void RenderLocalMarkers(ID3D11DeviceContext* pDC)
 {
-	RenderMarkers(pDC, g_local_marker_positions, NumMarkers, D3DXVECTOR4(1.f,0.f,0.f,1.f));
+	RenderMarkers(pDC, g_local_marker_positions, NumMarkers, XMFLOAT4(1.f, 0.f, 0.f, 1.f));
 }
 
 void RenderRemoteMarkers(ID3D11DeviceContext* pDC)
@@ -1377,7 +1381,7 @@ void RenderRemoteMarkers(ID3D11DeviceContext* pDC)
 		const gfsdk_float4* pMarkerPositions = NULL;
 		size_t numMarkers = 0;
 		if(g_pNetworkClient->GetRemoteMarkerPositions(pMarkerPositions, numMarkers)) {
-			RenderMarkers(pDC, pMarkerPositions, (int)numMarkers, D3DXVECTOR4(1.f,1.f,0.f,1.f));
+			RenderMarkers(pDC, pMarkerPositions, (int)numMarkers, XMFLOAT4(1.f, 1.f, 0.f, 1.f));
 		}
 	}
 }
@@ -1392,19 +1396,23 @@ void UpdateMarkers()
 	HRESULT hr;
 
 	// Find where the camera vector intersects mean sea level
-	D3DXVECTOR3 eye_pos = *g_Camera.GetEyePt();
-	D3DXVECTOR3 lookat_pos = *g_Camera.GetLookAtPt();
+	XMVECTOR eye_pos = g_Camera.GetEyePt();
+	XMVECTOR lookat_pos = g_Camera.GetLookAtPt();
 	const FLOAT intersectionHeight = g_ocean_param_quadtree.sea_level;
-	const FLOAT lambda = (intersectionHeight - eye_pos.y)/(lookat_pos.y - eye_pos.y);
-	const D3DXVECTOR3 sea_level_pos = (1.f - lambda) * eye_pos + lambda * lookat_pos;
-	const D3DXVECTOR2 sea_level_xy(sea_level_pos.x, sea_level_pos.z);
+	const FLOAT lambda = (intersectionHeight - XMVectorGetY(eye_pos))/(XMVectorGetY(lookat_pos) - XMVectorGetY(eye_pos));
+	const XMVECTOR sea_level_pos = (1.f - lambda) * eye_pos + lambda * lookat_pos;
+	const XMVECTOR sea_level_xy = XMVectorSet(XMVectorGetX(sea_level_pos), XMVectorGetZ(sea_level_pos), 0, 0);
 
 	// Update local marker coords, we could need them any time for remote
 	for(int x = 0; x != NumMarkersXY; ++x)
 	{
 		for(int y = 0; y != NumMarkersXY; ++y)
 		{
-			g_local_marker_coords[y * NumMarkersXY + x] = NvFromDX(sea_level_xy/kWaterScale + D3DXVECTOR2(2.f * (x-((NumMarkersXY-1)/2)), 2.f * (y-((NumMarkersXY-1)/2))));
+			XMVECTOR offset = XMVectorSet(2.f * (x - ((NumMarkersXY - 1) / 2)), 2.f * (y - ((NumMarkersXY - 1) / 2)), 0, 0);
+			XMVECTOR newPos = sea_level_xy / kWaterScale + offset;
+
+			g_local_marker_coords[y * NumMarkersXY + x].x = XMVectorGetX(newPos);
+			g_local_marker_coords[y * NumMarkersXY + x].x = XMVectorGetY(newPos);
 		}
 	}
 
@@ -1439,32 +1447,34 @@ void UpdateMarkers()
 
 void RenderSkybox(ID3D11DeviceContext* pDC)
 {
-	D3DXMATRIX matView = D3DXMATRIX(1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,1) * *g_Camera.GetViewMatrix();
-	D3DXMATRIX matProj = *g_Camera.GetProjMatrix();
-	D3DXMATRIX matVP = matView * matProj;
+	XMMATRIX matView = XMMATRIX(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1) * g_Camera.GetViewMatrix();
+	XMMATRIX matProj = g_Camera.GetProjMatrix();
+	XMMATRIX matVP = matView * matProj;
 
     D3D11_MAPPED_SUBRESOURCE msr;
 	pDC->Map(g_pSkyBoxVB, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-    D3DXVECTOR4* far_plane_quad = (D3DXVECTOR4*)msr.pData;
-	far_plane_quad[0] = D3DXVECTOR4(-g_FarPlane,  g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
-	far_plane_quad[1] = D3DXVECTOR4(-g_FarPlane, -g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
-	far_plane_quad[2] = D3DXVECTOR4( g_FarPlane,  g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
-	far_plane_quad[3] = D3DXVECTOR4( g_FarPlane, -g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
-	D3DXMATRIX matInvVP;
-	D3DXMatrixInverse(&matInvVP, NULL, &matVP);
-	D3DXVec4TransformArray(&far_plane_quad[0], sizeof(D3DXVECTOR4), &far_plane_quad[0], sizeof(D3DXVECTOR4), &matInvVP, 4);
+	XMFLOAT4* far_plane_quad = (XMFLOAT4*)msr.pData;
+	far_plane_quad[0] = XMFLOAT4(-g_FarPlane, g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
+	far_plane_quad[1] = XMFLOAT4(-g_FarPlane, -g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
+	far_plane_quad[2] = XMFLOAT4(g_FarPlane, g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
+	far_plane_quad[3] = XMFLOAT4(g_FarPlane, -g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
+	
+	//NOTE: Need Determinant!
+	XMMATRIX matInvVP = XMMatrixInverse(&DirectX::XMVectorSet(0, 0, 0, 0), matVP);
+
+	XMVector4TransformStream(&far_plane_quad[0], sizeof(XMFLOAT4), &far_plane_quad[0], sizeof(XMFLOAT4), 4, matInvVP);
 	pDC->Unmap(g_pSkyBoxVB, 0);
 
 	const UINT vbOffset = 0;
-	const UINT vertexStride = sizeof(D3DXVECTOR4);
+	const UINT vertexStride = sizeof(XMFLOAT4);
 	pDC->IASetInputLayout(g_pSkyboxLayout);
     pDC->IASetVertexBuffers(0, 1, &g_pSkyBoxVB, &vertexStride, &vbOffset);
 	pDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	g_pSkyBoxMatViewProjVariable->SetMatrix((FLOAT*)&matVP);
 
-	D3DXVECTOR3 eye_pos = *g_Camera.GetEyePt();
+	XMVECTOR eye_pos = g_Camera.GetEyePt();
 	g_pSkyBoxEyePosVariable->SetFloatVector((FLOAT*)&eye_pos);
 
 	g_pSkyBoxSkyCubeMapVariable->SetResource(g_pSkyCubeMap);

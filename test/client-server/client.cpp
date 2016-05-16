@@ -35,7 +35,7 @@
 
 #include <winsock.h>
 
-#include <D3dx9.h>
+//#include <D3dx9.h>
 
 #include <vector>
 #include <assert.h>

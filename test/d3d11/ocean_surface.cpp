@@ -31,10 +31,11 @@
 #include "SDKmisc.h"
 
 #include "GFSDK_WaveWorks_D3D_Util.h"
+#include "DDSTextureLoader.h"
 
 #pragma warning(disable:4127)
 
-extern HRESULT LoadFile(LPCTSTR FileName, ID3DXBuffer** ppBuffer);
+extern HRESULT LoadFile(LPCTSTR FileName, ID3DBlob** ppBuffer);
 
 OceanSurface::OceanSurface()
 {
@@ -174,7 +175,7 @@ HRESULT OceanSurface::init(const OceanSurfaceParameters& params)
 	{
 		TCHAR path[MAX_PATH];
 		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\ocean_surface_d3d11.fxo")));
-        ID3DXBuffer* pEffectBuffer = NULL;
+        ID3DBlob* pEffectBuffer = NULL;
         V_RETURN(LoadFile(path, &pEffectBuffer));
         V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, m_pd3dDevice, &m_pOceanFX));
         pEffectBuffer->Release();
@@ -275,8 +276,10 @@ HRESULT OceanSurface::init(const OceanSurfaceParameters& params)
 		TCHAR path[MAX_PATH];
 		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\reflect_cube.dds")));
 		ID3D11Resource* pD3D11Resource = NULL;
-		V_RETURN(D3DX11CreateTextureFromFile(m_pd3dDevice, path, NULL, NULL, &pD3D11Resource, NULL));
-		V_RETURN(m_pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &m_pCubeMap));
+
+		
+		V_RETURN(DirectX::CreateDDSTextureFromFile(m_pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &m_pCubeMap));
+//		V_RETURN(m_pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &m_pCubeMap));
 		SAFE_RELEASE(pD3D11Resource);
 	}
 
@@ -285,8 +288,8 @@ HRESULT OceanSurface::init(const OceanSurfaceParameters& params)
 		TCHAR path[MAX_PATH];
 		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\foam_intensity_perlin2.dds")));
 		ID3D11Resource* pD3D11Resource = NULL;
-		V_RETURN(D3DX11CreateTextureFromFile(m_pd3dDevice, path, NULL, NULL, &pD3D11Resource, NULL));
-		V_RETURN(m_pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &m_pFoamIntensityMap));
+		V_RETURN(DirectX::CreateDDSTextureFromFile(m_pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &m_pFoamIntensityMap));
+//		V_RETURN(m_pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &m_pFoamIntensityMap));
 		SAFE_RELEASE(pD3D11Resource);
 	}
 
@@ -295,8 +298,8 @@ HRESULT OceanSurface::init(const OceanSurfaceParameters& params)
 		TCHAR path[MAX_PATH];
 		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\foam.dds")));
 		ID3D11Resource* pD3D11Resource = NULL;
-		V_RETURN(D3DX11CreateTextureFromFile(m_pd3dDevice, path, NULL, NULL, &pD3D11Resource, NULL));
-		V_RETURN(m_pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &m_pFoamDiffuseMap));
+		V_RETURN(DirectX::CreateDDSTextureFromFile(m_pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &m_pFoamDiffuseMap));
+//		V_RETURN(m_pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &m_pFoamDiffuseMap));
 		SAFE_RELEASE(pD3D11Resource);
 	}
 
@@ -326,14 +329,15 @@ void OceanSurface::createFresnelMap()
 		// B channel: 
 		// A channel: 
 
-		float cos_a = i / (FLOAT)BICOLOR_TEX_SIZE;
-		float fresnel = D3DXFresnelTerm(cos_a, 1.33f);
-		DWORD weight = (DWORD)(fresnel * 255);
-
-		fresnel = powf(1 / (1 + cos_a), m_params.sky_blending);
-		DWORD refl_fresnel = (DWORD)(fresnel * 255);
-
-		buffer[i] = (weight) | (refl_fresnel << 8);
+		// TODO: FIX ME - COMPLETELY BROKEN WITH new DirectXMath FresnelTerm thingy
+// 		float cos_a = i / (FLOAT)BICOLOR_TEX_SIZE;
+// 		float fresnel = XMFresnelTerm(cos_a, 1.33f);
+// 		DWORD weight = (DWORD)(fresnel * 255);
+// 
+// 		fresnel = powf(1 / (1 + cos_a), m_params.sky_blending);
+// 		DWORD refl_fresnel = (DWORD)(fresnel * 255);
+// 
+// 		buffer[i] = (weight) | (refl_fresnel << 8);
 	}
 
 	D3D11_TEXTURE1D_DESC texDesc;
@@ -357,14 +361,14 @@ void OceanSurface::createFresnelMap()
 	SAFE_RELEASE(pTextureResource);
 }
 
-void OceanSurface::renderWireframe(ID3D11DeviceContext* pDC, const D3DXMATRIX& matView, const D3DXMATRIX& matProj, GFSDK_WaveWorks_SimulationHandle hSim, GFSDK_WaveWorks_SavestateHandle hSavestate, BOOL freeze_cam)
+void OceanSurface::renderWireframe(ID3D11DeviceContext* pDC, const XMMATRIX& matView, const XMMATRIX& matProj, GFSDK_WaveWorks_SimulationHandle hSim, GFSDK_WaveWorks_SavestateHandle hSavestate, BOOL freeze_cam)
 {
 	// Matrices
-	D3DXMATRIX matVP =  matView * matProj;
+	XMMATRIX matVP = matView * matProj;
 	m_pRenderSurfaceMatViewProjVariable->SetMatrix((FLOAT*)&matVP);
 
 	// Wireframe color
-	D3DXVECTOR4 patch_color(1, 1, 1, 1);
+	XMFLOAT4 patch_color(1, 1, 1, 1);
 	m_pRenderSurfacePatchColorVariable->SetFloatVector((FLOAT*)&patch_color);
 
 	D3D11_VIEWPORT vp;
@@ -382,7 +386,7 @@ void OceanSurface::renderWireframe(ID3D11DeviceContext* pDC, const D3DXMATRIX& m
 	GFSDK_WaveWorks_Savestate_RestoreD3D11(hSavestate, pDC);
 }
 
-void OceanSurface::renderShaded(ID3D11DeviceContext* pDC, const D3DXMATRIX& matView, const D3DXMATRIX& matProj, GFSDK_WaveWorks_SimulationHandle hSim, GFSDK_WaveWorks_SavestateHandle hSavestate, BOOL freeze_cam)
+void OceanSurface::renderShaded(ID3D11DeviceContext* pDC, const XMMATRIX& matView, const XMMATRIX& matProj, GFSDK_WaveWorks_SimulationHandle hSim, GFSDK_WaveWorks_SavestateHandle hSavestate, BOOL freeze_cam)
 {
 	m_pRenderSurfaceColorMapVariable->SetResource(m_pBicolorMap);
 	m_pRenderSurfaceCubeMapVariable->SetResource(m_pCubeMap);
@@ -394,7 +398,7 @@ void OceanSurface::renderShaded(ID3D11DeviceContext* pDC, const D3DXMATRIX& matV
 	m_pRenderSurfaceWaterColorVariable->SetFloatVector((FLOAT*)&m_params.waterbody_color);
 
 	// Matrices
-	D3DXMATRIX matVP =  matView * matProj;
+	XMMATRIX matVP = matView * matProj;
 	m_pRenderSurfaceMatViewProjVariable->SetMatrix((FLOAT*)&matVP);
 
 	D3D11_VIEWPORT vp;

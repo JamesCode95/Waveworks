@@ -27,4 +27,4 @@
 //
 
 #define GFSDK_WAVEWORKS_SM4
-#include  "FoamGeneration_nvsf.fx"
+#include  "FoamGeneration.fx"

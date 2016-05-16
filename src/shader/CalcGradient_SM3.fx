@@ -27,4 +27,4 @@
 //
 
 #define GFSDK_WAVEWORKS_SM3
-#include "CalcGradient_nvsf.fx"
+#include "CalcGradient.fx"

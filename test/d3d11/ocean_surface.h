@@ -32,6 +32,9 @@
 #include <D3DX11Effect.h>
 
 #include <GFSDK_WaveWorks.h>
+#include <DirectXMath.h>
+
+using namespace DirectX;
 
 //#define DEBUG_VS
 //#define DEBUG_PS
@@ -42,8 +45,8 @@
 struct OceanSurfaceParameters
 {
 	// Shading properties
-	D3DXVECTOR4 sky_color;
-    D3DXVECTOR4 waterbody_color;
+	XMFLOAT4 sky_color;
+	XMFLOAT4 waterbody_color;
     float sky_blending;
 };
 
@@ -88,8 +91,8 @@ public:
 	// --------------------------------- Rendering routines -----------------------------------
 
 	// Rendering
-	void renderShaded(ID3D11DeviceContext* pDC, const D3DXMATRIX& matView, const D3DXMATRIX& matProj, GFSDK_WaveWorks_SimulationHandle hSim, GFSDK_WaveWorks_SavestateHandle hSavestate, BOOL freeze_cam);
-	void renderWireframe(ID3D11DeviceContext* pDC, const D3DXMATRIX& matView, const D3DXMATRIX& matProj, GFSDK_WaveWorks_SimulationHandle hSim, GFSDK_WaveWorks_SavestateHandle hSavestate, BOOL freeze_cam);
+	void renderShaded(ID3D11DeviceContext* pDC, const XMMATRIX& matView, const XMMATRIX& matProj, GFSDK_WaveWorks_SimulationHandle hSim, GFSDK_WaveWorks_SavestateHandle hSavestate, BOOL freeze_cam);
+	void renderWireframe(ID3D11DeviceContext* pDC, const XMMATRIX& matView, const XMMATRIX& matProj, GFSDK_WaveWorks_SimulationHandle hSim, GFSDK_WaveWorks_SavestateHandle hSavestate, BOOL freeze_cam);
 	void getQuadTreeStats(GFSDK_WaveWorks_Quadtree_Stats& stats);
 
 	// --------------------------------- Surface geometry -----------------------------------
@@ -102,8 +105,8 @@ public:
 	UINT* m_pSimulationShaderInputMappings_Shaded;
 	UINT* m_pSimulationShaderInputMappings_Wireframe;
 
-	D3DXMATRIX m_matView;
-	D3DXMATRIX m_matProj;
+	XMMATRIX m_matView;
+	XMMATRIX m_matProj;
 };
 
 #endif	// _OCEAN_WAVE_H

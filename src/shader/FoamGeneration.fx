@@ -26,7 +26,7 @@
 // strictly prohibited.
 //
 
-#include "Common.fxh"
+#include "GFSDK_WaveWorks_Common.fxh"
 
 #ifdef GFSDK_WAVEWORKS_GL
 #define DECLARE_ATTR_CONSTANT(Type,Label,Regoff) uniform Type Label
