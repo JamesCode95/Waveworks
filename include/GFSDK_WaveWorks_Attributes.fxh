@@ -14,7 +14,7 @@
  * or patent rights of NVIDIA Corporation. No third party distribution is allowed unless 
  * expressly authorized by NVIDIA.  Details are subject to change without notice. 
  * This code supersedes and replaces all information previously supplied. 
- * NVIDIA Corporation products are not authorized for use as critical 
+ * NVIDIA Corporation products are not authorized for use as critic
  * components in life support devices or systems without express written approval of 
  * NVIDIA Corporation. 
  * 

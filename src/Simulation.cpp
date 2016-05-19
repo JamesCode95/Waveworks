@@ -59,13 +59,7 @@ namespace {
 		#pragma GCC diagnostic push
 		#pragma GCC diagnostic ignored "-Wunused-variable"
 	#endif
-	#include "Attributes_map.h"
-	namespace CalcGradients {
-		#include "CalcGradient_map.h"
-	}
-	namespace FoamGeneration {
-		#include "FoamGeneration_map.h"
-	}
+
 	#ifdef __GNUC__
 		#pragma GCC diagnostic pop
 	#endif
@@ -307,141 +301,141 @@ enum ShaderInputsGL2
 // NB: These should be kept synchronisd with the shader source
 #if WAVEWORKS_ENABLE_D3D9
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputDescsD3D9[NumShaderInputsD3D9] = {
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap1, 1 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap2, 2 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, nvsf_g_WorldEye, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, nvsf_g_Pad1, 1 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, nvsf_g_UVScaleCascade0123, 2 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_TexelLength_x2_PS, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade1Scale_PS, 1 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade1TexelScale_PS, 2 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade1UVOffset_PS, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade2Scale_PS, 4 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade2TexelScale_PS, 5 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade2UVOffset_PS, 6 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade3Scale_PS, 7 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade3TexelScale_PS, 8 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, nvsf_g_Cascade3UVOffset_PS, 9 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap1", 1 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap2", 2 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_WorldEye", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_Pad1", 1 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_UVScaleCascade0123", 2 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_TexelLength_x2_PS", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade1Scale_PS", 1 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade1TexelScale_PS", 2 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade1UVOffset_PS", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade2Scale_PS", 4 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade2TexelScale_PS", 5 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade2UVOffset_PS", 6 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade3Scale_PS", 7 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade3TexelScale_PS", 8 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade3UVOffset_PS", 9 },
 };
 #endif // WAVEWORKS_ENABLE_D3D9
 
 #if WAVEWORKS_ENABLE_D3D10
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputDescsD3D10[NumShaderInputsD3D10] = {
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, nvsf_attr_vs_buffer, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_ConstantBuffer, nvsf_attr_ps_buffer, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap3, 3 }
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_attr_vs_buffer", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_ConstantBuffer, "nvsf_attr_ps_buffer", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap3", 3 }
 };
 #endif // WAVEWORKS_ENABLE_D3D10
 
 #if WAVEWORKS_ENABLE_D3D11
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputDescsD3D11[NumShaderInputsD3D11] = {
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, nvsf_attr_vs_buffer, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_ConstantBuffer, nvsf_attr_vs_buffer, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, nvsf_g_samplerDisplacementMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, nvsf_g_samplerDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, nvsf_g_samplerDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, nvsf_g_samplerDisplacementMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, nvsf_g_textureDisplacementMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, nvsf_g_textureDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, nvsf_g_textureDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, nvsf_g_textureDisplacementMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_ConstantBuffer, nvsf_attr_ps_buffer, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap3, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap3, 3 }
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_attr_vs_buffer", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_ConstantBuffer, "nvsf_attr_vs_buffer", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, "nvsf_g_samplerDisplacementMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, "nvsf_g_samplerDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, "nvsf_g_samplerDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, "nvsf_g_samplerDisplacementMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, "nvsf_g_textureDisplacementMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, "nvsf_g_textureDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, "nvsf_g_textureDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, "nvsf_g_textureDisplacementMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_ConstantBuffer, "nvsf_attr_ps_buffer", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap3", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap3", 3 }
 };
 #endif // WAVEWORKS_ENABLE_D3D11
 
 #if WAVEWORKS_ENABLE_GNM
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputDescsGnm[NumShaderInputsGnm] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, nvsf_attr_vs_buffer, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap0, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, nvsf_g_samplerDisplacementMap3, 3 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap0, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, nvsf_g_textureDisplacementMap3, 3 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_ConstantBuffer, nvsf_attr_vs_buffer, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, nvsf_g_samplerDisplacementMap0, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, nvsf_g_samplerDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, nvsf_g_samplerDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, nvsf_g_samplerDisplacementMap3, 3 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, nvsf_g_textureDisplacementMap0, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, nvsf_g_textureDisplacementMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, nvsf_g_textureDisplacementMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, nvsf_g_textureDisplacementMap3, 3 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_ConstantBuffer, nvsf_attr_ps_buffer, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap0, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, nvsf_g_samplerGradientMap3, 3 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap0, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap1, 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap2, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, nvsf_g_textureGradientMap3, 3 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_attr_vs_buffer", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap0", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap3", 3 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap0", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap3", 3 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_ConstantBuffer, "nvsf_attr_vs_buffer", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, "nvsf_g_samplerDisplacementMap0", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, "nvsf_g_samplerDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, "nvsf_g_samplerDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Sampler, "nvsf_g_samplerDisplacementMap3", 3 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, "nvsf_g_textureDisplacementMap0", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, "nvsf_g_textureDisplacementMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, "nvsf_g_textureDisplacementMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::DomainShader_Texture, "nvsf_g_textureDisplacementMap3", 3 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_ConstantBuffer, "nvsf_attr_ps_buffer", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap0", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap3", 3 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap0", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap1", 1 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap2", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap3", 3 }
 };
 #endif // WAVEWORKS_ENABLE_GNM
 #if WAVEWORKS_ENABLE_GL
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputDescsGL2[NumShaderInputsGL2] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureBindLocation, nvsf_g_samplerDisplacementMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureBindLocation, nvsf_g_samplerDisplacementMap1, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureBindLocation, nvsf_g_samplerDisplacementMap2, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureBindLocation, nvsf_g_samplerDisplacementMap3, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureBindLocation, nvsf_g_samplerGradientMap0, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureBindLocation, nvsf_g_samplerGradientMap1, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureBindLocation, nvsf_g_samplerGradientMap2, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureBindLocation, nvsf_g_samplerGradientMap3, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureArrayBindLocation, nvsf_g_samplerDisplacementMapTextureArray, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureArrayBindLocation, nvsf_g_samplerGradientMapTextureArray, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, nvsf_g_WorldEye, 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, nvsf_g_UseTextureArrays, 1 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, nvsf_g_UVScaleCascade0123, 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_TexelLength_x2_PS, 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade1Scale_PS, 1 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade1TexelScale_PS, 2 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade1UVOffset_PS, 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade2Scale_PS, 4 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade2TexelScale_PS, 5 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade2UVOffset_PS, 6 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade3Scale_PS, 7 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade3TexelScale_PS, 8 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, nvsf_g_Cascade3UVOffset_PS, 9 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureBindLocation, "nvsf_g_samplerDisplacementMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureBindLocation, "nvsf_g_samplerDisplacementMap1", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureBindLocation, "nvsf_g_samplerDisplacementMap2", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureBindLocation, "nvsf_g_samplerDisplacementMap3", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureBindLocation, "nvsf_g_samplerGradientMap0", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureBindLocation, "nvsf_g_samplerGradientMap1", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureBindLocation, "nvsf_g_samplerGradientMap2", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureBindLocation, "nvsf_g_samplerGradientMap3", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_TextureArrayBindLocation, "nvsf_g_samplerDisplacementMapTextureArray", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_TextureArrayBindLocation, "nvsf_g_samplerGradientMapTextureArray", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_WorldEye", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_UseTextureArrays", 1 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_UVScaleCascade0123", 2 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_TexelLength_x2_PS", 0 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade1Scale_PS", 1 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade1TexelScale_PS", 2 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade1UVOffset_PS", 3 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade2Scale_PS", 4 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade2TexelScale_PS", 5 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade2UVOffset_PS", 6 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade3Scale_PS", 7 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade3TexelScale_PS", 8 },
+    { GFSDK_WaveWorks_ShaderInput_Desc::GL_FragmentShader_UniformLocation, "nvsf_g_Cascade3UVOffset_PS", 9 },
 };
 #endif // __GL__
 struct ps_calcgradient_cbuffer
@@ -1076,15 +1070,15 @@ HRESULT GFSDK_WaveWorks_Simulation::initShaders()
 			if(m_d3d._GL2.m_GradCalcProgram == 0) return E_FAIL;
 
 			// Gradient calculation program binding
-			m_d3d._GL2.m_GradCalcUniformLocation_Scales = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,::CalcGradients::nvsf_g_Scales); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_GradCalcUniformLocation_OneBack = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,::CalcGradients::nvsf_g_OneTexel_Back); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_GradCalcUniformLocation_OneFront = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,::CalcGradients::nvsf_g_OneTexel_Front); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_GradCalcUniformLocation_OneLeft = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,::CalcGradients::nvsf_g_OneTexel_Left); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_GradCalcUniformLocation_OneRight = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,::CalcGradients::nvsf_g_OneTexel_Right); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_GradCalcTextureBindLocation_DisplacementMap = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,::CalcGradients::nvsf_g_samplerDisplacementMap); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_GradCalcUniformLocation_Scales = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,"nvsf_g_Scales"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_GradCalcUniformLocation_OneBack = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,"nvsf_g_OneTexel_Back"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_GradCalcUniformLocation_OneFront = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,"nvsf_g_OneTexel_Front"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_GradCalcUniformLocation_OneLeft = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,"nvsf_g_OneTexel_Left"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_GradCalcUniformLocation_OneRight = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,"nvsf_g_OneTexel_Right"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_GradCalcTextureBindLocation_DisplacementMap = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_GradCalcProgram,"nvsf_g_samplerDisplacementMap"); CHECK_GL_ERRORS;
 			m_d3d._GL2.m_GradCalcTextureUnit_DisplacementMap = 0;
-			m_d3d._GL2.m_GradCalcAttributeLocation_Pos = NVSDK_GLFunctions.glGetAttribLocation(m_d3d._GL2.m_GradCalcProgram, ::CalcGradients::nvsf_vInPos); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_GradCalcAttributeLocation_TexCoord = NVSDK_GLFunctions.glGetAttribLocation(m_d3d._GL2.m_GradCalcProgram, ::CalcGradients::nvsf_vInTexCoord); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_GradCalcAttributeLocation_Pos = NVSDK_GLFunctions.glGetAttribLocation(m_d3d._GL2.m_GradCalcProgram, "nvsf_vInPos"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_GradCalcAttributeLocation_TexCoord = NVSDK_GLFunctions.glGetAttribLocation(m_d3d._GL2.m_GradCalcProgram, "nvsf_vInTexCoord"); CHECK_GL_ERRORS;
 
 			// Creating foam generation program
 			if(m_d3d._GL2.m_FoamGenProgram != 0) NVSDK_GLFunctions.glDeleteProgram(m_d3d._GL2.m_FoamGenProgram); CHECK_GL_ERRORS;
@@ -1092,13 +1086,13 @@ HRESULT GFSDK_WaveWorks_Simulation::initShaders()
 			if(m_d3d._GL2.m_FoamGenProgram == 0) return E_FAIL;
 
 			// Foam accumulation program binding
-			m_d3d._GL2.m_FoamGenUniformLocation_DissipationFactors = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_FoamGenProgram,::FoamGeneration::nvsf_g_DissipationFactors); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_FoamGenUniformLocation_SourceComponents = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_FoamGenProgram,::FoamGeneration::nvsf_g_SourceComponents); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_FoamGenUniformLocation_UVOffsets = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_FoamGenProgram,::FoamGeneration::nvsf_g_UVOffsets); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_FoamGenTextureBindLocation_EnergyMap = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_FoamGenProgram,::FoamGeneration::nvsf_g_samplerEnergyMap); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_FoamGenUniformLocation_DissipationFactors = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_FoamGenProgram,"nvsf_g_DissipationFactors"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_FoamGenUniformLocation_SourceComponents = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_FoamGenProgram,"nvsf_g_SourceComponents"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_FoamGenUniformLocation_UVOffsets = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_FoamGenProgram,"nvsf_g_UVOffsets"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_FoamGenTextureBindLocation_EnergyMap = NVSDK_GLFunctions.glGetUniformLocation(m_d3d._GL2.m_FoamGenProgram,"nvsf_g_samplerEnergyMap"); CHECK_GL_ERRORS;
 			m_d3d._GL2.m_FoamGenTextureUnit_EnergyMap = 0;
-			m_d3d._GL2.m_FoamGenAttributeLocation_Pos = NVSDK_GLFunctions.glGetAttribLocation(m_d3d._GL2.m_FoamGenProgram, ::FoamGeneration::nvsf_vInPos); CHECK_GL_ERRORS;
-			m_d3d._GL2.m_FoamGenAttributeLocation_TexCoord = NVSDK_GLFunctions.glGetAttribLocation(m_d3d._GL2.m_FoamGenProgram, ::FoamGeneration::nvsf_vInTexCoord); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_FoamGenAttributeLocation_Pos = NVSDK_GLFunctions.glGetAttribLocation(m_d3d._GL2.m_FoamGenProgram, "nvsf_vInPos"); CHECK_GL_ERRORS;
+			m_d3d._GL2.m_FoamGenAttributeLocation_TexCoord = NVSDK_GLFunctions.glGetAttribLocation(m_d3d._GL2.m_FoamGenProgram, "nvsf_vInTexCoord"); CHECK_GL_ERRORS;
 		}
 		break;
 #endif

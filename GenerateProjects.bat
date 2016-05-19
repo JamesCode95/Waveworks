@@ -14,6 +14,12 @@ pushd compiler\vc12win64-cmake\
 cmake ..\.. -G "Visual Studio 12 2013" -Ax64 -DTARGET_BUILD_PLATFORM=Windows -DWW_OUTPUT_DIR=bin\vc12win64-cmake\
 popd
 
+REM rmdir /s /q compiler\vc14win64-cmake\
+REM mkdir compiler\vc14win64-cmake\
+REM pushd compiler\vc14win64-cmake\
+REM cmake ..\.. -G "Visual Studio 14 2015" -Ax64 -DTARGET_BUILD_PLATFORM=Windows -DWW_OUTPUT_DIR=bin\vc14win64-cmake\
+REM popd
+
 REM rmdir /s /q compiler\vc12-ps4-cmake\
 REM mkdir compiler\vc12-ps4-cmake\
 REM pushd compiler\vc12-ps4-cmake\

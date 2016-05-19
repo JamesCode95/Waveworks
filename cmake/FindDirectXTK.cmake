@@ -8,10 +8,12 @@ else()
     set(DXTKARCH "Win32")
 endif()
 
-find_path(DXTK_SDK_PATH DirectXHelpers.h
-	HINTS ${GW_DEPS_ROOT}/DirectXTK/Inc
+find_path(DXTK_SDK_PATH Inc/DirectXHelpers.h
+	HINTS ${GW_DEPS_ROOT}/DirectXTK/
 	)
-    
+   
+MESSAGE("DXTK SDK ${DXTK_SDK_PATH}")
+   
 find_library(DXTK_LIBRARY_RELEASE 
     NAMES DirectXTK
     PATHS ${DXTK_SDK_PATH}/Bin/*/${DXTKARCH}/Release)

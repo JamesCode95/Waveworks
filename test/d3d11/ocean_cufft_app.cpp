@@ -95,7 +95,7 @@ GFSDK_WaveWorks_Simulation_Stats    g_ocean_stats_simulation;
 GFSDK_WaveWorks_Simulation_Stats    g_ocean_stats_simulation_filtered;
 int   g_max_detail_level;
 
-bool g_RenderWireframe = true;
+bool g_RenderWireframe = false;
 bool g_RenderWater = true;
 bool g_SimulateWater = true;
 bool g_ForceKick = false;
@@ -256,6 +256,7 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
 #endif
 
 	g_pTestParams = new TestParams(cmdline);
+	g_pTestParams->MediaDirectory = "D:\\Projects\\WaveworksGit\\WWLibrary\\test\\media";
 
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 
@@ -341,7 +342,7 @@ void InitApp()
 	g_ocean_simulation_param.foam_generation_threshold = 0.37f;
 
 	g_ocean_simulation_settings.fft_period						= 1000.0f;
-	g_ocean_simulation_settings.detail_level					= GFSDK_WaveWorks_Simulation_DetailLevel_Normal;
+	g_ocean_simulation_settings.detail_level					= GFSDK_WaveWorks_Simulation_DetailLevel_High;
 	g_ocean_simulation_settings.readback_displacements			= false;
 	g_ocean_simulation_settings.num_readback_FIFO_entries		= ReadbackArchiveSize;
 	g_ocean_simulation_settings.aniso_level						= 4;
@@ -558,10 +559,10 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	GFSDK_WaveWorks_InitD3D11(pd3dDevice,&malloHooks,GFSDK_WAVEWORKS_API_GUID);
 
 	// Do an unnecessary release-init cycle, to test that specific use-case
-	GFSDK_WaveWorks_InitD3D11(pd3dDevice,&malloHooks,GFSDK_WAVEWORKS_API_GUID);
-	GFSDK_WaveWorks_ReleaseD3D11(pd3dDevice);
-	GFSDK_WaveWorks_ReleaseD3D11(pd3dDevice);
-	GFSDK_WaveWorks_InitD3D11(pd3dDevice,&malloHooks,GFSDK_WAVEWORKS_API_GUID);
+// 	GFSDK_WaveWorks_InitD3D11(pd3dDevice,&malloHooks,GFSDK_WAVEWORKS_API_GUID);
+// 	GFSDK_WaveWorks_ReleaseD3D11(pd3dDevice);
+// 	GFSDK_WaveWorks_ReleaseD3D11(pd3dDevice);
+// 	GFSDK_WaveWorks_InitD3D11(pd3dDevice,&malloHooks,GFSDK_WAVEWORKS_API_GUID);
 
 	// Ocean sim
 	GFSDK_WaveWorks_Simulation_CreateD3D11(g_ocean_simulation_settings, g_ocean_simulation_param, pd3dDevice, &g_hOceanSimulation);
@@ -582,7 +583,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	// Skybox
     {
 		TCHAR path[MAX_PATH];
-		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\skybox_d3d11.fxo")));
+		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("skybox_d3d11.fxo")));
         ID3DBlob* pEffectBuffer = NULL;
         V_RETURN(LoadFile(path, &pEffectBuffer));
         V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pSkyboxFX));
@@ -608,13 +609,13 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 												));
 
 	TCHAR path[MAX_PATH];
-	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\sky_cube.dds")));
+	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("sky_cube.dds")));
 	ID3D11Resource* pD3D11Resource = NULL;
 	V_RETURN(DirectX::CreateDDSTextureFromFile(pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &g_pSkyCubeMap));
 //	V_RETURN(pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &g_pSkyCubeMap));
 	SAFE_RELEASE(pD3D11Resource);
 
-	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\nvidia_logo.dds")));
+	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("nvidia_logo.dds")));
 	V_RETURN(DirectX::CreateDDSTextureFromFile(pd3dDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &g_pLogoTex));
 //	V_RETURN(pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &g_pLogoTex));
 	SAFE_RELEASE(pD3D11Resource);
@@ -632,7 +633,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	// Readback marker
     {
 		TCHAR path[MAX_PATH];
-		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\ocean_marker_d3d11.fxo")))
+		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("ocean_marker_d3d11.fxo")))
         ID3DBlob* pEffectBuffer = NULL;
         V_RETURN(LoadFile(path, &pEffectBuffer));
         V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pMarkerFX));

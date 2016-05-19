@@ -43,3 +43,4 @@ test/gl2/win64/debug/cudart64_55.dll
 compiler/vc12win64-cmake/
 src/generated/
 bin/
+compiler/vc14win64-cmake/

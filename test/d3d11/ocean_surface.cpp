@@ -174,7 +174,7 @@ HRESULT OceanSurface::init(const OceanSurfaceParameters& params)
 	if(NULL == m_pOceanFX)
 	{
 		TCHAR path[MAX_PATH];
-		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\ocean_surface_d3d11.fxo")));
+		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("ocean_surface_d3d11.fxo")));
         ID3DBlob* pEffectBuffer = NULL;
         V_RETURN(LoadFile(path, &pEffectBuffer));
         V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, m_pd3dDevice, &m_pOceanFX));

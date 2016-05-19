@@ -24,7 +24,7 @@ IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 	# Use generator expressions to set config specific preprocessor definitions
 	SET(WW_COMPILE_DEFS
 		# Common to all configurations
-		_LIB;NVWAVEWORKS_LIB_DLL_EXPORTS;WIN32;
+		_LIB;NVWAVEWORKS_LIB_DLL_EXPORTS;WIN32;WAVEWORKS_ENABLE_DIRECTCOMPUTE
 
 		$<$<CONFIG:debug>:PROFILE;_DEV;>
 		$<$<CONFIG:release>:NDEBUG;>
@@ -201,20 +201,20 @@ CompileFXToH(${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl ${GEN_SRC
 
 # Now the CUDA file
 # CUDA!
-SET(CUDA_NVCC_FLAGS "-G -g -DWIN32 -D_WINDOWS -D_UNICODE -DUNICODE -D_LIB -gencode arch=compute_30,code=compute_30 -gencode arch=compute_20,code=sm_20")
+# SET(CUDA_NVCC_FLAGS "-G -g -DWIN32 -D_WINDOWS -D_UNICODE -DUNICODE -D_LIB -gencode arch=compute_30,code=compute_30 -gencode arch=compute_20,code=sm_20")
 
-CUDA_INCLUDE_DIRECTORIES(
-	${CUDA_INCLUDE_DIRS}
-)
+# CUDA_INCLUDE_DIRECTORIES(
+	# ${CUDA_INCLUDE_DIRS}
+# )
 
-SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+# SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
-SET(CUDA_NVCC_FLAGS_DEBUG   "--compiler-options=/Zi,/W4,/nologo,/Od,/MTd")
-SET(CUDA_NVCC_FLAGS_RELEASE "-use_fast_math -DNDEBUG --compiler-options=/W4,/nologo,/O2,/GF,/GS-,/Gy,/fp:fast,/GR-,/MT")
+# SET(CUDA_NVCC_FLAGS_DEBUG   "--compiler-options=/Zi,/W4,/nologo,/Od,/MTd")
+# SET(CUDA_NVCC_FLAGS_RELEASE "-use_fast_math -DNDEBUG --compiler-options=/W4,/nologo,/O2,/GF,/GS-,/Gy,/fp:fast,/GR-,/MT")
 
-CUDA_COMPILE(GENERATED_CUDA_FILES_1
-	${WW_SOURCE_DIR}/FFT_Simulation_CUDA_kernel.cu
-)
+# CUDA_COMPILE(GENERATED_CUDA_FILES_1
+	# ${WW_SOURCE_DIR}/FFT_Simulation_CUDA_kernel.cu
+# )
 
 ADD_LIBRARY(WaveWorks ${WW_LIBTYPE}
 	${WW_PLATFORM_SRC_FILES}
@@ -229,7 +229,7 @@ ADD_LIBRARY(WaveWorks ${WW_LIBTYPE}
 	
 	${GENERATED_HLSL_FILES}
 	
-	${GENERATED_CUDA_FILES_1}
+#	${GENERATED_CUDA_FILES_1}
 	
 #	${HLSL_FILES}
 #	${CUDA_FILES}
