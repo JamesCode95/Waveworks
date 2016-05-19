@@ -41,6 +41,7 @@
 #include <windows.h> // for QueryPerformanceFrequency/QueryPerformanceCounter
 #include "DDSTextureLoader.h"
 #include "D3DX11Effect.h"
+#include "D3D9types.h"
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
@@ -1164,7 +1165,7 @@ bool intersectRayWithOcean(XMVECTOR& Result, XMVECTOR Position, XMVECTOR Directi
 	const int max_num_binary_steps = 16;						// we limit ourselves on #of binary search steps
 	const float t_threshold = 0.05f;							// we stop successive tracing when we don't progress more than 5 cm each step
 	const float refinement_threshold_sqr = 0.1f*0.1f;			// we stop refinement step when we don't progress more than 10cm while doing refinement of current water altitude
-	const float t_multiplier = 1.8f/(fabs(Direction.y) + 1.0f);	// we increase step length at steep angles to speed up the tracing, 
+	const float t_multiplier = 1.8f/(fabs(XMVectorGetY(Direction)) + 1.0f);	// we increase step length at steep angles to speed up the tracing, 
 																// but less than 2 to make sure the process converges 
 																// and to add some safety to minimize chance of overshooting
 	XMVECTOR PositionBSStart;								// Vectors used at binary search step
@@ -1174,12 +1175,12 @@ bool intersectRayWithOcean(XMVECTOR& Result, XMVECTOR Position, XMVECTOR Directi
 	Direction = XMVector3Normalize(Direction);
 
 	// checking if ray is outside of ocean surface volume 
-	if((Position.y >= max_displacement + sea_level) && (Direction.y >=0)) return false;
+	if((XMVectorGetY(Position) >= max_displacement + sea_level) && (XMVectorGetY(Direction) >=0)) return false;
 
 	// getting to the top edge of volume where we can start
-	if(Position.y > max_displacement  + sea_level) 
+	if(XMVectorGetY(Position) > max_displacement  + sea_level) 
 	{
-		t = -(Position.y - max_displacement - sea_level) / Direction.y;	
+		t = -(XMVectorGetY(Position) - max_displacement - sea_level) / XMVectorGetY(Direction);	
 		Position += t*Direction;
 	}
 
@@ -1198,15 +1199,15 @@ bool intersectRayWithOcean(XMVECTOR& Result, XMVECTOR Position, XMVECTOR Directi
 			// moving back sample points by the displacements read initially, 
 			// to get a guess on which undisturbed water surface point moved to the actual sample point 
 			// due to x,y motion of water surface, assuming the x,y disturbances are locally constant
-			test_point.x = Position.x - displacements.x;
-			test_point.y = Position.z - displacements.y;
+			test_point.x = XMVectorGetX(Position) - displacements.x;
+			test_point.y = XMVectorGetZ(Position) - displacements.y;
 			GFSDK_WaveWorks_Simulation_GetDisplacements( hSim, &test_point, &displacements, 1 );
 			if(refinement_threshold_sqr > (old_test_point.x - test_point.x)*(old_test_point.x - test_point.x) + (old_test_point.y - test_point.y)*(old_test_point.y - test_point.y)) break;
 			old_test_point.x = test_point.x;
 			old_test_point.y = test_point.y;
 		}
 		// getting t to travel along the ray
-		t = t_multiplier * (Position.y - displacements.z - sea_level);
+		t = t_multiplier * (XMVectorGetY(Position) - displacements.z - sea_level);
 
 		// traveling along the ray
 		Position += t*Direction;
@@ -1219,20 +1220,18 @@ bool intersectRayWithOcean(XMVECTOR& Result, XMVECTOR Position, XMVECTOR Directi
 	// exited the loop, checking if intersection is found
 	if(t < t_threshold) 
 	{
-		Result.x = Position.x;
-		Result.y = Position.y;
-		Result.z = Position.z;
+		Result = Position;
 		return true;
 	}
 
 	// if we're looking down and we did not hit water surface, doing binary search to make sure we hit water surface,
 	// but there is risk of shooting through wave tips if we are tracing at extremely steep angles
-	if(Direction.y < 0) 
+	if(XMVectorGetY(Direction) < 0) 
 	{
 		PositionBSStart = Position;
 
 		// getting to the bottom edge of volume where we can start
-		t = -(Position.y + max_displacement - sea_level) / Direction.y;	
+		t = -(XMVectorGetY(Position) + max_displacement - sea_level) / XMVectorGetY(Direction);	
 		PositionBSEnd = Position + t*Direction;
 
 		for(int i = 0; i < max_num_binary_steps; i++)
@@ -1242,14 +1241,14 @@ bool intersectRayWithOcean(XMVECTOR& Result, XMVECTOR Position, XMVECTOR Directi
 			old_test_point.y = 0;
 			for(int k = 0; k < 4; k++) 
 			{
-				test_point.x = Position.x - displacements.x;
-				test_point.y = Position.z - displacements.y;
+				test_point.x = XMVectorGetX(Position) - displacements.x;
+				test_point.y = XMVectorGetZ(Position) - displacements.y;
 				GFSDK_WaveWorks_Simulation_GetDisplacements( hSim, &test_point, &displacements, 1 );
 				if(refinement_threshold_sqr > (old_test_point.x - test_point.x)*(old_test_point.x - test_point.x) + (old_test_point.y - test_point.y)*(old_test_point.y - test_point.y)) break;
 				old_test_point.x = test_point.x;
 				old_test_point.y = test_point.y;
 			}
-			if(Position.y - displacements.z - sea_level > 0)
+			if(XMVectorGetY(Position) - displacements.z - sea_level > 0)
 			{
 				PositionBSStart = Position;
 			}
@@ -1257,10 +1256,10 @@ bool intersectRayWithOcean(XMVECTOR& Result, XMVECTOR Position, XMVECTOR Directi
 			{
 				PositionBSEnd = Position;
 			}
-		}			
-		Result.x = Position.x;
-		Result.y = Position.y;
-		Result.z = Position.z;
+		}		
+
+		Result = Position;
+
 		return true;
 	}
 	return false;

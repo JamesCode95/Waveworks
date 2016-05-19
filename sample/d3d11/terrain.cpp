@@ -677,7 +677,7 @@ void CTerrain::CreateTerrain()
 				temp_layerdef_map_texture_pixels[(j*terrain_layerdef_map_texture_size+i)*4+3]=0;
 			}
 
-			mv=bilinear_interpolation(x-ix,z-iz,normal[ix][iz].y,normal[ix+1][iz].y,normal[ix+1][iz+1][1],normal[ix][iz+1].y);
+			mv=bilinear_interpolation(x-ix,z-iz,normal[ix][iz].y,normal[ix+1][iz].y,normal[ix+1][iz+1].y,normal[ix][iz+1].y);
 
 			if((mv<terrain_slope_grass_start)&&(rm>terrain_height_sand_end))
 			{
@@ -958,6 +958,8 @@ HRESULT CTerrain::LoadTextures()
 	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("foam.dds")));
 	V_RETURN(DirectX::CreateDDSTextureFromFile(pDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &foam_diffuse_textureSRV));
 	SAFE_RELEASE(pD3D11Resource);
+
+	return S_OK;
 }
 
 
@@ -1455,6 +1457,7 @@ void CTerrain::SetupRefractionView(CFirstPersonCamera *cam)
 	pEffect->GetVariableByName("g_HalfSpaceCullSign")->AsScalar()->SetFloat(-1.0f);
 	pEffect->GetVariableByName("g_HalfSpaceCullPosition")->AsScalar()->SetFloat(terrain_minheight);
 }
+
 void CTerrain::SetupLightView(CFirstPersonCamera *cam)
 {
 

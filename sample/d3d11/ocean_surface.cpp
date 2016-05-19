@@ -298,7 +298,11 @@ void OceanSurface::renderShaded(	ID3D11DeviceContext* pDC,
 		// Apply data tex SRV
 		XMMATRIX topDownMatrix;
 		pDistanceFieldModule->GetWorldToTopDownTextureMatrix( topDownMatrix );
-		m_pOceanFX->GetVariableByName("g_WorldToTopDownTextureMatrix")->AsMatrix()->SetMatrix( &topDownMatrix._11 );
+
+		XMFLOAT4X4 tdmStore;
+		XMStoreFloat4x4(&tdmStore, topDownMatrix);
+
+		m_pOceanFX->GetVariableByName("g_WorldToTopDownTextureMatrix")->AsMatrix()->SetMatrix( (FLOAT*)&tdmStore );
 			
 		m_pOceanFX->GetVariableByName("g_GerstnerSteepness")->AsScalar()->SetFloat( steepness );
 		m_pOceanFX->GetVariableByName("g_BaseGerstnerAmplitude")->AsScalar()->SetFloat( amplitude );

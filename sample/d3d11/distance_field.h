@@ -64,10 +64,10 @@ private:
 	ID3D11Texture2D*			m_pStagingTexture;
 
 	// ---------------------------------- Top down camera data ------------------------------------
-	XMVECTOR	m_topDownViewPositionWS;
-	XMVECTOR	m_viewDirectionWS;
-	XMMATRIX	m_worldToViewMatrix;
-	XMMATRIX	m_viewToProjectionMatrix;
+	XMFLOAT4	m_topDownViewPositionWS;
+	XMFLOAT4	m_viewDirectionWS;
+	XMFLOAT4X4	m_worldToViewMatrix;
+	XMFLOAT4X4	m_viewToProjectionMatrix;
 
 	bool m_shouldGenerateDataTexture;
 

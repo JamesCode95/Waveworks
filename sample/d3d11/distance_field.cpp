@@ -39,7 +39,7 @@ const unsigned int kTopDownDataResolution = 256;
 
 DistanceField::DistanceField( CTerrain* const pTerrainRenderer )
 	: m_pTerrainRenderer( pTerrainRenderer )
-	, m_viewDirectionWS( 0, -1, 0 )
+	, m_viewDirectionWS( 0, -1, 0, 0 )
 	, m_pTopDownDataSRV( NULL )
 	, m_pTopDownDataRTV( NULL )
 	, m_pTopDownDataTexture( NULL )
@@ -150,14 +150,15 @@ void DistanceField::renderTopDownData( ID3D11DeviceContext* pDC, const XMVECTOR 
 	pDC->ClearRenderTargetView( m_pTopDownDataRTV, ClearColor );
 	pDC->OMSetRenderTargetsAndUnorderedAccessViews( 1, &m_pTopDownDataRTV, NULL, 0, 0, NULL, NULL );
 
-	m_topDownViewPositionWS = XMVectorSet( XMVectorGetX(eyePositionWS), kHeightAboveSeaLevel, XMVectorGetZ(eyePositionWS), 0 );
+	m_topDownViewPositionWS = XMFLOAT4( XMVectorGetX(eyePositionWS), kHeightAboveSeaLevel, XMVectorGetZ(eyePositionWS), 0 );
 
 	const float kOrthoSize = 700;
-	m_viewToProjectionMatrix = XMMatrixOrthographicLH( kOrthoSize, kOrthoSize, 0.3f, kHeightAboveSeaLevel + kMinHeightBelowSeaLevel  );
-	const XMVECTOR up = XMVectorSet( 0, 0, 1, 0 );
-	m_worldToViewMatrix = XMMatrixLookAtLH( m_topDownViewPositionWS, eyePositionWS, up);
+	XMStoreFloat4x4(&m_viewToProjectionMatrix, XMMatrixOrthographicLH(kOrthoSize, kOrthoSize, 0.3f, kHeightAboveSeaLevel + kMinHeightBelowSeaLevel));
 
-	m_pTerrainRenderer->RenderTerrainToHeightField( pDC, m_worldToViewMatrix, m_viewToProjectionMatrix, m_topDownViewPositionWS, m_viewDirectionWS );
+	const XMVECTOR up = XMVectorSet( 0, 0, 1, 0 );
+	XMStoreFloat4x4(&m_worldToViewMatrix, XMMatrixLookAtLH(XMLoadFloat4(&m_topDownViewPositionWS), eyePositionWS, up));
+
+	m_pTerrainRenderer->RenderTerrainToHeightField( pDC, XMLoadFloat4x4(&m_worldToViewMatrix), XMLoadFloat4x4(&m_viewToProjectionMatrix), XMLoadFloat4(&m_topDownViewPositionWS), XMLoadFloat4(&m_viewDirectionWS) );
 
 	pDC->RSSetViewports(NumViewports, &vp);
 	pDC->OMSetRenderTargetsAndUnorderedAccessViews( 1, &pRenderTarget, pDepthBuffer, 0, 0, NULL, NULL );
@@ -287,5 +288,5 @@ float DistanceField::FindNearestPixel( float* pTextureData, const int cx, const 
 
 void DistanceField::GetWorldToTopDownTextureMatrix( XMMATRIX worldToTopDownMatrix )
 {
-	worldToTopDownMatrix = m_worldToViewMatrix * m_viewToProjectionMatrix;
+	worldToTopDownMatrix = XMLoadFloat4x4(&m_worldToViewMatrix) * XMLoadFloat4x4(&m_viewToProjectionMatrix);
 }
