@@ -53,7 +53,7 @@ extern float g_BaseGerstnerWavelength;
 extern float g_BaseGerstnerSpeed;
 extern float g_GerstnerParallelity;
 extern float g_ShoreTime;
-extern XMFLOAT3 g_WindDir;
+extern XMFLOAT2 g_WindDir;
 extern bool g_Wireframe;
 
 enum { NumMarkersXY = 10, NumMarkers = NumMarkersXY*NumMarkersXY };
@@ -61,9 +61,9 @@ enum { NumMarkersXY = 10, NumMarkers = NumMarkersXY*NumMarkersXY };
 extern gfsdk_float2 g_readback_marker_coords[NumMarkers];
 extern gfsdk_float4 g_readback_marker_positions[NumMarkers];
 
-extern XMFLOAT3 g_raycast_origins[NumMarkers];
-extern XMFLOAT3 g_raycast_directions[NumMarkers];
-extern XMFLOAT3 g_raycast_hitpoints[NumMarkers];
+extern XMVECTOR g_raycast_origins[NumMarkers];
+extern XMVECTOR g_raycast_directions[NumMarkers];
+extern XMVECTOR g_raycast_hitpoints[NumMarkers];
 
 int gp_wrap( int a)
 {
@@ -975,14 +975,23 @@ void CTerrain::RenderTerrainToHeightField(ID3D11DeviceContext* const pContext, c
 	pEffect->GetVariableByName("g_HeightFieldSize")->AsScalar()->SetFloat(terrain_gridpoints*terrain_geometry_scale);
 
 	XMMATRIX worldToProjectionMatrix = worldToViewMatrix * viewToProjectionMatrix;
-	XMMATRIX projectionToWorldMatrix = XMMatrixInverse(&XMVectorSet(0, 0, 0, 0), worldToProjectionMatrix);
+	XMMATRIX projectionToWorldMatrix = XMMatrixInverse(NULL, worldToProjectionMatrix);
 //    D3DXMatrixInverse(&projectionToWorldMatrix, NULL, &worldToProjectionMatrix);
 
-	pEffect->GetVariableByName("g_ModelViewMatrix")->AsMatrix()->SetMatrix( worldToViewMatrix );
-	pEffect->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix( worldToProjectionMatrix );
-	pEffect->GetVariableByName("g_ModelViewProjectionMatrixInv")->AsMatrix()->SetMatrix( projectionToWorldMatrix );
-	pEffect->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector( eyePositionWS );
-	pEffect->GetVariableByName("g_CameraDirection")->AsVector()->SetFloatVector( viewDirectionWS );
+	XMFLOAT4X4 wvMat, wtpMat, ptwMat;
+	XMFLOAT3 epWS, vdWS;
+
+	XMStoreFloat4x4(&wvMat, worldToViewMatrix);
+	XMStoreFloat4x4(&wtpMat, worldToProjectionMatrix);
+	XMStoreFloat4x4(&ptwMat, projectionToWorldMatrix);
+	XMStoreFloat3(&epWS, eyePositionWS);
+	XMStoreFloat3(&vdWS, viewDirectionWS);
+
+	pEffect->GetVariableByName("g_ModelViewMatrix")->AsMatrix()->SetMatrix( (FLOAT*) &wvMat );
+	pEffect->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix((FLOAT*)&wtpMat);
+	pEffect->GetVariableByName("g_ModelViewProjectionMatrixInv")->AsMatrix()->SetMatrix((FLOAT*)&ptwMat);
+	pEffect->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector((FLOAT*)&epWS);
+	pEffect->GetVariableByName("g_CameraDirection")->AsVector()->SetFloatVector((FLOAT*)&vdWS);
 
 	pEffect->GetVariableByName("g_HalfSpaceCullSign")->AsScalar()->SetFloat(1.0);
 	pEffect->GetVariableByName("g_HalfSpaceCullPosition")->AsScalar()->SetFloat(terrain_minheight*20);
@@ -1142,9 +1151,14 @@ void CTerrain::Render(CFirstPersonCamera *cam)
 	pEffect->GetVariableByName("g_ApplyFog")->AsScalar()->SetFloat(1.0f);
 	pEffect->GetVariableByName("g_FoamIntensityTexture")->AsShaderResource()->SetResource(foam_intensity_textureSRV);
 	pEffect->GetVariableByName("g_FoamDiffuseTexture")->AsShaderResource()->SetResource(foam_diffuse_textureSRV);
-	D3DXMATRIX topDownMatrix;
+
+	XMMATRIX topDownMatrix;
 	g_pOceanSurf->pDistanceFieldModule->GetWorldToTopDownTextureMatrix( topDownMatrix );
-	pEffect->GetVariableByName("g_WorldToTopDownTextureMatrix" )->AsMatrix()->SetMatrix(&topDownMatrix._11);
+
+	XMFLOAT4X4 tdMat;
+	XMStoreFloat4x4(&tdMat, topDownMatrix);
+
+	pEffect->GetVariableByName("g_WorldToTopDownTextureMatrix")->AsMatrix()->SetMatrix((FLOAT*)&tdMat);
 	pEffect->GetVariableByName("g_Time" )->AsScalar()->SetFloat( g_ShoreTime );
 	pEffect->GetVariableByName("g_DataTexture" )->AsShaderResource()->SetResource( g_pOceanSurf->pDistanceFieldModule->GetDataTextureSRV() );
 	pEffect->GetVariableByName("g_GerstnerSteepness")->AsScalar()->SetFloat( g_GerstnerSteepness );
@@ -1242,17 +1256,25 @@ void CTerrain::Render(CFirstPersonCamera *cam)
 	oceanFX->GetVariableByName("g_FoamIntensityTexture")->AsShaderResource()->SetResource(foam_intensity_textureSRV);
 	oceanFX->GetVariableByName("g_FoamDiffuseTexture")->AsShaderResource()->SetResource(foam_diffuse_textureSRV);
 
-	const D3DXMATRIX matView = D3DXMATRIX(1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,1) * *cam->GetViewMatrix();
-	const D3DXMATRIX matProj = *cam->GetProjMatrix();
-	D3DXVECTOR3 cameraPosition = *cam->GetEyePt();
-	D3DXVECTOR3 lightPosition = D3DXVECTOR3(14000.0f,6500.0f,4000.0f);
+	XMMATRIX matView = XMMatrixSet(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1) * cam->GetViewMatrix();
+	XMMATRIX matProj = cam->GetProjMatrix();
+	XMMATRIX matMVP = matView * matProj;
+	XMVECTOR cameraPosition = cam->GetEyePt();
+	XMVECTOR lightPosition = XMVectorSet(14000.0f, 6500.0f, 4000.0f, 0);
 
-	oceanFX->GetVariableByName("g_ModelViewMatrix")->AsMatrix()->SetMatrix(matView);
-	oceanFX->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix(matView*matProj);
-	oceanFX->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector(cameraPosition);
-	oceanFX->GetVariableByName("g_LightPosition")->AsVector()->SetFloatVector(lightPosition);
+// 	const D3DXMATRIX matView = D3DXMATRIX(1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,1) * *cam->GetViewMatrix();
+// 	const D3DXMATRIX matProj = *cam->GetProjMatrix();
+// 	D3DXVECTOR3 cameraPosition = *cam->GetEyePt();
+// 	D3DXVECTOR3 lightPosition = D3DXVECTOR3(14000.0f,6500.0f,4000.0f);
+// 
+	oceanFX->GetVariableByName("g_ModelViewMatrix")->AsMatrix()->SetMatrix((FLOAT*)&matView);
+	oceanFX->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix((FLOAT*)&matMVP);
+	oceanFX->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector((FLOAT*)&cameraPosition);
+	oceanFX->GetVariableByName("g_LightPosition")->AsVector()->SetFloatVector((FLOAT*)&lightPosition);
 	oceanFX->GetVariableByName("g_Wireframe")->AsScalar()->SetFloat(g_Wireframe ? 1.0f : 0.0f);
-	oceanFX->GetVariableByName("g_WinSize")->AsVector()->SetFloatVector(D3DXVECTOR4(main_Viewport.Width,main_Viewport.Height,0,0));
+
+	XMFLOAT4 winSize = XMFLOAT4(main_Viewport.Width, main_Viewport.Height, 0, 0);
+	oceanFX->GetVariableByName("g_WinSize")->AsVector()->SetFloatVector((FLOAT*)&winSize);
 	g_pOceanSurf->renderShaded(pContext, matView,matProj,g_hOceanSimulation, g_hOceanSavestate, g_WindDir, g_GerstnerSteepness, g_BaseGerstnerAmplitude, g_BaseGerstnerWavelength, g_BaseGerstnerSpeed, g_GerstnerParallelity, g_ShoreTime);
 
 	g_pOceanSurf->getQuadTreeStats(g_ocean_quadtree_stats);
@@ -1272,14 +1294,17 @@ void CTerrain::Render(CFirstPersonCamera *cam)
 
 	// drawing readback markers to main buffer
 	const UINT vbOffset = 0;
-	const UINT vertexStride = sizeof(D3DXVECTOR4);
+	const UINT vertexStride = sizeof(XMFLOAT4);
+	XMFLOAT4 contactPos;
+
 	pContext->IASetInputLayout(g_pOceanSurf->m_pRayContactLayout);
 	pContext->IASetVertexBuffers(0, 1, &g_pOceanSurf->m_pContactVB, &vertexStride, &vbOffset);
 	pContext->IASetIndexBuffer(g_pOceanSurf->m_pContactIB, DXGI_FORMAT_R16_UINT, 0);
 	pContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	for( int i = 0; i < NumMarkers; i++)
 	{
-		g_pOceanSurf->m_pOceanFX->GetVariableByName("g_ContactPosition")->AsVector()->SetFloatVector(D3DXVECTOR4(g_readback_marker_positions[i].x,g_readback_marker_positions[i].y,g_readback_marker_positions[i].z,0));
+		contactPos = XMFLOAT4(g_readback_marker_positions[i].x, g_readback_marker_positions[i].y, g_readback_marker_positions[i].z, 0);
+		g_pOceanSurf->m_pOceanFX->GetVariableByName("g_ContactPosition")->AsVector()->SetFloatVector((FLOAT*)&contactPos);
 		g_pOceanSurf->m_pRenderRayContactTechnique->GetPassByIndex(0)->Apply(0, pContext);
 		pContext->DrawIndexed(12, 0, 0);
 	}
@@ -1290,18 +1315,29 @@ void CTerrain::Render(CFirstPersonCamera *cam)
 	pContext->IASetVertexBuffers(0, 1, &g_pOceanSurf->m_pContactVB, &vertexStride, &vbOffset);
 	pContext->IASetIndexBuffer(g_pOceanSurf->m_pContactIB, DXGI_FORMAT_R16_UINT, 0);
 	pContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	for( int i = 0; i < NumMarkers; i++)
 	{
-		g_pOceanSurf->m_pOceanFX->GetVariableByName("g_ContactPosition")->AsVector()->SetFloatVector(D3DXVECTOR4(g_raycast_hitpoints[i].x, g_raycast_hitpoints[i].z, g_raycast_hitpoints[i].y, 0.0f));
+		XMStoreFloat4(&contactPos, g_raycast_hitpoints[i]);
+
+		g_pOceanSurf->m_pOceanFX->GetVariableByName("g_ContactPosition")->AsVector()->SetFloatVector((FLOAT*)&contactPos);
 		g_pOceanSurf->m_pRenderRayContactTechnique->GetPassByIndex(0)->Apply(0, pContext);
 		pContext->DrawIndexed(12, 0, 0);
 	}
+
+	XMFLOAT4 origPos, rayDirection;
+
 	// drawing rays to main buffer
 	pContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINESTRIP);
 	for( int i = 0; i < NumMarkers; i++)
 	{
-		g_pOceanSurf->m_pOceanFX->GetVariableByName("g_OriginPosition")->AsVector()->SetFloatVector(g_raycast_origins[i]);
-		g_pOceanSurf->m_pOceanFX->GetVariableByName("g_RayDirection")->AsVector()->SetFloatVector(g_raycast_directions[i]*100.0f);
+		XMStoreFloat4(&origPos, g_raycast_origins[i]);
+		g_pOceanSurf->m_pOceanFX->GetVariableByName("g_OriginPosition")->AsVector()->SetFloatVector((FLOAT*)&origPos);
+
+		XMVECTOR vecRayDir = g_raycast_directions[i] * 100.0f;
+		XMStoreFloat4(&rayDirection, vecRayDir);
+
+		g_pOceanSurf->m_pOceanFX->GetVariableByName("g_RayDirection")->AsVector()->SetFloatVector((FLOAT*) &rayDirection);
 		g_pOceanSurf->m_pRenderRayContactTechnique->GetPassByIndex(1)->Apply(0, pContext);
 		pContext->DrawIndexed(2, 0, 0);
 	}
@@ -1362,41 +1398,53 @@ void CTerrain::SetupReflectionView(CFirstPersonCamera *cam)
 
 	float aspectRatio = BackbufferWidth / BackbufferHeight;
 
-	D3DXVECTOR3 EyePoint;
-    D3DXVECTOR3 LookAtPoint;
+	XMVECTOR EyePoint;
+    XMVECTOR LookAtPoint;
 
-	EyePoint =*cam->GetEyePt();
-	LookAtPoint =*cam->GetLookAtPt();
-	EyePoint.y=-1.0f*EyePoint.y+1.0f;
-	LookAtPoint.y=-1.0f*LookAtPoint.y+1.0f;
+	EyePoint = cam->GetEyePt();
+	LookAtPoint = cam->GetLookAtPt();
+
+	XMVectorSetY(EyePoint, -1.0f*XMVectorGetY(EyePoint) + 1.0f);
+	XMVectorSetY(LookAtPoint, -1.0f*XMVectorGetY(LookAtPoint) + 1.0f);
 
 
-	D3DXMATRIX mView;
-	D3DXMATRIX mProj;
-	D3DXMATRIX mViewProj;
-	D3DXMATRIX mViewProjInv;
+	XMMATRIX mView = cam->GetViewMatrix();
+	XMMATRIX mProj;
+	XMMATRIX mViewProj;
+	XMMATRIX mViewProjInv;
 
-	D3DXMATRIX mWorld;
-	mView = *cam->GetViewMatrix();
-	mWorld = *cam->GetWorldMatrix();
+	XMMATRIX mWorld = cam->GetWorldMatrix();
+	XMFLOAT4X4 mWorldTweak;
+	XMStoreFloat4x4(&mWorldTweak, mWorld);
 
-	mWorld._42=-mWorld._42-1.0f;
+	mWorldTweak._42 = -mWorldTweak._42 - 1.0f;
 	
-	mWorld._21*=-1.0f;
-	mWorld._23*=-1.0f;
+	mWorldTweak._21 *= -1.0f;
+	mWorldTweak._23 *= -1.0f;
 
-	mWorld._32*=-1.0f;
+	mWorldTweak._32 *= -1.0f;
+
+	mWorld = XMLoadFloat4x4(&mWorldTweak);
 	
-	D3DXMatrixInverse(&mView, NULL, &mWorld);
-	D3DXMatrixPerspectiveFovLH(&mProj,camera_fov * D3DX_PI / 360.0f,aspectRatio,scene_z_near,scene_z_far);
-	mViewProj=mView*mProj;
-	D3DXMatrixInverse(&mViewProjInv, NULL, &mViewProj);
+	mView = XMMatrixInverse(NULL, mWorld);
+	mProj = XMMatrixPerspectiveFovLH(camera_fov * XMVectorGetY(DirectX::g_XMPi) / 360.0f, aspectRatio, scene_z_near, scene_z_far);
+	mViewProj = mView * mProj;
+	mViewProjInv = XMMatrixInverse(NULL, mViewProj);
 
-	pEffect->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix(mViewProj);
-	pEffect->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector(EyePoint);
-	D3DXVECTOR3 direction = LookAtPoint - EyePoint;
-	D3DXVECTOR3 normalized_direction = *D3DXVec3Normalize(&normalized_direction,&direction);
-	pEffect->GetVariableByName("g_CameraDirection")->AsVector()->SetFloatVector(normalized_direction);
+	XMFLOAT4X4 mvpStore;
+	XMFLOAT4 epStore;
+
+	XMStoreFloat4x4(&mvpStore, mViewProj);
+	XMStoreFloat4(&epStore, EyePoint);
+
+	pEffect->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix((FLOAT*)&mvpStore);
+	pEffect->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector((FLOAT*)&epStore);
+
+	XMVECTOR normalized_direction = XMVector3Normalize(LookAtPoint - EyePoint);
+	XMFLOAT4 ndStore;
+	XMStoreFloat4(&ndStore, normalized_direction);
+
+	pEffect->GetVariableByName("g_CameraDirection")->AsVector()->SetFloatVector((FLOAT*) &ndStore);
 
 	pEffect->GetVariableByName("g_HalfSpaceCullSign")->AsScalar()->SetFloat(1.0f);
 	pEffect->GetVariableByName("g_HalfSpaceCullPosition")->AsScalar()->SetFloat(0);
@@ -1410,31 +1458,40 @@ void CTerrain::SetupRefractionView(CFirstPersonCamera *cam)
 void CTerrain::SetupLightView(CFirstPersonCamera *cam)
 {
 
-	D3DXVECTOR3 EyePoint= D3DXVECTOR3(14000.0f,6500.0f,4000.0f);
-    D3DXVECTOR3 LookAtPoint = D3DXVECTOR3(terrain_far_range/2.0f,0.0f,terrain_far_range/2.0f);
-	D3DXVECTOR3 lookUp = D3DXVECTOR3(0,1,0);
-	D3DXVECTOR3 cameraPosition = *cam->GetEyePt();
+	XMVECTOR EyePoint = XMVectorSet(14000.0f,6500.0f,4000.0f, 0);
+	XMVECTOR LookAtPoint  = XMVectorSet(terrain_far_range / 2.0f, 0.0f, terrain_far_range / 2.0f, 0);
+	XMVECTOR lookUp = XMVectorSet(0, 1, 0, 0);
+	XMVECTOR cameraPosition = cam->GetEyePt();
 
 	float nr, fr;
-	nr=sqrt(EyePoint.x*EyePoint.x+EyePoint.y*EyePoint.y+EyePoint.z*EyePoint.z)-terrain_far_range*1.0f;
-	fr=sqrt(EyePoint.x*EyePoint.x+EyePoint.y*EyePoint.y+EyePoint.z*EyePoint.z)+terrain_far_range*1.0f;
+	nr=sqrt(XMVectorGetX(EyePoint)*XMVectorGetX(EyePoint)+XMVectorGetY(EyePoint)*XMVectorGetY(EyePoint)+XMVectorGetZ(EyePoint)*XMVectorGetZ(EyePoint))-terrain_far_range*1.0f;
+	fr=sqrt(XMVectorGetX(EyePoint)*XMVectorGetX(EyePoint)+XMVectorGetY(EyePoint)*XMVectorGetY(EyePoint)+XMVectorGetZ(EyePoint)*XMVectorGetZ(EyePoint))+terrain_far_range*1.0f;
 
-    D3DXMATRIX mView = *D3DXMatrixLookAtLH(&mView,&EyePoint,&LookAtPoint,&lookUp);
-    D3DXMATRIX mProjMatrix = *D3DXMatrixOrthoLH(&mProjMatrix,terrain_far_range*1.5,terrain_far_range,nr,fr);
-    D3DXMATRIX mViewProj = mView * mProjMatrix;
-    D3DXMATRIX mViewProjInv;
-    D3DXMatrixInverse(&mViewProjInv, NULL, &mViewProj);
+	XMMATRIX mView = XMMatrixLookAtLH(EyePoint, LookAtPoint, lookUp); // *D3DXMatrixLookAtLH(&mView, &EyePoint, &LookAtPoint, &lookUp);
+	XMMATRIX mProjMatrix = XMMatrixOrthographicLH(terrain_far_range*1.5, terrain_far_range, nr, fr); //*D3DXMatrixOrthoLH(&mProjMatrix, terrain_far_range*1.5, terrain_far_range, nr, fr);
+	XMMATRIX mViewProj = mView * mProjMatrix;
+	XMMATRIX mViewProjInv;
+
+	mViewProjInv = XMMatrixInverse(NULL, mViewProj);
+
+	XMFLOAT4X4 vpStore, vpiStore;
+	XMStoreFloat4x4(&vpStore, mViewProj);
+	XMStoreFloat4x4(&vpiStore, mViewProjInv);
+	XMFLOAT4 camStore, ndStore;
+	XMStoreFloat4(&camStore, cameraPosition);
 
 	ID3DX11Effect* oceanFX = g_pOceanSurf->m_pOceanFX;
-	oceanFX->GetVariableByName("g_LightModelViewProjectionMatrix")->AsMatrix()->SetMatrix(mViewProj);
+	oceanFX->GetVariableByName("g_LightModelViewProjectionMatrix")->AsMatrix()->SetMatrix((FLOAT*)&vpStore);
 
-	pEffect->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix(mViewProj);
-	pEffect->GetVariableByName("g_LightModelViewProjectionMatrix")->AsMatrix()->SetMatrix(mViewProj);
-	pEffect->GetVariableByName("g_LightModelViewProjectionMatrixInv")->AsMatrix()->SetMatrix(mViewProjInv);
-	pEffect->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector(cameraPosition);
-	D3DXVECTOR3 direction = *cam->GetLookAtPt() - *cam->GetEyePt();
-	D3DXVECTOR3 normalized_direction = *D3DXVec3Normalize(&normalized_direction,&direction);
-	pEffect->GetVariableByName("g_CameraDirection")->AsVector()->SetFloatVector(normalized_direction);
+	pEffect->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix((FLOAT*)&vpStore);
+	pEffect->GetVariableByName("g_LightModelViewProjectionMatrix")->AsMatrix()->SetMatrix((FLOAT*)&vpStore);
+	pEffect->GetVariableByName("g_LightModelViewProjectionMatrixInv")->AsMatrix()->SetMatrix((FLOAT*)&vpiStore);
+	pEffect->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector((FLOAT*)&camStore);
+
+	XMVECTOR normalized_direction = XMVector3Normalize(cam->GetLookAtPt() - cam->GetEyePt());
+	XMStoreFloat4(&ndStore, normalized_direction);
+
+	pEffect->GetVariableByName("g_CameraDirection")->AsVector()->SetFloatVector((FLOAT*)&ndStore);
 
 	pEffect->GetVariableByName("g_HalfSpaceCullSign")->AsScalar()->SetFloat(1.0);
 	pEffect->GetVariableByName("g_HalfSpaceCullPosition")->AsScalar()->SetFloat(terrain_minheight*2);
@@ -1443,25 +1500,32 @@ void CTerrain::SetupLightView(CFirstPersonCamera *cam)
 
 void CTerrain::SetupNormalView(CFirstPersonCamera *cam)
 {
-	D3DXVECTOR3 EyePoint;
-    D3DXVECTOR3 LookAtPoint;
+	XMVECTOR EyePoint = cam->GetEyePt();
+	XMVECTOR LookAtPoint = cam->GetLookAtPt();
 
-	EyePoint =*cam->GetEyePt();
-	LookAtPoint =*cam->GetLookAtPt();
-    D3DXMATRIX mView = *cam->GetViewMatrix();
-    D3DXMATRIX mProjMatrix = *cam->GetProjMatrix();
-    D3DXMATRIX mViewProj = mView * mProjMatrix;
-    D3DXMATRIX mViewProjInv;
-    D3DXMatrixInverse(&mViewProjInv, NULL, &mViewProj);
-    D3DXVECTOR3 cameraPosition = *cam->GetEyePt();
+    XMMATRIX mView = cam->GetViewMatrix();
+	XMMATRIX mProjMatrix = cam->GetProjMatrix();
+	XMMATRIX mViewProj = mView * mProjMatrix;
+	XMMATRIX mViewProjInv = XMMatrixInverse(NULL, mViewProj);
+	XMVECTOR cameraPosition = cam->GetEyePt();
 
-	pEffect->GetVariableByName("g_ModelViewMatrix")->AsMatrix()->SetMatrix(mView);
-	pEffect->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix(mViewProj);
-	pEffect->GetVariableByName("g_ModelViewProjectionMatrixInv")->AsMatrix()->SetMatrix(mViewProjInv);
-	pEffect->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector(cameraPosition);
-	D3DXVECTOR3 direction = LookAtPoint - EyePoint;
-	D3DXVECTOR3 normalized_direction = *D3DXVec3Normalize(&normalized_direction,&direction);
-	pEffect->GetVariableByName("g_CameraDirection")->AsVector()->SetFloatVector(normalized_direction);
+	XMFLOAT4X4 vStore, vpStore, vpiStore;
+	XMStoreFloat4x4(&vStore, mView);
+	XMStoreFloat4x4(&vpStore, mViewProj);
+	XMStoreFloat4x4(&vpiStore, mViewProjInv);
+	
+	XMFLOAT4 cpStore, ndStore;
+	XMStoreFloat4(&cpStore, cameraPosition);
+
+
+	pEffect->GetVariableByName("g_ModelViewMatrix")->AsMatrix()->SetMatrix((FLOAT*)&vStore);
+	pEffect->GetVariableByName("g_ModelViewProjectionMatrix")->AsMatrix()->SetMatrix((FLOAT*)&vpStore);
+	pEffect->GetVariableByName("g_ModelViewProjectionMatrixInv")->AsMatrix()->SetMatrix((FLOAT*)&vpiStore);
+	pEffect->GetVariableByName("g_CameraPosition")->AsVector()->SetFloatVector((FLOAT*)&cpStore);
+
+	XMVECTOR normalized_direction = XMVector3Normalize(LookAtPoint - EyePoint);
+	XMStoreFloat4(&ndStore, normalized_direction);
+	pEffect->GetVariableByName("g_CameraDirection")->AsVector()->SetFloatVector((FLOAT*)&ndStore);
 	pEffect->GetVariableByName("g_HalfSpaceCullSign")->AsScalar()->SetFloat(1.0);
 	pEffect->GetVariableByName("g_HalfSpaceCullPosition")->AsScalar()->SetFloat(terrain_minheight*20);
 

@@ -34,7 +34,6 @@
 
 #pragma warning(disable:4127)
 
-extern HRESULT LoadFile(LPCTSTR FileName, ID3DXBuffer** ppBuffer);
 
 OceanSurface::OceanSurface()
 {
@@ -149,13 +148,14 @@ HRESULT OceanSurface::init()
 
 	if(NULL == m_pOceanFX)
 	{
-        ID3DXBuffer* pEffectBuffer = NULL;
+		ID3DBlob* pEffectBuffer = NULL;
 
 		TCHAR path[MAX_PATH];
-		DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\ocean_surface_d3d11.fxo"));
-        V_RETURN(LoadFile(path, &pEffectBuffer));
-        V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, m_pd3dDevice, &m_pOceanFX));
-        pEffectBuffer->Release();
+
+		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("ocean_surface_d3d11.fxo")));
+		V_RETURN(D3DX11CreateEffectFromFile(path, 0, m_pd3dDevice, &m_pOceanFX));// pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pEffect));
+		SAFE_RELEASE(pEffectBuffer);
+
 
 		// Hook up the shader mappings
 		m_pRenderSurfaceTechnique = m_pOceanFX->GetTechniqueByName("RenderOceanSurfTech");
@@ -246,7 +246,7 @@ HRESULT OceanSurface::init()
 								-1, 1, 0, 0,
 								 0, 1,-1, 0};
 		D3D11_BUFFER_DESC vBufferDesc;
-		vBufferDesc.ByteWidth = 5 * sizeof(D3DXVECTOR4);
+		vBufferDesc.ByteWidth = 5 * sizeof(XMFLOAT4);
 		vBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		vBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vBufferDesc.CPUAccessFlags = 0;
@@ -276,11 +276,11 @@ HRESULT OceanSurface::init()
 
 
 void OceanSurface::renderShaded(	ID3D11DeviceContext* pDC, 
-									const D3DXMATRIX& matView, 
-									const D3DXMATRIX& matProj, 
+									const XMMATRIX matView, 
+									const XMMATRIX matProj,
 									GFSDK_WaveWorks_SimulationHandle hSim, 
 									GFSDK_WaveWorks_SavestateHandle hSavestate, 
-									const D3DXVECTOR2& windDir, 
+									const XMFLOAT2 windDir, 
 									const float steepness, 
 									const float amplitude, 
 									const float wavelength, 
@@ -296,7 +296,7 @@ void OceanSurface::renderShaded(	ID3D11DeviceContext* pDC,
 	if( pDistanceFieldModule != NULL)
 	{
 		// Apply data tex SRV
-		D3DXMATRIX topDownMatrix;
+		XMMATRIX topDownMatrix;
 		pDistanceFieldModule->GetWorldToTopDownTextureMatrix( topDownMatrix );
 		m_pOceanFX->GetVariableByName("g_WorldToTopDownTextureMatrix")->AsMatrix()->SetMatrix( &topDownMatrix._11 );
 			

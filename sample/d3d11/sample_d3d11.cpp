@@ -39,6 +39,8 @@
 #include "GFSDK_WaveWorks_D3D_Util.h"
 #include "terrain.h"
 #include <windows.h> // for QueryPerformanceFrequency/QueryPerformanceCounter
+#include "DDSTextureLoader.h"
+#include "D3DX11Effect.h"
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
@@ -46,7 +48,7 @@
 // Disable warning "conditional expression is constant"
 #pragma warning(disable:4127)
 
-extern HRESULT LoadFile(LPCTSTR FileName, ID3DXBuffer** ppBuffer);
+extern HRESULT LoadFile(LPCTSTR FileName, ID3DBlob** ppBuffer);
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -84,7 +86,7 @@ GFSDK_WaveWorks_Quadtree_Params			g_ocean_quadtree_param;
 GFSDK_WaveWorks_Quadtree_Stats			g_ocean_quadtree_stats;
 GFSDK_WaveWorks_Simulation_DetailLevel	g_max_detail_level = GFSDK_WaveWorks_Simulation_DetailLevel_Normal;
 
-D3DXVECTOR2 g_WindDir = D3DXVECTOR2(0.8f, 0.6f);
+XMFLOAT2 g_WindDir = XMFLOAT2(0.8f, 0.6f);
 bool g_Wireframe = false;
 bool g_SimulateWater = true;
 bool g_ForceKick = false;
@@ -123,9 +125,9 @@ enum { NumMarkersXY = 10, NumMarkers = NumMarkersXY*NumMarkersXY };
 gfsdk_float2 g_readback_marker_coords[NumMarkers];
 gfsdk_float4 g_readback_marker_positions[NumMarkers];
 
-D3DXVECTOR3 g_raycast_origins[NumMarkers];
-D3DXVECTOR3 g_raycast_directions[NumMarkers];
-D3DXVECTOR3 g_raycast_hitpoints[NumMarkers];
+XMVECTOR g_raycast_origins[NumMarkers];
+XMVECTOR g_raycast_directions[NumMarkers];
+XMVECTOR g_raycast_hitpoints[NumMarkers];
 bool		g_raycast_hittestresults[NumMarkers];
 static LARGE_INTEGER g_IntersectRaysPerfCounter, g_IntersectRaysPerfCounterOld, g_IntersectRaysPerfFrequency;
 float		g_IntersectRaysTime;
@@ -159,7 +161,6 @@ const FLOAT kMaxWindSpeedBeaufort = 4.0f;
 //--------------------------------------------------------------------------------------
 // Forward declarations 
 //--------------------------------------------------------------------------------------
-bool    CALLBACK IsD3D9DeviceAcceptable( D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext );
 bool    CALLBACK IsD3D11DeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo, DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext );
 bool    CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext );
 HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext );
@@ -215,7 +216,6 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
     DXUTSetCallbackKeyboard( KeyboardProc );
     DXUTSetCallbackFrameMove( OnFrameMove );
 
-	DXUTSetCallbackD3D9DeviceAcceptable( IsD3D9DeviceAcceptable );
     DXUTSetCallbackD3D11DeviceAcceptable( IsD3D11DeviceAcceptable );
     DXUTSetCallbackD3D11DeviceCreated( OnD3D11CreateDevice );
     DXUTSetCallbackD3D11SwapChainResized( OnD3D11ResizedSwapChain );
@@ -365,16 +365,6 @@ void AddGUISet()
     iY += 20;
 }
 
-//--------------------------------------------------------------------------------------
-// Called during device initialization, this code checks the device for some 
-// minimum set of capabilities, and rejects those that don't pass by returning E_FAIL.
-//--------------------------------------------------------------------------------------
-bool CALLBACK IsD3D9DeviceAcceptable(	D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, 
-										D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
-{
-	return false;
-}
-
 bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
                                        DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
 {
@@ -465,7 +455,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	}
 
 	float aspectRatio = (float)pBackBufferSurfaceDesc->Width / (float)pBackBufferSurfaceDesc->Height;
-    g_Camera.SetProjParams(camera_fov * D3DX_PI / 360.0f, aspectRatio, scene_z_near, scene_z_far);
+    g_Camera.SetProjParams(camera_fov * XMVectorGetY(DirectX::g_XMPi) / 360.0f, aspectRatio, scene_z_near, scene_z_far);
 
 	// Ocean sim
 	GFSDK_WaveWorks_InitD3D11(pd3dDevice,NULL,GFSDK_WAVEWORKS_API_GUID);
@@ -486,16 +476,14 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	g_pLogoTextureVariable = g_pOceanSurf->m_pOceanFX->GetVariableByName("g_LogoTexture")->AsShaderResource();
 
 	ID3D11Resource* pD3D11Resource = NULL;
-	DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\media\\nvidia_logo.dds"));
-	V_RETURN(D3DX11CreateTextureFromFile(pd3dDevice, path, NULL, NULL, &pD3D11Resource, NULL));
-	V_RETURN(pd3dDevice->CreateShaderResourceView(pD3D11Resource, NULL, &g_pLogoTex));
+	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("nvidia_logo.dds")));
+	V_RETURN(DirectX::CreateDDSTextureFromFile(pd3dDevice, static_cast<const wchar_t *>(path), NULL, &g_pLogoTex));
 	SAFE_RELEASE(pD3D11Resource);
 
 	// Terrain and sky fx
-	ID3DXBuffer* pEffectBuffer = NULL;
-	DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("..\\Media\\sample_d3d11.fxo"));
-	V_RETURN(LoadFile(path, &pEffectBuffer));
-	V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pEffect));
+	ID3DBlob* pEffectBuffer = NULL;
+	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("sample_d3d11.fxo")));
+	V_RETURN(D3DX11CreateEffectFromFile(path, 0, pd3dDevice, &g_pEffect));// pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pEffect));
 	SAFE_RELEASE(pEffectBuffer);
 
     // Initialize shoreline interaction.
@@ -531,7 +519,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_SettingsDlg.OnD3D11ResizedSwapChain(pd3dDevice,pBackBufferSurfaceDesc) );
 
 	float aspectRatio = (float)pBackBufferSurfaceDesc->Width / (float)pBackBufferSurfaceDesc->Height;
-    g_Camera.SetProjParams(camera_fov * D3DX_PI / 360.0f, aspectRatio, scene_z_near, scene_z_far);
+	g_Camera.SetProjParams(camera_fov * XMVectorGetY(DirectX::g_XMPi) / 360.0f, aspectRatio, scene_z_near, scene_z_far);
 
 	// UI
 	g_HUD.SetLocation(pBackBufferSurfaceDesc->Width-240, 8);
@@ -701,16 +689,16 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
 	g_FrameTime = fElapsedTime;
 
-	D3DXVECTOR2 ScreenSizeInv(1.0f / (g_Terrain.BackbufferWidth*main_buffer_size_multiplier), 1.0f / (g_Terrain.BackbufferHeight*main_buffer_size_multiplier));
+	XMFLOAT2 ScreenSizeInv(1.0f / (g_Terrain.BackbufferWidth*main_buffer_size_multiplier), 1.0f / (g_Terrain.BackbufferHeight*main_buffer_size_multiplier));
 
 	ID3DX11Effect* oceanFX = g_pOceanSurf->m_pOceanFX;
 
 	oceanFX->GetVariableByName("g_ZNear")->AsScalar()->SetFloat(scene_z_near);
 	oceanFX->GetVariableByName("g_ZFar")->AsScalar()->SetFloat(scene_z_far);
-	D3DXVECTOR3 light_pos = D3DXVECTOR3(140000.0f,65000.0f,40000.0f);
-	g_pEffect->GetVariableByName("g_LightPosition")->AsVector()->SetFloatVector(light_pos);
-	g_pEffect->GetVariableByName("g_ScreenSizeInv")->AsVector()->SetFloatVector(ScreenSizeInv);
-	oceanFX->GetVariableByName("g_ScreenSizeInv")->AsVector()->SetFloatVector(ScreenSizeInv);
+	XMFLOAT3 light_pos = XMFLOAT3(140000.0f,65000.0f,40000.0f);
+	g_pEffect->GetVariableByName("g_LightPosition")->AsVector()->SetFloatVector((FLOAT*)&light_pos);
+	g_pEffect->GetVariableByName("g_ScreenSizeInv")->AsVector()->SetFloatVector((FLOAT*)&ScreenSizeInv);
+	oceanFX->GetVariableByName("g_ScreenSizeInv")->AsVector()->SetFloatVector((FLOAT*)&ScreenSizeInv);
 	g_pEffect->GetVariableByName("g_DynamicTessFactor")->AsScalar()->SetFloat(g_ocean_quadtree_param.tessellation_lod * 0.25f + 0.1f);
 
 	g_pOceanSurf->m_pOceanFX->GetVariableByName("g_enableShoreEffects")->AsScalar()->SetFloat(g_enableShoreEffects? 1.0f:0.0f);
@@ -766,7 +754,7 @@ void RenderText( double fTime )
     // Output statistics
     g_pTxtHelper->Begin();
     g_pTxtHelper->SetInsertionPos( 2, 0 );
-    g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 0.9f, 0.9f, 0.9f, 1.0f ) );
+    g_pTxtHelper->SetForegroundColor( XMFLOAT4( 0.9f, 0.9f, 0.9f, 1.0f ) );
 
 	swprintf_s(buffer, buffer_len, L"Lib build: %S\n", GFSDK_WaveWorks_GetBuildString());
 	g_pTxtHelper->DrawTextLine(buffer);
@@ -776,7 +764,7 @@ void RenderText( double fTime )
 
 	if(g_QueryStats)
 	{
-		g_pTxtHelper->SetForegroundColor( D3DXCOLOR( 1.0f, 1.0f, 1.0f, 1.0f ) );
+		g_pTxtHelper->SetForegroundColor( XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f ) );
 		g_pTxtHelper->DrawTextLine(L"----------");
 		wsprintf(buffer, L"Quad patches drawn                 : %d\n", g_ocean_quadtree_stats.num_patches_drawn);
 		g_pTxtHelper->DrawTextLine(buffer);
@@ -1162,7 +1150,7 @@ void UpdateReadbackPositions()
 // Returns true and sets Result to intersection point if intersection is found, or returns false and does not update Result 
 // NB: The function does trace the water surface from above or from inside the water volume, but can be easily changed to trace from below water volume
 // NB: y axiz is up
-bool intersectRayWithOcean(D3DXVECTOR3& Result, D3DXVECTOR3 Position, D3DXVECTOR3 Direction, GFSDK_WaveWorks_SimulationHandle hSim, float sea_level)
+bool intersectRayWithOcean(XMVECTOR& Result, XMVECTOR Position, XMVECTOR Direction, GFSDK_WaveWorks_SimulationHandle hSim, float sea_level)
 {
 	gfsdk_float2 test_point;									// x,z coordinates of current test point
 	gfsdk_float2 old_test_point;								// x,z coordinates of current test point
@@ -1179,11 +1167,11 @@ bool intersectRayWithOcean(D3DXVECTOR3& Result, D3DXVECTOR3 Position, D3DXVECTOR
 	const float t_multiplier = 1.8f/(fabs(Direction.y) + 1.0f);	// we increase step length at steep angles to speed up the tracing, 
 																// but less than 2 to make sure the process converges 
 																// and to add some safety to minimize chance of overshooting
-	D3DXVECTOR3 PositionBSStart;								// Vectors used at binary search step
-	D3DXVECTOR3 PositionBSEnd;
+	XMVECTOR PositionBSStart;								// Vectors used at binary search step
+	XMVECTOR PositionBSEnd;
 
 	// normalizing direction 
-	D3DXVec3Normalize(&Direction, &Direction);
+	Direction = XMVector3Normalize(Direction);
 
 	// checking if ray is outside of ocean surface volume 
 	if((Position.y >= max_displacement + sea_level) && (Direction.y >=0)) return false;
@@ -1285,13 +1273,10 @@ void UpdateRaycastPositions()
 		for(int y = 0; y != NumMarkersXY; ++y)
 		{
 			int i = x + y*NumMarkersXY;
-			g_raycast_origins[i].x = 0;
-			g_raycast_origins[i].y = 10;
-			g_raycast_origins[i].z = terrain_gridpoints*terrain_geometry_scale;
-			g_raycast_directions[i].x = 5.0f*float(x - NumMarkersXY/2.0f);
-			g_raycast_directions[i].y = -10.0f;
-			g_raycast_directions[i].z = 5.0f*float(y - NumMarkersXY/2.0f);
-			D3DXVec3Normalize(&g_raycast_directions[i], &g_raycast_directions[i]);
+			g_raycast_origins[i] = XMVectorSet(0, 10, terrain_gridpoints*terrain_geometry_scale, 0);
+			g_raycast_directions[i] = XMVectorSet(5.0f*float(x - NumMarkersXY / 2.0f), -10.0f, 5.0f*float(y - NumMarkersXY / 2.0f), 0);
+
+			g_raycast_directions[i] = XMVector3Normalize(g_raycast_directions[i]);
 		}
 	}
 	g_IntersectRaysTime = 0.f;

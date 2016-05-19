@@ -1468,8 +1468,7 @@ void RenderSkybox(ID3D11DeviceContext* pDC)
 	far_plane_quad[2] = XMFLOAT4(g_FarPlane, g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
 	far_plane_quad[3] = XMFLOAT4(g_FarPlane, -g_FarPlane, g_FarPlane * 0.999f, g_FarPlane);
 	
-	//NOTE: Need Determinant!
-	XMMATRIX matInvVP = XMMatrixInverse(&DirectX::XMVectorSet(0, 0, 0, 0), matVP);
+	XMMATRIX matInvVP = XMMatrixInverse(NULL, matVP);
 
 	XMVector4TransformStream(&far_plane_quad[0], sizeof(XMFLOAT4), &far_plane_quad[0], sizeof(XMFLOAT4), 4, matInvVP);
 	pDC->Unmap(g_pSkyBoxVB, 0);

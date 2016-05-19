@@ -63,19 +63,19 @@ public:
 
 	// --------------------------------- Rendering routines -----------------------------------
 	// Rendering
-	void renderShaded(	ID3D11DeviceContext* pDC, 
-						const XMMATRIX& matView, 
-						const XMMATRIX& matProj,
-						GFSDK_WaveWorks_SimulationHandle hSim, 
-						GFSDK_WaveWorks_SavestateHandle hSavestate, 
-						const XMFLOAT2& windDir, 
-						const float steepness, 
-						const float amplitude, 
-						const float wavelength, 
-						const float speed, 
-						const float parallelness,
-                        const float totalTime
-						);
+	void renderShaded(		ID3D11DeviceContext* pDC, 
+							const XMMATRIX matView, 
+							const XMMATRIX matProj, 
+							GFSDK_WaveWorks_SimulationHandle hSim, 
+							GFSDK_WaveWorks_SavestateHandle hSavestate, 
+							const XMFLOAT2 windDir, 
+							const float steepness, 
+							const float amplitude, 
+							const float wavelength, 
+							const float speed, 
+							const float parallelness, 
+							const float totalTime);
+	
 	void getQuadTreeStats(GFSDK_WaveWorks_Quadtree_Stats& stats);
 
 	// --------------------------------- Surface geometry -----------------------------------

@@ -35,8 +35,6 @@
 
 #pragma warning(disable:4127)
 
-extern HRESULT LoadFile(LPCTSTR FileName, ID3DXBuffer** ppBuffer);
-
 const unsigned int kTopDownDataResolution = 256;
 
 DistanceField::DistanceField( CTerrain* const pTerrainRenderer )
@@ -119,13 +117,13 @@ void DistanceField::GenerateDataTexture( ID3D11DeviceContext* pDC )
 {
 	if( !m_shouldGenerateDataTexture ) return;
 
-	renderTopDownData( pDC, D3DXVECTOR3( 250, 0, 250 ) );
+	renderTopDownData( pDC, XMVectorSet( 250, 0, 250, 0 ) );
 	generateDistanceField( pDC );
 
 	m_shouldGenerateDataTexture = false;
 }
 
-void DistanceField::renderTopDownData( ID3D11DeviceContext* pDC, const D3DXVECTOR3& eyePositionWS )
+void DistanceField::renderTopDownData( ID3D11DeviceContext* pDC, const XMVECTOR eyePositionWS )
 {
 	const float kHeightAboveSeaLevel = 300;
 	const float kMinHeightBelowSeaLevel = 20;
@@ -147,16 +145,17 @@ void DistanceField::renderTopDownData( ID3D11DeviceContext* pDC, const D3DXVECTO
 	viewport.Height = kTopDownDataResolution;
 	viewport.Width = kTopDownDataResolution;
 
+	float ClearColor[4] = { 0.0f, -kMinHeightBelowSeaLevel, 0.0f, 0.0f };
 	pDC->RSSetViewports(1, &viewport);
-	pDC->ClearRenderTargetView( m_pTopDownDataRTV, D3DXCOLOR( 0.0f, -kMinHeightBelowSeaLevel, 0.0f, 0.0f ) );
+	pDC->ClearRenderTargetView( m_pTopDownDataRTV, ClearColor );
 	pDC->OMSetRenderTargetsAndUnorderedAccessViews( 1, &m_pTopDownDataRTV, NULL, 0, 0, NULL, NULL );
 
-	m_topDownViewPositionWS = D3DXVECTOR3( eyePositionWS.x, kHeightAboveSeaLevel, eyePositionWS.z );
+	m_topDownViewPositionWS = XMVectorSet( XMVectorGetX(eyePositionWS), kHeightAboveSeaLevel, XMVectorGetZ(eyePositionWS), 0 );
 
 	const float kOrthoSize = 700;
-	D3DXMatrixOrthoLH( &m_viewToProjectionMatrix, kOrthoSize, kOrthoSize, 0.3f, kHeightAboveSeaLevel + kMinHeightBelowSeaLevel  );
-	const D3DXVECTOR3 up = D3DXVECTOR3( 0, 0, 1 );
-	D3DXMatrixLookAtLH( &m_worldToViewMatrix, &m_topDownViewPositionWS, &eyePositionWS, &up);
+	m_viewToProjectionMatrix = XMMatrixOrthographicLH( kOrthoSize, kOrthoSize, 0.3f, kHeightAboveSeaLevel + kMinHeightBelowSeaLevel  );
+	const XMVECTOR up = XMVectorSet( 0, 0, 1, 0 );
+	m_worldToViewMatrix = XMMatrixLookAtLH( m_topDownViewPositionWS, eyePositionWS, up);
 
 	m_pTerrainRenderer->RenderTerrainToHeightField( pDC, m_worldToViewMatrix, m_viewToProjectionMatrix, m_topDownViewPositionWS, m_viewDirectionWS );
 
@@ -286,7 +285,7 @@ float DistanceField::FindNearestPixel( float* pTextureData, const int cx, const 
 	return originPositive ? -minDistance/kMaxDistance : minDistance/kMaxDistance;
 }
 
-void DistanceField::GetWorldToTopDownTextureMatrix( D3DXMATRIX& worldToTopDownMatrix )
+void DistanceField::GetWorldToTopDownTextureMatrix( XMMATRIX worldToTopDownMatrix )
 {
 	worldToTopDownMatrix = m_worldToViewMatrix * m_viewToProjectionMatrix;
 }

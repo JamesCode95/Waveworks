@@ -43,7 +43,7 @@ struct DistanceField
 
 	// --------------------------------- Accessors -----------------------------------
 	ID3D11ShaderResourceView*	GetDataTextureSRV() const	{ return m_pTopDownDataSRV; } 
-	void	GetWorldToTopDownTextureMatrix( XMMATRIX& worldToTopDownMatrix );
+	void	GetWorldToTopDownTextureMatrix( XMMATRIX worldToTopDownMatrix );
 
 	// --------------------------------- Rendering routines -----------------------------------
 	void GenerateDataTexture(ID3D11DeviceContext* pDC );
@@ -71,8 +71,8 @@ private:
 
 	bool m_shouldGenerateDataTexture;
 
-	void renderTopDownData(ID3D11DeviceContext* pDC, const XMVECTOR& eyePositionWS);
-	void generateDistanceField( ID3D11DeviceContext* pDC );
+	void renderTopDownData(ID3D11DeviceContext* pDC, const XMVECTOR eyePositionWS);
+	void generateDistanceField(ID3D11DeviceContext* pDC);
 	bool checkPixel( float* pTextureData, const int cx, const int cy, const int dx, const int dy) const;
 	float FindNearestPixel( float* pTextureData, const int cx, const int cy, float&, float&);
 };
