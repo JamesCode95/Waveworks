@@ -1,5 +1,5 @@
 #
-# Build test_d3d11
+# Build sample_d3d11
 #
 
 SET(GW_DEPS_ROOT $ENV{GW_DEPS_ROOT})
@@ -26,9 +26,9 @@ IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 	# Use generator expressions to set config specific preprocessor definitions
 	SET(WW_COMPILE_DEFS
 		# Common to all configurations
-		_LIB;NVWAVEWORKS_LIB_DLL_EXPORTS;WIN32;
+		WIN32;_WINDOWS
 
-		$<$<CONFIG:debug>:PROFILE;_DEV;>
+		$<$<CONFIG:debug>:PROFILE;>
 		$<$<CONFIG:release>:NDEBUG;>
 	)
 

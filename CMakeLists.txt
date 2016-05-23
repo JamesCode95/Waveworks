@@ -11,6 +11,8 @@ LIST(APPEND CMAKE_MODULE_PATH ${GW_DEPS_ROOT}CMakeModules)
 
 MESSAGE(${CMAKE_MODULE_PATH})
 
+
+
 # TODO: Fail if we didn't find deps
 
 IF(CMAKE_CONFIGURATION_TYPES)
@@ -126,3 +128,4 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${FINAL_OUTPUT_DIR})
 INCLUDE(compiler/cmake/NvWaveWorks.cmake)
 INCLUDE(compiler/cmake/test_d3d11.cmake)
 INCLUDE(compiler/cmake/sample_d3d11.cmake)
+INCLUDE(compiler/cmake/sample_opengl.cmake)
