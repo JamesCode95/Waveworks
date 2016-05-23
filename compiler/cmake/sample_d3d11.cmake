@@ -98,8 +98,8 @@ INCLUDE(cmake/CompileFXToFXO.cmake)
 ADD_CUSTOM_TARGET(samp_d3d11fx ALL)
 
 #FUNCTION(CompileFXToFXO FILE OUTPUT_FILE TARGET INCLUDE_DIR OPTIONS)
-CompileFXToFXO(${SAMP_SOURCE_DIR}/ocean_surface.fx ${PROJECT_SOURCE_DIR}/test/media/ocean_surface_d3d11.fxo samp_d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
-CompileFXToFXO(${SAMP_SOURCE_DIR}/sample.fx ${PROJECT_SOURCE_DIR}/test/media/sample_d3d11.fxo samp_d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
+CompileFXToFXO(${SAMP_SOURCE_DIR}/ocean_surface.fx ${PROJECT_SOURCE_DIR}/media/sample/ocean_surface_d3d11.fxo samp_d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
+CompileFXToFXO(${SAMP_SOURCE_DIR}/sample.fx ${PROJECT_SOURCE_DIR}/media/sample/sample_d3d11.fxo samp_d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
 
 ADD_EXECUTABLE(SampleD3D11 WIN32
 	${WW_PLATFORM_SRC_FILES}

@@ -107,9 +107,9 @@ INCLUDE(cmake/CompileFXToFXO.cmake)
 ADD_CUSTOM_TARGET(d3d11fx ALL)
 
 #FUNCTION(CompileFXToFXO FILE OUTPUT_FILE TARGET INCLUDE_DIR OPTIONS)
-CompileFXToFXO(${TEST_SOURCE_DIR}/ocean_marker.fx ${PROJECT_SOURCE_DIR}/test/media/ocean_marker_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
-CompileFXToFXO(${TEST_SOURCE_DIR}/ocean_surface.fx ${PROJECT_SOURCE_DIR}/test/media/ocean_surface_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
-CompileFXToFXO(${TEST_SOURCE_DIR}/skybox.fx ${PROJECT_SOURCE_DIR}/test/media/skybox_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
+CompileFXToFXO(${TEST_SOURCE_DIR}/ocean_marker.fx ${PROJECT_SOURCE_DIR}/media/test/ocean_marker_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
+CompileFXToFXO(${TEST_SOURCE_DIR}/ocean_surface.fx ${PROJECT_SOURCE_DIR}/media/test/ocean_surface_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
+CompileFXToFXO(${TEST_SOURCE_DIR}/skybox.fx ${PROJECT_SOURCE_DIR}/media/test/skybox_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
 
 ADD_EXECUTABLE(TestD3D11 WIN32
 	${WW_PLATFORM_SRC_FILES}

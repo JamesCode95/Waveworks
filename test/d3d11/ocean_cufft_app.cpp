@@ -256,7 +256,7 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
 #endif
 
 	g_pTestParams = new TestParams(cmdline);
-	g_pTestParams->MediaDirectory = "D:\\Projects\\WaveworksGit\\WWLibrary\\test\\media";
+	g_pTestParams->MediaDirectory = "..\\..\\media\\test";
 
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 

@@ -43,6 +43,10 @@
 #include "D3DX11Effect.h"
 #include "D3D9types.h"
 
+#include <locale>
+#include <codecvt>
+#include <xlocbuf>
+
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
 
@@ -204,6 +208,14 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
 #if defined(DEBUG) | defined(_DEBUG)
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
+
+	//TODO: Take from cmdline
+	auto mediaPath = "..\\..\\media\\sample";
+
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	DXUTSetMediaSearchPath(converter.from_bytes(mediaPath).c_str());
+
+
     // Set the callback functions. These functions allow DXUT to notify
     // the application about device changes, user input, and windows messages.  The 
     // callbacks are optional so you need only set callbacks for events you're interested 
