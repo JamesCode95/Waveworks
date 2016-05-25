@@ -47,8 +47,6 @@ public:
 
 	virtual ~NVWaveWorks_FFT_Simulation_Manager() {};
 
-	virtual HRESULT initD3D9(IDirect3DDevice9* /*pD3DDevice*/) { return S_OK; }
-    virtual HRESULT initD3D10(ID3D10Device* /*pD3DDevice*/)    { return S_OK; }
     virtual HRESULT initD3D11(ID3D11Device* /*pD3DDevice*/)    { return S_OK; }
     virtual HRESULT initGL2(void* /*pGLContext*/)			   { return S_OK; }
 	virtual HRESULT initNoGraphics()                           { return S_OK; }

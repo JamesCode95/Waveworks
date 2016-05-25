@@ -779,62 +779,6 @@ NVWaveWorks_FFT_Simulation_CPU_Impl::~NVWaveWorks_FFT_Simulation_CPU_Impl()
     releaseAll();
 }
 
-HRESULT NVWaveWorks_FFT_Simulation_CPU_Impl::initD3D9(IDirect3DDevice9* D3D9_ONLY(pD3DDevice))
-{
-#if WAVEWORKS_ENABLE_D3D9
-    HRESULT hr;
-
-    if(nv_water_d3d_api_d3d9 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._9.m_pd3d9Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d9;
-        m_d3d._9.m_pd3d9Device = pD3DDevice;
-        m_d3d._9.m_pd3d9Device->AddRef();
-        V_RETURN(allocateAllResources());
-    }
-    return S_OK;
-#else
-	return E_FAIL;
-#endif
-}
-
-
-HRESULT NVWaveWorks_FFT_Simulation_CPU_Impl::initD3D10(ID3D10Device* D3D10_ONLY(pD3DDevice))
-{
-#if WAVEWORKS_ENABLE_D3D10
-    HRESULT hr;
-
-    if(nv_water_d3d_api_d3d10 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._10.m_pd3d10Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d10;
-        m_d3d._10.m_pd3d10Device = pD3DDevice;
-        m_d3d._10.m_pd3d10Device->AddRef();
-        V_RETURN(allocateAllResources());
-    }
-    return S_OK;
-#else
-	return E_FAIL;
-#endif
-}
-
-
 HRESULT NVWaveWorks_FFT_Simulation_CPU_Impl::initD3D11(ID3D11Device* D3D11_ONLY(pD3DDevice))
 {
 #if WAVEWORKS_ENABLE_D3D11
@@ -1106,50 +1050,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CPU_Impl::allocateAllResources()
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			SAFE_RELEASE(m_d3d._9.m_pd3d9DisplacementMapTexture[1]);
-			SAFE_RELEASE(m_d3d._9.m_pd3d9DisplacementMapTexture[0]);
-			for(int i=0; i<2; i++)
-			{
-				// Create 2D texture
-				V_RETURN(m_d3d._9.m_pd3d9Device->CreateTexture(N,N,1,D3DUSAGE_DYNAMIC,D3DFMT_A16B16G16R16F,D3DPOOL_DEFAULT,&m_d3d._9.m_pd3d9DisplacementMapTexture[i],NULL));
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			SAFE_RELEASE(m_d3d._10.m_pd3d10DisplacementMapTexture[1]);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10DisplacementMapTexture[0]);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10DisplacementMapTextureSRV[0]);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10DisplacementMapTextureSRV[1]);
-			for(int i=0; i<2; i++)
-			{
-				// Create 2D texture
-				D3D10_TEXTURE2D_DESC tex_desc;
-				tex_desc.Width = N;
-				tex_desc.Height = N;
-				tex_desc.MipLevels = 1;
-				tex_desc.ArraySize = 1;
-				tex_desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-				tex_desc.SampleDesc.Count = 1;
-				tex_desc.SampleDesc.Quality = 0;
-				tex_desc.Usage = D3D10_USAGE_DYNAMIC;
-				tex_desc.BindFlags = D3D10_BIND_SHADER_RESOURCE;
-				tex_desc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
-				tex_desc.MiscFlags = 0;
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateTexture2D(&tex_desc, NULL, &m_d3d._10.m_pd3d10DisplacementMapTexture[i]));
-
-				// Create shader resource view
-				D3D10_SHADER_RESOURCE_VIEW_DESC srv_desc;
-				srv_desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-				srv_desc.ViewDimension = D3D10_SRV_DIMENSION_TEXTURE2D;
-				srv_desc.Texture2D.MipLevels = tex_desc.MipLevels;
-				srv_desc.Texture2D.MostDetailedMip = 0;
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateShaderResourceView(m_d3d._10.m_pd3d10DisplacementMapTexture[i], &srv_desc, &m_d3d._10.m_pd3d10DisplacementMapTextureSRV[i]));
-			}
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			SAFE_RELEASE(m_d3d._11.m_pDC);//release previous context
@@ -1259,16 +1159,6 @@ void NVWaveWorks_FFT_Simulation_CPU_Impl::releaseAll()
 #if WAVEWORKS_ENABLE_GRAPHICS
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			SAFE_RELEASE(m_d3d._9.m_pd3d9Device);
-	        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			SAFE_RELEASE(m_d3d._10.m_pd3d10Device);
-	        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			SAFE_RELEASE(m_d3d._11.m_pd3d11Device);
@@ -1313,20 +1203,6 @@ void NVWaveWorks_FFT_Simulation_CPU_Impl::releaseAllResources()
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-	    case nv_water_d3d_api_d3d9:
-			SAFE_RELEASE(m_d3d._9.m_pd3d9DisplacementMapTexture[0]);
-			SAFE_RELEASE(m_d3d._9.m_pd3d9DisplacementMapTexture[1]);
-	        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	    case nv_water_d3d_api_d3d10:
-			SAFE_RELEASE(m_d3d._10.m_pd3d10DisplacementMapTexture[0]);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10DisplacementMapTexture[1]);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10DisplacementMapTextureSRV[0]);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10DisplacementMapTextureSRV[1]);
-	        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 	    case nv_water_d3d_api_d3d11:
 			assert(NULL == m_d3d._11.m_pDC); // should be done by OnCompleteSimulationStep()
@@ -1446,28 +1322,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CPU_Impl::getTimings(NVWaveWorks_FFT_Simulati
 	return S_OK;
 }
 
-LPDIRECT3DTEXTURE9 NVWaveWorks_FFT_Simulation_CPU_Impl::GetDisplacementMapD3D9()
-{
-#if WAVEWORKS_ENABLE_D3D9
-	assert(m_d3dAPI == nv_water_d3d_api_d3d9);
-	int ti = (m_mapped_texture_index+1)&1;
-	return m_d3d._9.m_pd3d9DisplacementMapTexture[ti];
-#else
-	return NULL;
-#endif
-}
-
-ID3D10ShaderResourceView** NVWaveWorks_FFT_Simulation_CPU_Impl::GetDisplacementMapD3D10()
-{
-#if WAVEWORKS_ENABLE_D3D10
-	assert(m_d3dAPI == nv_water_d3d_api_d3d10);
-	int ti = (m_mapped_texture_index+1)&1;
-	return &m_d3d._10.m_pd3d10DisplacementMapTextureSRV[ti];
-#else
-	return NULL;
-#endif
-}
-
 ID3D11ShaderResourceView** NVWaveWorks_FFT_Simulation_CPU_Impl::GetDisplacementMapD3D11()
 {
 #if WAVEWORKS_ENABLE_D3D11
@@ -1505,16 +1359,6 @@ void NVWaveWorks_FFT_Simulation_CPU_Impl::OnCompleteSimulationStep(gfsdk_U64 kic
 {
 	if(m_mapped_texture_ptr) {
 		switch(m_d3dAPI) {
-#if WAVEWORKS_ENABLE_D3D9
-			case nv_water_d3d_api_d3d9:
-				m_d3d._9.m_pd3d9DisplacementMapTexture[m_mapped_texture_index]->UnlockRect(0);
-				break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-			case nv_water_d3d_api_d3d10:
-				m_d3d._10.m_pd3d10DisplacementMapTexture[m_mapped_texture_index]->Unmap(0);
-				break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 			case nv_water_d3d_api_d3d11:
 				assert(NULL != m_d3d._11.m_pDC);
@@ -1580,26 +1424,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CPU_Impl::OnInitiateSimulationStep(Graphics_C
 
 	UINT N = m_params.fft_resolution;
 	switch(m_d3dAPI) {
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9: {
-				HRESULT hr;
-				D3DLOCKED_RECT lockrect;
-				V_RETURN(m_d3d._9.m_pd3d9DisplacementMapTexture[m_mapped_texture_index]->LockRect(0,&lockrect,NULL,D3DLOCK_DISCARD));
-				m_mapped_texture_ptr = static_cast<BYTE*>(lockrect.pBits);
-				m_mapped_texture_row_pitch = lockrect.Pitch;
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10: {
-				HRESULT hr;
-				D3D10_MAPPED_TEXTURE2D mt_d3d10;
-				V_RETURN(m_d3d._10.m_pd3d10DisplacementMapTexture[m_mapped_texture_index]->Map(0,D3D10_MAP_WRITE_DISCARD,0,&mt_d3d10));
-				m_mapped_texture_ptr = static_cast<BYTE*>(mt_d3d10.pData);
-				m_mapped_texture_row_pitch = mt_d3d10.RowPitch;
-			}
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11: {
 				HRESULT hr;

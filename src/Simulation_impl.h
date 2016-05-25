@@ -69,8 +69,6 @@ public:
     GFSDK_WaveWorks_Simulation();
     ~GFSDK_WaveWorks_Simulation();
 
-    HRESULT initD3D9(const GFSDK_WaveWorks_Detailed_Simulation_Params& params, IDirect3DDevice9* pD3DDevice);
-    HRESULT initD3D10(const GFSDK_WaveWorks_Detailed_Simulation_Params& params, ID3D10Device* pD3DDevice);
     HRESULT initD3D11(const GFSDK_WaveWorks_Detailed_Simulation_Params& params, GFSDK_WaveWorks_CPU_Scheduler_Interface* pOptionalScheduler, ID3D11Device* pD3DDevice);
 	HRESULT initGnm(const GFSDK_WaveWorks_Detailed_Simulation_Params& params, GFSDK_WaveWorks_CPU_Scheduler_Interface* pOptionalScheduler);
 	HRESULT initGL2(const GFSDK_WaveWorks_Detailed_Simulation_Params& params, void* pGLContext);
@@ -110,10 +108,6 @@ public:
 										UINT numSamples
 										);
 
-    static HRESULT getShaderInputCountD3D9();
-    static HRESULT getShaderInputDescD3D9(UINT inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
-    static HRESULT getShaderInputCountD3D10();
-    static HRESULT getShaderInputDescD3D10(UINT inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
     static HRESULT getShaderInputCountD3D11();
     static HRESULT getShaderInputDescD3D11(UINT inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
     static HRESULT getShaderInputCountGnm();
@@ -127,20 +121,10 @@ private:
     GFSDK_WaveWorks_Detailed_Simulation_Params m_params;
 
     HRESULT updateGradientMaps(Graphics_Context* pGC, GFSDK_WaveWorks_Savestate* pSavestateImpl);
-    HRESULT updateGradientMapsD3D9(GFSDK_WaveWorks_Savestate* pSavestateImpl);
-    HRESULT updateGradientMapsD3D10(GFSDK_WaveWorks_Savestate* pSavestateImpl);
 	HRESULT updateGradientMapsD3D11(Graphics_Context* pGC, GFSDK_WaveWorks_Savestate* pSavestateImpl);
 	HRESULT updateGradientMapsGnm(Graphics_Context* pGC, GFSDK_WaveWorks_Savestate* pSavestateImpl);
 	HRESULT updateGradientMapsGL2(Graphics_Context* pGC);
 
-    HRESULT setRenderStateD3D9(	const gfsdk_float4x4& matView,
-								const UINT* pShaderInputRegisterMappings,
-								GFSDK_WaveWorks_Savestate* pSavestateImpl
-								);
-    HRESULT setRenderStateD3D10(	const gfsdk_float4x4& matView,
-									const UINT* pShaderInputRegisterMappings,
-									GFSDK_WaveWorks_Savestate* pSavestateImpl
-									);
     HRESULT setRenderStateD3D11(	ID3D11DeviceContext* pDC,
 									const gfsdk_float4x4& matView,
 									const UINT* pShaderInputRegisterMappings,
@@ -170,24 +154,6 @@ private:
 
 		// Set when the gradient map is newly created and therefore in need of an intitial clear
 		bool m_gradient_map_needs_clear[MaxNumGPUs];
-
-#if WAVEWORKS_ENABLE_D3D9
-        struct D3D9Objects
-        {
-            LPDIRECT3DTEXTURE9 m_pd3d9GradientMap[MaxNumGPUs];			// (ABGR16F) - round-robin, to avoid SLI-inteframe dependencies
-			LPDIRECT3DTEXTURE9 m_pd3d9FoamEnergyMap;					// (R16F)
-        };
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-        struct D3D10Objects
-        {
-            ID3D10ShaderResourceView* m_pd3d10GradientMap[MaxNumGPUs];			// (ABGR16F) - round-robin, to avoid SLI-inteframe dependencies
-            ID3D10RenderTargetView*   m_pd3d10GradientRenderTarget[MaxNumGPUs];	// (ditto)
-            ID3D10ShaderResourceView* m_pd3d10FoamEnergyMap;		// (R16F)
-            ID3D10RenderTargetView*   m_pd3d10FoamEnergyRenderTarget;// (ditto)
-        };
-#endif
 
 #if WAVEWORKS_ENABLE_D3D11
         struct D3D11Objects
@@ -219,12 +185,6 @@ private:
 #endif
 		union
         {
-#if WAVEWORKS_ENABLE_D3D9
-            D3D9Objects _9;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-            D3D10Objects _10;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 			D3D11Objects _11;
 #endif
@@ -270,49 +230,6 @@ private:
 
     // D3D API handling
     nv_water_d3d_api m_d3dAPI;
-
-#if WAVEWORKS_ENABLE_D3D9
-    struct D3D9Objects
-    {
-        IDirect3DDevice9* m_pd3d9Device;
-
-        // Shaders for grad calc
-        IDirect3DVertexShader9* m_pd3d9GradCalcVS;
-        IDirect3DPixelShader9* m_pd3d9GradCalcPS;
-		// Shaders for foam generation
-        IDirect3DVertexShader9* m_pd3d9FoamGenVS;
-        IDirect3DPixelShader9* m_pd3d9FoamGenPS;
-    };
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-    struct D3D10Objects
-    {
-        ID3D10Device* m_pd3d10Device;
-
-        // Shaders for grad calc
-        ID3D10VertexShader* m_pd3d10GradCalcVS;
-        ID3D10PixelShader* m_pd3d10GradCalcPS;
-        ID3D10Buffer* m_pd3d10GradCalcPixelShaderCB;
-        ID3D10SamplerState* m_pd3d10PointSampler;
-        ID3D10DepthStencilState* m_pd3d10NoDepthStencil;
-        ID3D10RasterizerState* m_pd3d10AlwaysSolidRasterizer;
-        ID3D10BlendState* m_pd3d10CalcGradBlendState;
-		ID3D10BlendState* m_pd3d10AccumulateFoamBlendState;
-		ID3D10BlendState* m_pd3d10WriteAccumulatedFoamBlendState;
-
-        // State for main rendering
-        ID3D10SamplerState* m_pd3d10LinearNoMipSampler;
-        ID3D10SamplerState* m_pd3d10GradMapSampler;
-        ID3D10Buffer*		m_pd3d10PixelShaderCB;
-        ID3D10Buffer*		m_pd3d10VertexShaderCB;
-
-		// Shaders for foam generation
-        ID3D10VertexShader* m_pd3d10FoamGenVS;
-        ID3D10PixelShader* m_pd3d10FoamGenPS;
-        ID3D10Buffer* m_pd3d10FoamGenPixelShaderCB;
-	};
-#endif
 
 #if WAVEWORKS_ENABLE_D3D11
     struct D3D11Objects
@@ -417,12 +334,6 @@ private:
 #endif
 	union
     {
-#if WAVEWORKS_ENABLE_D3D9
-        D3D9Objects _9;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-        D3D10Objects _10;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		D3D11Objects _11;
 #endif

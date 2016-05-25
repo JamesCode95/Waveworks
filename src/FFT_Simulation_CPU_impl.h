@@ -62,8 +62,6 @@ public:
 	void OnCompleteSimulationStep(gfsdk_U64 kickID);
 
 	// Mandatory NVWaveWorks_FFT_Simulation interface
-    HRESULT initD3D9(IDirect3DDevice9* pD3DDevice);
-    HRESULT initD3D10(ID3D10Device* pD3DDevice);
     HRESULT initD3D11(ID3D11Device* pD3DDevice);
 	HRESULT initGnm();
 	HRESULT initGL2(void* pGLContext);
@@ -73,8 +71,6 @@ public:
 	HRESULT addArchivedDisplacements(float coord, const gfsdk_float2* inSamplePoints, gfsdk_float4* outDisplacements, UINT numSamples);
 	HRESULT getTimings(NVWaveWorks_FFT_Simulation_Timings&) const;
 	gfsdk_U64 getDisplacementMapVersion() const { return m_DisplacementMapVersion; }
-	LPDIRECT3DTEXTURE9 GetDisplacementMapD3D9();
-	ID3D10ShaderResourceView** GetDisplacementMapD3D10();
 	ID3D11ShaderResourceView** GetDisplacementMapD3D11();
 	sce::Gnm::Texture* GetDisplacementMapGnm();
 	GLuint					   GetDisplacementMapGL2();
@@ -104,23 +100,6 @@ private:
 
 	// D3D API handling
 	nv_water_d3d_api m_d3dAPI;
-
-#if WAVEWORKS_ENABLE_D3D9
-    struct D3D9Objects
-    {
-		IDirect3DDevice9* m_pd3d9Device;
-        LPDIRECT3DTEXTURE9 m_pd3d9DisplacementMapTexture[2];			// (ABGR32F)
-    };
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-    struct D3D10Objects
-    {
-		ID3D10Device* m_pd3d10Device;
-        ID3D10Texture2D* m_pd3d10DisplacementMapTexture[2];
-        ID3D10ShaderResourceView* m_pd3d10DisplacementMapTextureSRV[2];	// (ABGR32F)
-    };
-#endif
 
 #if WAVEWORKS_ENABLE_D3D11
     struct D3D11Objects
@@ -155,12 +134,6 @@ private:
 
     union
     {
-#if WAVEWORKS_ENABLE_D3D9
-        D3D9Objects _9;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-        D3D10Objects _10;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		D3D11Objects _11;
 #endif

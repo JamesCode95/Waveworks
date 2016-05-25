@@ -124,87 +124,6 @@ NVWaveWorks_FFT_Simulation_CUDA_Impl::~NVWaveWorks_FFT_Simulation_CUDA_Impl()
     releaseAll();
 }
 
-HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::initD3D9(IDirect3DDevice9* pD3DDevice)
-{
-#if WAVEWORKS_ENABLE_D3D9
-    HRESULT hr;
-
-    if(nv_water_d3d_api_d3d9 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._9.m_pd3d9Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d9;
-        m_d3d._9.m_pd3d9Device = pD3DDevice;
-        m_d3d._9.m_pd3d9Device->AddRef();
-
-		// Use 4x32F for D3D9
-		m_readback_element_size = sizeof(float4);
-
-		m_numCudaDevices = m_pManager->GetNumCudaDevices();
-		m_pCudaDeviceStates = new CudaDeviceState[m_numCudaDevices];
-		memset(m_pCudaDeviceStates, 0, m_numCudaDevices * sizeof(CudaDeviceState));
-		for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-		{
-			m_pCudaDeviceStates[cuda_dev_index].m_cudaDevice = m_pManager->GetCudaDeviceInfo(cuda_dev_index).m_cudaDevice;
-			m_pCudaDeviceStates[cuda_dev_index].m_constantsIndex = -1;
-		}
-
-        V_RETURN(allocateAllResources());
-    }
-
-    return S_OK;
-#else
-    return E_FAIL;
-#endif
-}
-
-HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::initD3D10(ID3D10Device* pD3DDevice)
-{
-#if WAVEWORKS_ENABLE_D3D10
-    HRESULT hr;
-
-    if(nv_water_d3d_api_d3d10 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._10.m_pd3d10Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d10;
-        m_d3d._10.m_pd3d10Device = pD3DDevice;
-        m_d3d._10.m_pd3d10Device->AddRef();
-
-		// Use 4x32F for D3D10
-		m_readback_element_size = sizeof(float4);
-
-		m_numCudaDevices = m_pManager->GetNumCudaDevices();
-		m_pCudaDeviceStates = new CudaDeviceState[m_numCudaDevices];
-		memset(m_pCudaDeviceStates, 0, m_numCudaDevices * sizeof(CudaDeviceState));
-		for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-		{
-			m_pCudaDeviceStates[cuda_dev_index].m_cudaDevice = m_pManager->GetCudaDeviceInfo(cuda_dev_index).m_cudaDevice;
-		}
-
-        V_RETURN(allocateAllResources());
-    }
-
-    return S_OK;
-#else
-    return E_FAIL;
-#endif
-}
-
 HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::initD3D11(ID3D11Device* pD3DDevice)
 {
 #if WAVEWORKS_ENABLE_D3D11
@@ -625,90 +544,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::kickPreInterop(double dSimTime, gf
 	return S_OK;
 }
 
-HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::kickWithinInteropD3D9(gfsdk_U64 kickID)
-{
-#if WAVEWORKS_ENABLE_D3D9
-	HRESULT hr;
-
-	assert(nv_water_d3d_api_d3d9 == m_d3dAPI);
-
-	// Be sure to use the correct cuda device for the current frame (important in SLI)
-	const int activeCudaDeviceIndex = m_pManager->GetActiveCudaDeviceIndex();
-	CudaDeviceState& dev_state = m_pCudaDeviceStates[activeCudaDeviceIndex];
-	const CudaDeviceInfo& dev_info = m_pManager->GetCudaDeviceInfo(activeCudaDeviceIndex);
-
-	int output_size = m_resolution * m_resolution;
-
-    float4* tex_data = NULL;
-	IDirect3DResource9* mapped_resource = m_d3d._9.m_pd3d9PerCudaDeviceResources[activeCudaDeviceIndex].m_pd3d9DisplacementMap;
-    CUDA_V_RETURN(cudaD3D9ResourceGetMappedPointer((void**)&tex_data, mapped_resource, 0, 0));
-
-    // Fill displacement texture
-    CUDA_V_RETURN(cuda_ComputeColumns(tex_data, m_resolution, dev_state.m_constantsIndex, dev_info.m_kernel_stream));
-
-    // Optionally, get data staged for readback
-	m_working_readback_slot = NULL;
-	if(m_ReadbackInitialised) {
-		V_RETURN(consumeAvailableReadbackSlot(dev_state, kickID, &m_working_readback_slot));
-		CUDA_V_RETURN(cudaMemcpyAsync(m_working_readback_slot->m_device_Dxyz, tex_data, output_size * sizeof(float4), cudaMemcpyDeviceToDevice, dev_info.m_kernel_stream));
-
-		// The copy out of staging is done on a separate stream with the goal of allowing the copy to occur
-		// in parallel with other GPU workloads, so we need to do some inter-stream sync here
-		CUDA_V_RETURN(cudaEventRecord(m_working_readback_slot->m_staging_evt,dev_info.m_kernel_stream));
-	}
-
-	// CUDA workload is done, stop the clock and unmap as soon as we can so as not to block the graphics pipe
-	if(m_working_timer_slot)
-	{
-		CUDA_V_RETURN(cudaEventRecord(m_working_timer_slot->m_stop_timer_evt,dev_info.m_kernel_stream));
-	}
-#endif
-
-	return S_OK;
-}
-
-HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::kickWithinInteropD3D10(gfsdk_U64 kickID)
-{
-#if WAVEWORKS_ENABLE_D3D10
-	HRESULT hr;
-
-	assert(nv_water_d3d_api_d3d10 == m_d3dAPI);
-
-	// Be sure to use the correct cuda device for the current frame (important in SLI)
-	const int activeCudaDeviceIndex = m_pManager->GetActiveCudaDeviceIndex();
-	CudaDeviceState& dev_state = m_pCudaDeviceStates[activeCudaDeviceIndex];
-	const CudaDeviceInfo& dev_info = m_pManager->GetCudaDeviceInfo(activeCudaDeviceIndex);
-
-	int output_size = m_resolution * m_resolution;
-
-    float4* tex_data = NULL;
-	ID3D10Resource* mapped_resource = m_d3d._10.m_pd3d10PerCudaDeviceResources[activeCudaDeviceIndex].m_pd3d10DisplacementMapResource;
-    CUDA_V_RETURN(cudaD3D10ResourceGetMappedPointer((void**)&tex_data, mapped_resource, 0));
-
-    // Fill displacement texture
-	CUDA_V_RETURN(cuda_ComputeColumns(tex_data, m_resolution, dev_state.m_constantsIndex, dev_info.m_kernel_stream));
-
-    // Optionally, get data staged for readback
-	m_working_readback_slot = NULL;
-	if(m_ReadbackInitialised) {
-		V_RETURN(consumeAvailableReadbackSlot(dev_state, kickID, &m_working_readback_slot));
-		CUDA_V_RETURN(cudaMemcpyAsync(m_working_readback_slot->m_device_Dxyz, tex_data, output_size * sizeof(float4), cudaMemcpyDeviceToDevice, dev_info.m_kernel_stream));
-
-		// The copy out of staging is done on a separate stream with the goal of allowing the copy to occur
-		// in parallel with other GPU workloads, so we need to do some inter-stream sync here
-		CUDA_V_RETURN(cudaEventRecord(m_working_readback_slot->m_staging_evt,dev_info.m_kernel_stream));
-	}
-
-	// CUDA workload is done, stop the clock and unmap as soon as we can so as not to block the graphics pipe
-	if(m_working_timer_slot)
-	{
-		CUDA_V_RETURN(cudaEventRecord(m_working_timer_slot->m_stop_timer_evt,dev_info.m_kernel_stream));
-	}
-#endif
-
-	return S_OK;
-}
-
 HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::kickWithinInteropD3D11(gfsdk_U64 kickID)
 {
 #if WAVEWORKS_ENABLE_D3D11
@@ -845,20 +680,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::kickWithinInterop(gfsdk_U64 kickID
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			V_RETURN(kickWithinInteropD3D9(kickID));
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			V_RETURN(kickWithinInteropD3D10(kickID));
-        }
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -919,50 +740,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::allocateAllResources()
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			m_d3d._9.m_pd3d9PerCudaDeviceResources = new D3D9Objects::PerCudaDeviceResources[m_numCudaDevices];
-
-			for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-			{
-				D3D9Objects::PerCudaDeviceResources& pcdr = m_d3d._9.m_pd3d9PerCudaDeviceResources[cuda_dev_index];
-				V_RETURN(m_d3d._9.m_pd3d9Device->CreateTexture(m_resolution, m_resolution, 1, 0, D3DFMT_A32B32G32R32F, D3DPOOL_DEFAULT, &pcdr.m_pd3d9DisplacementMap, NULL));
-				pcdr.m_d3d9DisplacementmapIsRegistered = false;
-			}
-        }
-        break;
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			m_d3d._10.m_pd3d10PerCudaDeviceResources = new D3D10Objects::PerCudaDeviceResources[m_numCudaDevices];
-
-            // Create displacement map
-            D3D10_TEXTURE2D_DESC displacementMapTD;
-            displacementMapTD.Width = m_resolution;
-            displacementMapTD.Height = m_resolution;
-            displacementMapTD.MipLevels = 1;
-            displacementMapTD.ArraySize = 1;
-            displacementMapTD.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-            displacementMapTD.SampleDesc = kNoSample;
-            displacementMapTD.Usage = D3D10_USAGE_DEFAULT;
-            displacementMapTD.BindFlags = D3D10_BIND_SHADER_RESOURCE;
-            displacementMapTD.CPUAccessFlags = 0;
-            displacementMapTD.MiscFlags = 0;
-
-			for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-			{
-				D3D10Objects::PerCudaDeviceResources& pcdr = m_d3d._10.m_pd3d10PerCudaDeviceResources[cuda_dev_index];
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateTexture2D(&displacementMapTD, NULL, &pcdr.m_pd3d10DisplacementMapResource));
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateShaderResourceView(pcdr.m_pd3d10DisplacementMapResource, NULL, &pcdr.m_pd3d10DisplacementMap));
-				pcdr.m_d3d10DisplacementmapIsRegistered = false;
-			}
-        }
-		break;
-#endif
-
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -1050,20 +827,6 @@ void NVWaveWorks_FFT_Simulation_CUDA_Impl::releaseAll()
 #if WAVEWORKS_ENABLE_GRAPHICS
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			SAFE_RELEASE(m_d3d._9.m_pd3d9Device);
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			SAFE_RELEASE(m_d3d._10.m_pd3d10Device);
-        }
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -1101,33 +864,6 @@ void NVWaveWorks_FFT_Simulation_CUDA_Impl::releaseAllResources()
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-			{
-				D3D9Objects::PerCudaDeviceResources& pcdr = m_d3d._9.m_pd3d9PerCudaDeviceResources[cuda_dev_index];
-				SAFE_RELEASE(pcdr.m_pd3d9DisplacementMap);
-			}
-
-			SAFE_DELETE_ARRAY(m_d3d._9.m_pd3d9PerCudaDeviceResources);
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-			{
-				D3D10Objects::PerCudaDeviceResources& pcdr = m_d3d._10.m_pd3d10PerCudaDeviceResources[cuda_dev_index];
-				SAFE_RELEASE(pcdr.m_pd3d10DisplacementMapResource);
-				SAFE_RELEASE(pcdr.m_pd3d10DisplacementMap);
-			}
-
-			SAFE_DELETE_ARRAY(m_d3d._10.m_pd3d10PerCudaDeviceResources);
-        }
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -1166,58 +902,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::registerDisplacementMapWithCUDA()
 {
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			bool all_registered = true;
-			for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-			{
-				D3D9Objects::PerCudaDeviceResources& pcdr = m_d3d._9.m_pd3d9PerCudaDeviceResources[cuda_dev_index];
-				if(pcdr.m_pd3d9DisplacementMap)
-				{
-					if(!pcdr.m_d3d9DisplacementmapIsRegistered)
-					{
-						CUDA_V_RETURN(cudaSetDevice(m_pCudaDeviceStates[cuda_dev_index].m_cudaDevice));
-						CUDA_V_RETURN(cudaD3D9RegisterResource(pcdr.m_pd3d9DisplacementMap, cudaD3D9RegisterFlagsNone));
-						CUDA_V_RETURN(cudaD3D9ResourceSetMapFlags(pcdr.m_pd3d9DisplacementMap,cudaD3D9MapFlagsWriteDiscard));
-						pcdr.m_d3d9DisplacementmapIsRegistered = true;
-					}
-				}
-				else
-				{
-					all_registered = false;
-				}
-			}
-			m_DisplacementMapIsCUDARegistered = all_registered;
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			bool all_registered = true;
-			for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-			{
-				D3D10Objects::PerCudaDeviceResources& pcdr = m_d3d._10.m_pd3d10PerCudaDeviceResources[cuda_dev_index];
-				if(pcdr.m_pd3d10DisplacementMapResource)
-				{
-					if(!pcdr.m_d3d10DisplacementmapIsRegistered)
-					{
-						CUDA_V_RETURN(cudaSetDevice(m_pCudaDeviceStates[cuda_dev_index].m_cudaDevice));
-						CUDA_V_RETURN(cudaD3D10RegisterResource(pcdr.m_pd3d10DisplacementMapResource, cudaD3D10RegisterFlagsNone));
-						CUDA_V_RETURN(cudaD3D10ResourceSetMapFlags(pcdr.m_pd3d10DisplacementMapResource,cudaD3D10MapFlagsWriteDiscard));
-						pcdr.m_d3d10DisplacementmapIsRegistered = true;
-					}
-				}
-				else
-				{
-					all_registered = false;
-				}
-			}
-			m_DisplacementMapIsCUDARegistered = all_registered;
-        }
-        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -1293,40 +977,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::unregisterDisplacementMapWithCUDA(
 {
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-			{
-				D3D9Objects::PerCudaDeviceResources& pcdr = m_d3d._9.m_pd3d9PerCudaDeviceResources[cuda_dev_index];
-				if(pcdr.m_pd3d9DisplacementMap)
-				{
-					CUDA_V_RETURN(cudaSetDevice(m_pCudaDeviceStates[cuda_dev_index].m_cudaDevice));
-					CUDA_V_RETURN(cudaD3D9UnregisterResource(pcdr.m_pd3d9DisplacementMap));
-					pcdr.m_d3d9DisplacementmapIsRegistered = false;
-				}
-			}
-            m_DisplacementMapIsCUDARegistered = false;
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-			{
-				D3D10Objects::PerCudaDeviceResources& pcdr = m_d3d._10.m_pd3d10PerCudaDeviceResources[cuda_dev_index];
-				if(pcdr.m_pd3d10DisplacementMapResource)
-				{
-					CUDA_V_RETURN(cudaSetDevice(m_pCudaDeviceStates[cuda_dev_index].m_cudaDevice));
-					CUDA_V_RETURN(cudaD3D10UnregisterResource(pcdr.m_pd3d10DisplacementMapResource));
-					pcdr.m_d3d10DisplacementmapIsRegistered = false;
-				}
-			}
-            m_DisplacementMapIsCUDARegistered = false;
-        }
-        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -1784,29 +1434,6 @@ HRESULT NVWaveWorks_FFT_Simulation_CUDA_Impl::getTimings(NVWaveWorks_FFT_Simulat
 	return S_OK;
 }
 
-
-LPDIRECT3DTEXTURE9 NVWaveWorks_FFT_Simulation_CUDA_Impl::GetDisplacementMapD3D9()
-{
-#if WAVEWORKS_ENABLE_D3D9
-	assert(m_d3dAPI == nv_water_d3d_api_d3d9);
-	const int activeCudaDeviceIndex = m_pManager->GetActiveCudaDeviceIndex();
-	return m_d3d._9.m_pd3d9PerCudaDeviceResources ? m_d3d._9.m_pd3d9PerCudaDeviceResources[activeCudaDeviceIndex].m_pd3d9DisplacementMap : NULL;
-#else
-    return NULL;
-#endif
-}
-
-ID3D10ShaderResourceView** NVWaveWorks_FFT_Simulation_CUDA_Impl::GetDisplacementMapD3D10()
-{
-#if WAVEWORKS_ENABLE_D3D10
-	assert(m_d3dAPI == nv_water_d3d_api_d3d10);
-	const int activeCudaDeviceIndex = m_pManager->GetActiveCudaDeviceIndex();
-	return m_d3d._10.m_pd3d10PerCudaDeviceResources ? &m_d3d._10.m_pd3d10PerCudaDeviceResources[activeCudaDeviceIndex].m_pd3d10DisplacementMap : NULL;
-#else
-    return NULL;
-#endif
-}
-
 ID3D11ShaderResourceView** NVWaveWorks_FFT_Simulation_CUDA_Impl::GetDisplacementMapD3D11()
 {
 #if WAVEWORKS_ENABLE_D3D11
@@ -1826,26 +1453,6 @@ GLuint NVWaveWorks_FFT_Simulation_CUDA_Impl::GetDisplacementMapGL2()
 	return m_d3d._GL2.m_pGL2PerCudaDeviceResources ? m_d3d._GL2.m_pGL2PerCudaDeviceResources[activeCudaDeviceIndex].m_GL2DisplacementMapTexture : NULL;
 #else
 	return 0;
-#endif
-}
-
-IDirect3DResource9* NVWaveWorks_FFT_Simulation_CUDA_Impl::getD3D9InteropResource(unsigned int deviceIndex)
-{
-#if WAVEWORKS_ENABLE_D3D9
-	assert(m_d3dAPI == nv_water_d3d_api_d3d9);
-	return m_d3d._9.m_pd3d9PerCudaDeviceResources[deviceIndex].m_pd3d9DisplacementMap;
-#else
-	return NULL;
-#endif
-}
-
-ID3D10Resource* NVWaveWorks_FFT_Simulation_CUDA_Impl::getD3D10InteropResource(unsigned int deviceIndex)
-{
-#if WAVEWORKS_ENABLE_D3D10
-	assert(m_d3dAPI == nv_water_d3d_api_d3d10);
-	return m_d3d._10.m_pd3d10PerCudaDeviceResources[deviceIndex].m_pd3d10DisplacementMapResource;
-#else
-	return NULL;
 #endif
 }
 

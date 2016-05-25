@@ -463,96 +463,6 @@ gfsdk_bool GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_GLAttribIsShaderInput(gfsdk
 	CUSTOM_ENTRYPOINT_END(false)
 }
 
-gfsdk_bool GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_D3D9(IDirect3D9* D3D9_ONLY(pD3D9), const _D3DADAPTER_IDENTIFIER9& D3D9_ONLY(adapterIdentifier), GFSDK_WaveWorks_Simulation_DetailLevel D3D9_ONLY(detailLevel))
-{
-#if WAVEWORKS_ENABLE_D3D9
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-
-	const nv_water_simulation_api simulationAPI = ToAPI(detailLevel);
-	switch(simulationAPI) {
-		case nv_water_simulation_api_cuda:
-			{
-			#ifdef SUPPORT_CUDA
-
-				// Only support CUDA on D3D9Ex. 2 reasons -
-				//  - SLI interop is super-flakey on plain old D3D9
-				//  - CUDA/D3D9 interop is deprecated (but CUDA/D3D9Ex is not), so we should prepare...
-				IDirect3D9Ex* pD3D9Ex = NULL;
-				HRESULT hr = pD3D9->QueryInterface(IID_IDirect3D9Ex, (void**)&pD3D9Ex);
-				if(FAILED(hr))
-				{
-					// Not D3D9Ex, so deny CUDA
-					return false;
-				}
-				SAFE_RELEASE(pD3D9Ex);
-
-				// Now check for double-precision support
-				int device;
-				cudaD3D9GetDevice(&device, adapterIdentifier.DeviceName);
-				if (cudaGetLastError() != cudaSuccess)
-					return false;
-				else
-					return cudaDeviceSupportsDoublePrecision(device);
-			#else
-				return false;
-			#endif
-			}
-		case nv_water_simulation_api_cpu:
-			{
-			#ifdef SUPPORT_FFTCPU
-				return true;
-			#else
-				return false;
-			#endif
-			}
-		default:
-			return false;
-	}
-
-	CUSTOM_ENTRYPOINT_END(false)
-#else
-	return false;
-#endif
-}
-
-gfsdk_bool GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_D3D10(IDXGIAdapter* D3D10_ONLY(adapter), GFSDK_WaveWorks_Simulation_DetailLevel D3D10_ONLY(detailLevel))
-{
-#if WAVEWORKS_ENABLE_D3D10
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-
-	const nv_water_simulation_api simulationAPI = ToAPI(detailLevel);
-	switch(simulationAPI) {
-		case nv_water_simulation_api_cuda:
-			{
-			#ifdef SUPPORT_CUDA
-				int device;
-				cudaD3D10GetDevice(&device, adapter);
-				if (cudaGetLastError() != cudaSuccess)
-					return false;
-				else
-					return cudaDeviceSupportsDoublePrecision(device);
-			#else
-				return false;
-			#endif
-			}
-		case nv_water_simulation_api_cpu:
-			{
-			#ifdef SUPPORT_FFTCPU
-				return true;
-			#else
-				return false;
-			#endif
-			}
-		default:
-			return false;
-	}
-
-	CUSTOM_ENTRYPOINT_END(false)
-#else
-	return false;
-#endif
-}
-
 gfsdk_bool GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_D3D11(IDXGIAdapter* WIN_ONLY(D3D11_ONLY(adapter)), GFSDK_WaveWorks_Simulation_DetailLevel D3D11_ONLY(detailLevel))
 {
 #if WAVEWORKS_ENABLE_D3D11
@@ -700,142 +610,6 @@ gfsdk_bool GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_DetailLevelIsSup
 #else
 	return false;
 #endif
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_InitD3D9(IDirect3DDevice9* D3D9_ONLY(pD3DDevice), const GFSDK_WaveWorks_Malloc_Hooks* D3D9_ONLY(pRequiredMallocHooks), const GFSDK_WaveWorks_API_GUID& D3D9_ONLY(apiGUID)){
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-
-#if WAVEWORKS_ENABLE_D3D9
-	if(g_InitialisedAPI != nv_water_d3d_api_undefined) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state\n"));
-		return gfsdk_waveworks_result_FAIL;
-	}
-
-	if(!equal(apiGUID,GFSDK_WAVEWORKS_API_GUID)) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID\n"));
-		return gfsdk_waveworks_result_FAIL;
-	}
-
-	if(pRequiredMallocHooks) {
-		const gfsdk_waveworks_result smmcResult = SetMemoryManagementCallbacks(*pRequiredMallocHooks);
-		if(smmcResult != gfsdk_waveworks_result_OK)
-			return smmcResult;
-	}
-
-#if defined(SUPPORT_CUDA)
-	// Only support CUDA on D3D9Ex device. 2 reasons -
-	//  - SLI interop is super-flakey on plain old D3D9
-	//  - CUDA/D3D9 interop is deprecated (but CUDA/D3D9Ex is not), so we should prepare...
-	IDirect3DDevice9Ex* pD3D9ExDevice = NULL;
-	HRESULT hr = pD3DDevice->QueryInterface(IID_IDirect3DDevice9Ex, (void**)&pD3D9ExDevice);
-	if(FAILED(hr))
-	{
-		g_InitialisedAPI = nv_water_d3d_api_d3d9;
-		g_CanUseCUDA = false;
-		return gfsdk_waveworks_result_OK;	// This is legit, it just means we can't support CUDA
-	}
-	SAFE_RELEASE(pD3D9ExDevice);
-
-	// Associate all Cuda devices with the D3D9 device
-	unsigned int numCudaDevices = 0;
-	cudaError cu_err = cudaD3D9GetDevices(&numCudaDevices, NULL, 0, pD3DDevice, cudaD3D9DeviceListAll);
-	if(cudaSuccess != cu_err)
-	{
-		// This is our first meaningful call to CUDA, so treat CUDA as unavailable if it fails for any reason
-		g_InitialisedAPI = nv_water_d3d_api_d3d9;
-		g_CanUseCUDA = false;
-		return gfsdk_waveworks_result_OK;
-	}
-
-	int* pCudaDevices = (int*)_alloca(numCudaDevices * sizeof(int));
-	CUDA_API_RETURN(cudaD3D9GetDevices(&numCudaDevices, pCudaDevices, numCudaDevices, pD3DDevice, cudaD3D9DeviceListAll));
-	g_CanUseCUDA = numCudaDevices > 0;
-	for(unsigned int cuda_dev_index = 0; cuda_dev_index != numCudaDevices; ++cuda_dev_index)
-	{
-		if(!cudaDeviceSupportsDoublePrecision(pCudaDevices[cuda_dev_index])) {
-			// We can't use a CUDA device that does not have double-precision support
-			g_CanUseCUDA = false;
-		}
-		CUDA_API_RETURN(cudaD3D9SetDirect3DDevice(pD3DDevice, pCudaDevices[cuda_dev_index]));
-	}
-
-	int currentFrameCudaDevice = 0;
-	CUDA_API_RETURN(cudaD3D9GetDevices(&numCudaDevices, &currentFrameCudaDevice, 1, pD3DDevice, cudaD3D9DeviceListCurrentFrame));
-	CUDA_API_RETURN(cudaSetDevice(currentFrameCudaDevice));
-
-#else
-	g_CanUseCUDA = false;
-#endif
-	g_InitialisedAPI = nv_water_d3d_api_d3d9;
-	return gfsdk_waveworks_result_OK;
-
-#else
-	return gfsdk_waveworks_result_FAIL;
-#endif
-
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_InitD3D10(ID3D10Device* D3D10_ONLY(pD3DDevice), const GFSDK_WaveWorks_Malloc_Hooks* D3D10_ONLY(pRequiredMallocHooks), const GFSDK_WaveWorks_API_GUID& D3D10_ONLY(apiGUID))
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-
-#if WAVEWORKS_ENABLE_D3D10
-	if(g_InitialisedAPI != nv_water_d3d_api_undefined) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state\n"));
-		return gfsdk_waveworks_result_FAIL;
-	}
-
-	if(!equal(apiGUID,GFSDK_WAVEWORKS_API_GUID)) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID\n"));
-		return gfsdk_waveworks_result_FAIL;
-	}
-
-	if(pRequiredMallocHooks) {
-		const gfsdk_waveworks_result smmcResult = SetMemoryManagementCallbacks(*pRequiredMallocHooks);
-		if(smmcResult != gfsdk_waveworks_result_OK)
-			return smmcResult;
-	}
-
-#if defined(SUPPORT_CUDA)
-	// Associate all Cuda devices with the D3D10 device
-	unsigned int numCudaDevices = 0;
-	cudaError cu_err = cudaD3D10GetDevices(&numCudaDevices, NULL, 0, pD3DDevice, cudaD3D10DeviceListAll);
-	if(cudaSuccess != cu_err)
-	{
-		// This is our first meaningful call to CUDA, so treat CUDA as unavailable if it fails for any reason
-		g_InitialisedAPI = nv_water_d3d_api_d3d10;
-		g_CanUseCUDA = false;
-		return gfsdk_waveworks_result_OK;
-	}
-
-	int* pCudaDevices = (int*)_alloca(numCudaDevices * sizeof(int));
-	CUDA_API_RETURN(cudaD3D10GetDevices(&numCudaDevices, pCudaDevices, numCudaDevices, pD3DDevice, cudaD3D10DeviceListAll));
-	g_CanUseCUDA = numCudaDevices > 0;
-	for(unsigned int cuda_dev_index = 0; cuda_dev_index != numCudaDevices; ++cuda_dev_index)
-	{
-		if(!cudaDeviceSupportsDoublePrecision(pCudaDevices[cuda_dev_index])) {
-			// We can't use a CUDA device that does not have double-precision support
-			g_CanUseCUDA = false;
-		}
-		CUDA_API_RETURN(cudaD3D10SetDirect3DDevice(pD3DDevice, pCudaDevices[cuda_dev_index]));
-	}
-
-	int currentFrameCudaDevice = 0;
-	CUDA_API_RETURN(cudaD3D10GetDevices(&numCudaDevices, &currentFrameCudaDevice, 1, pD3DDevice, cudaD3D10DeviceListCurrentFrame));
-	CUDA_API_RETURN(cudaSetDevice(currentFrameCudaDevice));
-
-#else
-	g_CanUseCUDA = false;
-#endif
-	g_InitialisedAPI = nv_water_d3d_api_d3d10;
-	return gfsdk_waveworks_result_OK;
-
-#else
-	return gfsdk_waveworks_result_FAIL;
-#endif
-
-	ENTRYPOINT_END
 }
 
 gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_InitD3D11(ID3D11Device* CUDA_ONLY(pD3DDevice), const GFSDK_WaveWorks_Malloc_Hooks* pRequiredMallocHooks, const GFSDK_WaveWorks_API_GUID& apiGUID)
@@ -998,74 +772,6 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_InitGL2(const G
 #else
 	return gfsdk_waveworks_result_FAIL;
 #endif
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_ReleaseD3D9(IDirect3DDevice9* D3D9_ONLY(pD3DDevice))
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-
-	resetMemoryManagementCallbacksToDefaults();
-
-	g_CanUseCUDA = false;
-
-#if defined(SUPPORT_CUDA) && WAVEWORKS_ENABLE_D3D9
-	unsigned int numCudaDevices = 0;
-	cudaError cu_err = cudaD3D9GetDevices(&numCudaDevices, NULL, 0, pD3DDevice, cudaD3D9DeviceListAll);
-	if(cudaErrorNoDevice == cu_err)
-	{
-		g_InitialisedAPI = nv_water_d3d_api_undefined;
-		return gfsdk_waveworks_result_OK;	// Legit on systems that do not support CUDA - nothing to do here
-	}
-	else
-		CUDA_API_RETURN(cu_err);
-
-	int* pCudaDevices = (int*)_alloca(numCudaDevices * sizeof(int));
-	CUDA_API_RETURN(cudaD3D9GetDevices(&numCudaDevices, pCudaDevices, numCudaDevices, pD3DDevice, cudaD3D9DeviceListAll));
-	for(unsigned int cuda_dev_index = 0; cuda_dev_index != numCudaDevices; ++cuda_dev_index)
-	{
-		CUDA_API_RETURN(cudaSetDevice(pCudaDevices[cuda_dev_index]));
-		cudaDeviceReset();
-	}
-#endif
-
-	g_InitialisedAPI = nv_water_d3d_api_undefined;
-	return gfsdk_waveworks_result_OK;
-
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_ReleaseD3D10(ID3D10Device* D3D10_ONLY(pD3DDevice))
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-
-	resetMemoryManagementCallbacksToDefaults();
-
-	g_CanUseCUDA = false;
-
-#if defined(SUPPORT_CUDA) && WAVEWORKS_ENABLE_D3D10
-	unsigned int numCudaDevices = 0;
-	cudaError cu_err = cudaD3D10GetDevices(&numCudaDevices, NULL, 0, pD3DDevice, cudaD3D10DeviceListAll);
-	if(cudaErrorNoDevice == cu_err)
-	{
-		g_InitialisedAPI = nv_water_d3d_api_undefined;
-		return gfsdk_waveworks_result_OK;	// Legit on systems that do not support CUDA - nothing to do here
-	}
-	else
-		CUDA_API_RETURN(cu_err);
-
-	int* pCudaDevices = (int*)_alloca(numCudaDevices * sizeof(int));
-	CUDA_API_RETURN(cudaD3D10GetDevices(&numCudaDevices, pCudaDevices, numCudaDevices, pD3DDevice, cudaD3D10DeviceListAll));
-	for(unsigned int cuda_dev_index = 0; cuda_dev_index != numCudaDevices; ++cuda_dev_index)
-	{
-		CUDA_API_RETURN(cudaSetDevice(pCudaDevices[cuda_dev_index]));
-		cudaDeviceReset();
-	}
-#endif
-
-	g_InitialisedAPI = nv_water_d3d_api_undefined;
-	return gfsdk_waveworks_result_OK;
-
 	ENTRYPOINT_END
 }
 
@@ -1256,23 +962,6 @@ namespace
     }
 }
 
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Savestate_CreateD3D9(GFSDK_WaveWorks_StatePreserveFlags PreserveFlags, IDirect3DDevice9* pD3DDevice, GFSDK_WaveWorks_SavestateHandle* pResult)
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-    GFSDK_WaveWorks_Savestate* pImpl = new GFSDK_WaveWorks_Savestate(pD3DDevice, PreserveFlags);
-    *pResult = ToHandle(pImpl);
-    return gfsdk_waveworks_result_OK;
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Savestate_CreateD3D10(GFSDK_WaveWorks_StatePreserveFlags PreserveFlags, ID3D10Device* pD3DDevice, GFSDK_WaveWorks_SavestateHandle* pResult)
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-    GFSDK_WaveWorks_Savestate* pImpl = new GFSDK_WaveWorks_Savestate(pD3DDevice, PreserveFlags);
-    *pResult = ToHandle(pImpl);
-    return gfsdk_waveworks_result_OK;
-	ENTRYPOINT_END
-}
 
 gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Savestate_CreateD3D11(GFSDK_WaveWorks_StatePreserveFlags PreserveFlags, ID3D11Device* pD3DDevice, GFSDK_WaveWorks_SavestateHandle* pResult)
 {
@@ -1280,20 +969,6 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Savestate_Creat
 	GFSDK_WaveWorks_Savestate* pImpl = new GFSDK_WaveWorks_Savestate(pD3DDevice, PreserveFlags);
 	*pResult = ToHandle(pImpl);
 	return gfsdk_waveworks_result_OK;
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Savestate_RestoreD3D9(GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-	return ToAPIResult(FromHandle(hSavestate)->Restore(NULL));
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Savestate_RestoreD3D10(GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-	return ToAPIResult(FromHandle(hSavestate)->Restore(NULL));
 	ENTRYPOINT_END
 }
 
@@ -1312,64 +987,6 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Savestate_Destr
 	delete pImpl;
 
 	return gfsdk_waveworks_result_OK;
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_CreateD3D9(const GFSDK_WaveWorks_Simulation_Settings& D3D9_ONLY(global_settings), const GFSDK_WaveWorks_Simulation_Params& D3D9_ONLY(global_params), IDirect3DDevice9* D3D9_ONLY(pD3DDevice), GFSDK_WaveWorks_SimulationHandle* D3D9_ONLY(pResult))
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-
-#if WAVEWORKS_ENABLE_D3D9
-	// Don't assume the user checked GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_XXXX()...
-	if(gfsdk_waveworks_result_OK != CheckDetailLevelSupport(global_settings.detail_level,__DEF_FUNCTION__))
-	{
-		return gfsdk_waveworks_result_FAIL;
-	}
-
-    GFSDK_WaveWorks_Simulation* pImpl = new GFSDK_WaveWorks_Simulation();
-	GFSDK_WaveWorks_Detailed_Simulation_Params detailed_params;
-	Init_Detailed_Water_Simulation_Params(global_settings, global_params, &detailed_params);
-    HRESULT hr = pImpl->initD3D9(detailed_params, pD3DDevice);
-    if(FAILED(hr))
-    {
-        delete pImpl;
-        return ToAPIResult(hr);
-    }
-    *pResult = ToHandle(pImpl);
-    return gfsdk_waveworks_result_OK;
-#else // WAVEWORKS_ENABLE_D3D9
-	return gfsdk_waveworks_result_FAIL;
-#endif // WAVEWORKS_ENABLE_D3D9
-
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_CreateD3D10(const GFSDK_WaveWorks_Simulation_Settings& D3D10_ONLY(global_settings), const GFSDK_WaveWorks_Simulation_Params& D3D10_ONLY(global_params), ID3D10Device* D3D10_ONLY(pD3DDevice), GFSDK_WaveWorks_SimulationHandle* D3D10_ONLY(pResult))
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-
-#if WAVEWORKS_ENABLE_D3D10
-	// Don't assume the user checked GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_XXXX()...
-	if(gfsdk_waveworks_result_OK != CheckDetailLevelSupport(global_settings.detail_level,__DEF_FUNCTION__))
-	{
-		return gfsdk_waveworks_result_FAIL;
-	}
-
-    GFSDK_WaveWorks_Simulation* pImpl = new GFSDK_WaveWorks_Simulation();
-	GFSDK_WaveWorks_Detailed_Simulation_Params detailed_params;
-	Init_Detailed_Water_Simulation_Params(global_settings, global_params, &detailed_params);
-	HRESULT hr = pImpl->initD3D10(detailed_params, pD3DDevice);
-    if(FAILED(hr))
-    {
-        delete pImpl;
-        return ToAPIResult(hr);
-    }
-    *pResult = ToHandle(pImpl);
-    return gfsdk_waveworks_result_OK;
-#else // WAVEWORKS_ENABLE_D3D10
-	return gfsdk_waveworks_result_FAIL;
-#endif // WAVEWORKS_ENABLE_D3D10
-
 	ENTRYPOINT_END
 }
 
@@ -1578,20 +1195,6 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_Kick
 	ENTRYPOINT_END
 }
 
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_KickD3D9(GFSDK_WaveWorks_SimulationHandle hSim, gfsdk_U64* pKickID, GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-	return Simulation_Kick_Generic(hSim, pKickID, NULL, hSavestate);
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_KickD3D10(GFSDK_WaveWorks_SimulationHandle hSim, gfsdk_U64* pKickID, GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-	return Simulation_Kick_Generic(hSim, pKickID, NULL, hSavestate);
-	ENTRYPOINT_END
-}
-
 gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_KickD3D11(GFSDK_WaveWorks_SimulationHandle hSim, gfsdk_U64* pKickID, ID3D11DeviceContext* pDC, GFSDK_WaveWorks_SavestateHandle hSavestate)
 {
 	ENTRYPOINT_BEGIN_API(d3d11)
@@ -1620,34 +1223,6 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_GetS
 	ENTRYPOINT_BEGIN
 	(FromHandle(hSim))->getStats(stats);
 	return gfsdk_waveworks_result_OK;
-	ENTRYPOINT_END
-}
-
-gfsdk_U32 GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_GetShaderInputCountD3D9()
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-    return GFSDK_WaveWorks_Simulation::getShaderInputCountD3D9();
-	CUSTOM_ENTRYPOINT_END((gfsdk_U32)-1)
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_GetShaderInputDescD3D9(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc)
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-    return ToAPIResult(GFSDK_WaveWorks_Simulation::getShaderInputDescD3D9(inputIndex, pDesc));
-	ENTRYPOINT_END
-}
-
-gfsdk_U32 GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_GetShaderInputCountD3D10()
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-    return GFSDK_WaveWorks_Simulation::getShaderInputCountD3D10();
-	CUSTOM_ENTRYPOINT_END((gfsdk_U32)-1)
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_GetShaderInputDescD3D10(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc)
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-    return ToAPIResult(GFSDK_WaveWorks_Simulation::getShaderInputDescD3D10(inputIndex, pDesc));
 	ENTRYPOINT_END
 }
 
@@ -1778,20 +1353,6 @@ gfsdk_waveworks_result GFSDK_WaveWorks_Simulation_AdvanceStagingCursorNoGraphics
 	ENTRYPOINT_END
 }
 
-gfsdk_waveworks_result GFSDK_WaveWorks_Simulation_AdvanceStagingCursorD3D9(GFSDK_WaveWorks_SimulationHandle hSim, bool block, GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-	return Simulation_AdvanceStagingCursor_Generic(hSim,block,NULL,hSavestate);
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WaveWorks_Simulation_AdvanceStagingCursorD3D10(GFSDK_WaveWorks_SimulationHandle hSim, bool block, GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-	return Simulation_AdvanceStagingCursor_Generic(hSim,block,NULL,hSavestate);
-	ENTRYPOINT_END
-}
-
 gfsdk_waveworks_result GFSDK_WaveWorks_Simulation_AdvanceStagingCursorD3D11(GFSDK_WaveWorks_SimulationHandle hSim, bool block, ID3D11DeviceContext* pDC, GFSDK_WaveWorks_SavestateHandle hSavestate)
 {
 	ENTRYPOINT_BEGIN_API(d3d11)
@@ -1906,20 +1467,6 @@ namespace
 	}
 }
 
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_SetRenderStateD3D9(GFSDK_WaveWorks_SimulationHandle hSim, const gfsdk_float4x4& matView, const gfsdk_U32* pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-	return Simulation_SetRenderState_Generic(hSim,NULL,matView,pShaderInputRegisterMappings,hSavestate,NULL);
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_SetRenderStateD3D10(GFSDK_WaveWorks_SimulationHandle hSim, const gfsdk_float4x4& matView, const gfsdk_U32* pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-	return Simulation_SetRenderState_Generic(hSim,NULL,matView,pShaderInputRegisterMappings,hSavestate,NULL);
-	ENTRYPOINT_END
-}
-
 gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_SetRenderStateD3D11(GFSDK_WaveWorks_SimulationHandle hSim, ID3D11DeviceContext* pDC, const gfsdk_float4x4& matView, const gfsdk_U32* pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate)
 {
 	ENTRYPOINT_BEGIN_API(d3d11)
@@ -1956,42 +1503,6 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Simulation_GetA
 	ENTRYPOINT_BEGIN
     FromHandle(hSim)->getArchivedDisplacements(coord, inSamplePoints, outDisplacements, numSamples);
     return gfsdk_waveworks_result_OK;
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_CreateD3D9(const GFSDK_WaveWorks_Quadtree_Params& params, IDirect3DDevice9* pD3DDevice, GFSDK_WaveWorks_QuadtreeHandle* pResult)
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-
-    GFSDK_WaveWorks_Quadtree* pImpl = new GFSDK_WaveWorks_Quadtree();
-    HRESULT hr = pImpl->initD3D9(params, pD3DDevice);
-    if(FAILED(hr))
-    {
-        delete pImpl;
-        return ToAPIResult(hr);
-    }
-
-    *pResult = ToHandle(pImpl);
-    return gfsdk_waveworks_result_OK;
-
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_CreateD3D10(const GFSDK_WaveWorks_Quadtree_Params& params, ID3D10Device* pD3DDevice, GFSDK_WaveWorks_QuadtreeHandle* pResult)
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-
-    GFSDK_WaveWorks_Quadtree* pImpl = new GFSDK_WaveWorks_Quadtree();
-    HRESULT hr = pImpl->initD3D10(params, pD3DDevice);
-    if(FAILED(hr))
-    {
-        delete pImpl;
-        return ToAPIResult(hr);
-    }
-
-    *pResult = ToHandle(pImpl);
-    return gfsdk_waveworks_result_OK;
-
 	ENTRYPOINT_END
 }
 
@@ -2066,34 +1577,6 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_Update
 	ENTRYPOINT_END
 }
 
-gfsdk_U32 GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_GetShaderInputCountD3D9()
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-    return GFSDK_WaveWorks_Quadtree::getShaderInputCountD3D9();
-	CUSTOM_ENTRYPOINT_END((gfsdk_U32)-1)
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_GetShaderInputDescD3D9(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc)
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-	return ToAPIResult(GFSDK_WaveWorks_Quadtree::getShaderInputDescD3D9(inputIndex, pDesc));
-	ENTRYPOINT_END
-}
-
-gfsdk_U32 GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_GetShaderInputCountD3D10()
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-	return GFSDK_WaveWorks_Quadtree::getShaderInputCountD3D10();
-	CUSTOM_ENTRYPOINT_END((gfsdk_U32)-1)
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_GetShaderInputDescD3D10(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc)
-{
-	ENTRYPOINT_BEGIN_NO_INIT_CHECK
-	return ToAPIResult(GFSDK_WaveWorks_Quadtree::getShaderInputDescD3D10(inputIndex, pDesc));
-	ENTRYPOINT_END
-}
-
 gfsdk_U32 GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_GetShaderInputCountD3D11()
 {
 	ENTRYPOINT_BEGIN_NO_INIT_CHECK
@@ -2153,20 +1636,6 @@ namespace
 
 		return gfsdk_waveworks_result_OK;
 	}
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_DrawD3D9(GFSDK_WaveWorks_QuadtreeHandle hQuadtree, const gfsdk_float4x4& matView, const gfsdk_float4x4& matProj, const gfsdk_U32* pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d9)
-	return Quadtree_Draw_Generic(hQuadtree,NULL,matView,matProj,NULL,pShaderInputRegisterMappings,hSavestate);
-	ENTRYPOINT_END
-}
-
-gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_DrawD3D10(GFSDK_WaveWorks_QuadtreeHandle hQuadtree, const gfsdk_float4x4& matView, const gfsdk_float4x4& matProj, const gfsdk_U32* pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate)
-{
-	ENTRYPOINT_BEGIN_API(d3d10)
-	return Quadtree_Draw_Generic(hQuadtree,NULL,matView,matProj,NULL,pShaderInputRegisterMappings,hSavestate);
-	ENTRYPOINT_END
 }
 
 gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_Quadtree_DrawD3D11(GFSDK_WaveWorks_QuadtreeHandle hQuadtree, ID3D11DeviceContext* pDC, const gfsdk_float4x4& matView, const gfsdk_float4x4& matProj, const gfsdk_U32* pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate)

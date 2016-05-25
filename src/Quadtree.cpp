@@ -71,20 +71,6 @@ namespace SM5 {
 
 }
 
-enum ShaderInputsD3D9
-{
-	ShaderInputD3D9_g_matLocalWorld = 0,
-	ShaderInputD3D9_g_vsEyePos,
-	ShaderInputD3D9_g_MorphParam,
-	NumShaderInputsD3D9
-};
-
-enum ShaderInputsD3D10
-{
-	ShaderInputD3D10_vs_buffer = 0,
-	NumShaderInputsD3D10
-};
-
 enum ShaderInputsD3D11
 {
 	ShaderInputD3D11_vs_buffer = 0,
@@ -107,21 +93,6 @@ enum ShaderInputsGL2
 	ShaderInputGL2_attr_vPos,
 	NumShaderInputsGL2
 };
-
-// NB: These should be kept synchronised with the shader source
-#if WAVEWORKS_ENABLE_D3D9
-const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputD3D9Descs[NumShaderInputsD3D9] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_matLocalWorld", 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_vsEyePos",      3 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_MorphParam",    4 }
-};
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputD3D10Descs[NumShaderInputsD3D10] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_geom_buffer", 0 }
-};
-#endif
 
 #if WAVEWORKS_ENABLE_D3D11
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputD3D11Descs[NumShaderInputsD3D11] = {
@@ -235,23 +206,6 @@ void GFSDK_WaveWorks_Quadtree::releaseD3DObjects()
 #if WAVEWORKS_ENABLE_GRAPHICS
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-			SAFE_RELEASE(m_d3d._9.m_pd3d9Device);
-			m_d3dAPI = nv_water_d3d_api_undefined;
-		}
-		break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			SAFE_RELEASE(m_d3d._10.m_pd3d10VertexShaderCB);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10Device);
-			m_d3dAPI = nv_water_d3d_api_undefined;
-		}
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 	case nv_water_d3d_api_d3d11:
 		{
@@ -288,28 +242,6 @@ HRESULT GFSDK_WaveWorks_Quadtree::allocateD3DObjects()
 #if WAVEWORKS_ENABLE_GRAPHICS
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-		}
-		break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			HRESULT hr;
-			SAFE_RELEASE(m_d3d._10.m_pd3d10VertexShaderCB);
-
-			D3D10_BUFFER_DESC vscbDesc;
-			vscbDesc.ByteWidth = sizeof(vs_cbuffer);
-			vscbDesc.Usage = D3D10_USAGE_DEFAULT;
-			vscbDesc.BindFlags = D3D10_BIND_CONSTANT_BUFFER;
-			vscbDesc.CPUAccessFlags = 0;
-			vscbDesc.MiscFlags = 0;
-			V_RETURN(m_d3d._10.m_pd3d10Device->CreateBuffer(&vscbDesc, NULL, &m_d3d._10.m_pd3d10VertexShaderCB));
-		}
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 	case nv_water_d3d_api_d3d11:
 		{
@@ -358,64 +290,6 @@ HRESULT GFSDK_WaveWorks_Quadtree::allocateD3DObjects()
 #endif // WAVEWORKS_ENABLE_GRAPHICS
 
 	return S_OK;
-}
-
-HRESULT GFSDK_WaveWorks_Quadtree::initD3D9(const GFSDK_WaveWorks_Quadtree_Params& D3D9_ONLY(params), IDirect3DDevice9* D3D9_ONLY(pD3DDevice))
-{
-#if WAVEWORKS_ENABLE_D3D9
-	HRESULT hr;
-
-	if(nv_water_d3d_api_d3d9 != m_d3dAPI)
-	{
-		releaseD3DObjects();
-	}
-	else if(m_d3d._9.m_pd3d9Device != pD3DDevice)
-	{
-		releaseD3DObjects();
-	}
-
-	if(nv_water_d3d_api_undefined == m_d3dAPI)
-	{
-		m_d3dAPI = nv_water_d3d_api_d3d9;
-		m_d3d._9.m_pd3d9Device = pD3DDevice;
-		m_d3d._9.m_pd3d9Device->AddRef();
-
-		V_RETURN(allocateD3DObjects());
-	}
-
-	return reinit(params);
-#else
-	return E_FAIL;
-#endif
-}
-
-HRESULT GFSDK_WaveWorks_Quadtree::initD3D10(const GFSDK_WaveWorks_Quadtree_Params& D3D10_ONLY(params), ID3D10Device* D3D10_ONLY(pD3DDevice))
-{
-#if WAVEWORKS_ENABLE_D3D10
-	HRESULT hr;
-
-	if(nv_water_d3d_api_d3d10 != m_d3dAPI)
-	{
-		releaseD3DObjects();
-	}
-	else if(m_d3d._10.m_pd3d10Device != pD3DDevice)
-	{
-		releaseD3DObjects();
-	}
-
-	if(nv_water_d3d_api_undefined == m_d3dAPI)
-	{
-		m_d3dAPI = nv_water_d3d_api_d3d10;
-		m_d3d._10.m_pd3d10Device = pD3DDevice;
-		m_d3d._10.m_pd3d10Device->AddRef();
-
-		V_RETURN(allocateD3DObjects());
-	}
-
-	return reinit(params);
-#else
-	return E_FAIL;
-#endif
 }
 
 HRESULT GFSDK_WaveWorks_Quadtree::initD3D11(const GFSDK_WaveWorks_Quadtree_Params& D3D11_ONLY(params), ID3D11Device* D3D11_ONLY(pD3DDevice))
@@ -823,38 +697,6 @@ HRESULT GFSDK_WaveWorks_Quadtree::initGeometry()
 	HRESULT hr;
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-			const D3DVERTEXELEMENT9 grid_decl[] =
-			{
-				{0, 0, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-				D3DDECL_END()
-			};
-
-			V_RETURN(NVWaveWorks_Mesh::CreateD3D9(m_d3d._9.m_pd3d9Device, grid_decl, sizeof(vertex_array[0]), vertex_array, num_vert, index_array, index_size_lookup[m_lods], &m_pMesh));
-		}
-		break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			const D3D10_INPUT_ELEMENT_DESC grid_layout[] = {
-				{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D10_INPUT_PER_VERTEX_DATA, 0 }
-			};
-			const UINT num_layout_elements = sizeof(grid_layout)/sizeof(grid_layout[0]);
-
-			
-			V_RETURN(NVWaveWorks_Mesh::CreateD3D10(	m_d3d._10.m_pd3d10Device,
-													grid_layout, num_layout_elements,
-													SM4::g_GFSDK_WAVEWORKS_VERTEX_INPUT_Sig, sizeof(SM4::g_GFSDK_WAVEWORKS_VERTEX_INPUT_Sig),
-													sizeof(vertex_array[0]), vertex_array, num_vert,
-													index_array, index_size_lookup[m_lods],
-													&m_pMesh
-													));
-		}
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 	case nv_water_d3d_api_d3d11:
 		{
@@ -1284,36 +1126,10 @@ HRESULT GFSDK_WaveWorks_Quadtree::flushRenderList(	Graphics_Context* pGC,
 #if WAVEWORKS_ENABLE_GRAPHICS
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			{
-				const UINT rm_g_matLocalWorld = pShaderInputRegisterMappings[ShaderInputD3D9_g_matLocalWorld];
-				const UINT rm_g_vsEyePos = pShaderInputRegisterMappings[ShaderInputD3D9_g_vsEyePos];
-				const UINT rm_g_MorphParam = pShaderInputRegisterMappings[ShaderInputD3D9_g_MorphParam];
-				if(rm_g_matLocalWorld != nvrm_unused)
-					V_RETURN(pSavestateImpl->PreserveD3D9VertexShaderConstantF(rm_g_matLocalWorld, 3));
-				if(rm_g_vsEyePos != nvrm_unused)
-					V_RETURN(pSavestateImpl->PreserveD3D9VertexShaderConstantF(rm_g_vsEyePos, 1));
-				if(rm_g_MorphParam != nvrm_unused)
-					V_RETURN(pSavestateImpl->PreserveD3D9VertexShaderConstantF(rm_g_MorphParam, 1));
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			{
-				const UINT reg = pShaderInputRegisterMappings[ShaderInputD3D10_vs_buffer];
-				if(reg != nvrm_unused)
-				{
-					V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderConstantBuffer(reg));
-				}
-			}
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
-				const UINT reg = pShaderInputRegisterMappings[ShaderInputD3D10_vs_buffer];
+				const UINT reg = pShaderInputRegisterMappings[ShaderInputD3D11_vs_buffer];
 				if(reg != nvrm_unused)
 				{
 					V_RETURN(pSavestateImpl->PreserveD3D11PixelShaderConstantBuffer(pDC_d3d11, reg));
@@ -1387,38 +1203,6 @@ HRESULT GFSDK_WaveWorks_Quadtree::flushRenderList(	Graphics_Context* pGC,
 		gfsdk_float4 morphParam = gfsdk_make_float4(morph_distance_constant,0.f,0.f,node.morph_sign);
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			{
-				UINT rm_g_matLocalWorld = pShaderInputRegisterMappings[ShaderInputD3D9_g_matLocalWorld];
-				UINT rm_g_vsEyePos = pShaderInputRegisterMappings[ShaderInputD3D9_g_vsEyePos];
-				UINT rm_g_MorphParam = pShaderInputRegisterMappings[ShaderInputD3D9_g_MorphParam];
-				if(rm_g_matLocalWorld != nvrm_unused)
-					V_RETURN(m_d3d._9.m_pd3d9Device->SetVertexShaderConstantF(rm_g_matLocalWorld, &matLocalWorld._11, 3));
-				if(rm_g_vsEyePos != nvrm_unused)
-					V_RETURN(m_d3d._9.m_pd3d9Device->SetVertexShaderConstantF(rm_g_vsEyePos, &eyePos.x, 1));
-				if(rm_g_MorphParam != nvrm_unused)
-					V_RETURN(m_d3d._9.m_pd3d9Device->SetVertexShaderConstantF(rm_g_MorphParam, &morphParam.x, 1));
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			{
-				const UINT reg = pShaderInputRegisterMappings[ShaderInputD3D10_vs_buffer];
-				if(reg != nvrm_unused)
-				{
-					vs_cbuffer VSCB;
-					memcpy(&VSCB.g_matLocalWorld, &matLocalWorld, sizeof(VSCB.g_matLocalWorld));
-					memcpy(&VSCB.g_vsEyePos, &eyePos, sizeof(VSCB.g_vsEyePos));
-					memcpy(&VSCB.g_MorphParam, &morphParam, sizeof(VSCB.g_MorphParam));
-					m_d3d._10.m_pd3d10Device->UpdateSubresource(m_d3d._10.m_pd3d10VertexShaderCB, 0, NULL, &VSCB, 0, 0);
-					m_d3d._10.m_pd3d10Device->VSSetConstantBuffers(reg, 1, &m_d3d._10.m_pd3d10VertexShaderCB);
-
-				}
-			}
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
@@ -1571,27 +1355,6 @@ HRESULT GFSDK_WaveWorks_Quadtree::buildRenderList(	Graphics_Context* pGC,
 #if WAVEWORKS_ENABLE_GRAPHICS
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-			D3DVIEWPORT9 vp;
-			V_RETURN(m_d3d._9.m_pd3d9Device->GetViewport(&vp));
-			viewportW = FLOAT(vp.Width);
-			viewportH = FLOAT(vp.Height);
-			break;
-		}
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			D3D10_VIEWPORT vp;
-			UINT NumViewports = 1;
-			m_d3d._10.m_pd3d10Device->RSGetViewports(&NumViewports,&vp);
-			viewportW = FLOAT(vp.Width);
-			viewportH = FLOAT(vp.Height);
-			break;
-		}
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 	case nv_water_d3d_api_d3d11:
 		{
@@ -1739,16 +1502,6 @@ HRESULT GFSDK_WaveWorks_Quadtree::buildRenderListExplicit(	const gfsdk_float4x4&
 	return S_OK;
 }
 
-HRESULT GFSDK_WaveWorks_Quadtree::getShaderInputCountD3D9()
-{
-	return NumShaderInputsD3D9;
-}
-
-HRESULT GFSDK_WaveWorks_Quadtree::getShaderInputCountD3D10()
-{
-	return NumShaderInputsD3D10;
-}
-
 HRESULT GFSDK_WaveWorks_Quadtree::getShaderInputCountD3D11()
 {
 	return NumShaderInputsD3D11;
@@ -1762,34 +1515,6 @@ HRESULT GFSDK_WaveWorks_Quadtree::getShaderInputCountGnm()
 HRESULT GFSDK_WaveWorks_Quadtree::getShaderInputCountGL2()
 {
 	return NumShaderInputsGL2;
-}
-
-HRESULT GFSDK_WaveWorks_Quadtree::getShaderInputDescD3D9(UINT D3D9_ONLY(inputIndex), GFSDK_WaveWorks_ShaderInput_Desc* D3D9_ONLY(pDesc))
-{
-#if WAVEWORKS_ENABLE_D3D9
-	if(inputIndex >= NumShaderInputsD3D9)
-		return E_FAIL;
-
-	*pDesc = ShaderInputD3D9Descs[inputIndex];
-
-	return S_OK;
-#else // WAVEWORKS_ENABLE_D3D9
-	return E_FAIL;
-#endif
-}
-
-HRESULT GFSDK_WaveWorks_Quadtree::getShaderInputDescD3D10(UINT D3D10_ONLY(inputIndex), GFSDK_WaveWorks_ShaderInput_Desc* D3D10_ONLY(pDesc))
-{
-#if WAVEWORKS_ENABLE_D3D10
-	if(inputIndex >= NumShaderInputsD3D10)
-		return E_FAIL;
-
-	*pDesc = ShaderInputD3D10Descs[inputIndex];
-
-	return S_OK;
-#else // WAVEWORKS_ENABLE_D3D10
-	return E_FAIL;
-#endif
 }
 
 HRESULT GFSDK_WaveWorks_Quadtree::getShaderInputDescD3D11(UINT D3D11_ONLY(inputIndex), GFSDK_WaveWorks_ShaderInput_Desc* D3D11_ONLY(pDesc))

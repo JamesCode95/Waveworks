@@ -46,8 +46,6 @@ public:
 	~NVWaveWorks_FFT_Simulation_CUDA_Impl();
 
 	// Mandatory NVWaveWorks_FFT_Simulation interface
-    HRESULT initD3D9(IDirect3DDevice9* pD3DDevice);
-    HRESULT initD3D10(ID3D10Device* pD3DDevice);
     HRESULT initD3D11(ID3D11Device* pD3DDevice);
 	HRESULT initGL2(void* pGLContext);
 	HRESULT initNoGraphics();
@@ -56,13 +54,9 @@ public:
 	HRESULT addArchivedDisplacements(float coord, const gfsdk_float2* inSamplePoints, gfsdk_float4* outDisplacements, UINT numSamples);
 	gfsdk_U64 getDisplacementMapVersion() const { return m_DisplacementMapVersion; }
 	HRESULT getTimings(NVWaveWorks_FFT_Simulation_Timings&) const;
-	LPDIRECT3DTEXTURE9 GetDisplacementMapD3D9();
-	ID3D10ShaderResourceView** GetDisplacementMapD3D10();
 	ID3D11ShaderResourceView** GetDisplacementMapD3D11();
 	GLuint					   GetDisplacementMapGL2();
 
-	IDirect3DResource9* getD3D9InteropResource(unsigned int deviceIndex);
-	ID3D10Resource* getD3D10InteropResource(unsigned int deviceIndex);
 	cudaGraphicsResource* getInteropResource(unsigned int deviceIndex);
 
 	HRESULT preKick(int constantsIndex);
@@ -81,8 +75,6 @@ public:
 private:
 
 	HRESULT kickWithinInteropD3D11(gfsdk_U64 kickID);
-	HRESULT kickWithinInteropD3D10(gfsdk_U64 kickID);
-	HRESULT kickWithinInteropD3D9(gfsdk_U64 kickID);
 	HRESULT kickWithinInteropGL2(gfsdk_U64 kickID);
 	HRESULT kickWithinInteropNoGfx(gfsdk_U64 kickID);
 
@@ -214,39 +206,6 @@ private:
 	// D3D API handling
 	nv_water_d3d_api m_d3dAPI;
 
-#if WAVEWORKS_ENABLE_D3D9
-    struct D3D9Objects
-    {
-		IDirect3DDevice9* m_pd3d9Device;
-
-		struct PerCudaDeviceResources
-		{
-			// Displacement/choppy field
-			LPDIRECT3DTEXTURE9 m_pd3d9DisplacementMap;			// (ABGR32F)
-			bool m_d3d9DisplacementmapIsRegistered;
-		};
-
-		PerCudaDeviceResources* m_pd3d9PerCudaDeviceResources;
-    };
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-    struct D3D10Objects
-    {
-		ID3D10Device* m_pd3d10Device;
-
-		struct PerCudaDeviceResources
-		{
-			// Displacement/choppy field
-			ID3D10Texture2D* m_pd3d10DisplacementMapResource;
-			ID3D10ShaderResourceView* m_pd3d10DisplacementMap;	// (ABGR32F)
-			bool m_d3d10DisplacementmapIsRegistered;
-		};
-
-		PerCudaDeviceResources* m_pd3d10PerCudaDeviceResources;
-    };
-#endif
-
 #if WAVEWORKS_ENABLE_D3D11
     struct D3D11Objects
     {
@@ -290,12 +249,6 @@ private:
 
     union
     {
-#if WAVEWORKS_ENABLE_D3D9
-        D3D9Objects _9;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-        D3D10Objects _10;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		D3D11Objects _11;
 #endif

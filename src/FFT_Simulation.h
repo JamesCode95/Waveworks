@@ -53,8 +53,6 @@ public:
 
 	virtual ~NVWaveWorks_FFT_Simulation() {};
 
-    virtual HRESULT initD3D9(IDirect3DDevice9* pD3DDevice) = 0;
-    virtual HRESULT initD3D10(ID3D10Device* pD3DDevice) = 0;
     virtual HRESULT initD3D11(ID3D11Device* pD3DDevice) = 0;
 	virtual HRESULT initGnm() { return S_FALSE; };
 	virtual HRESULT initGL2(void* /*pGLContext*/) { return S_FALSE; };
@@ -78,8 +76,6 @@ public:
 	virtual gfsdk_U64 getDisplacementMapVersion() const = 0;	// Returns the kickID of the last time the displacement map was updated
 
 	// NB: None of these AddRef's the underlying D3D resource
-	virtual LPDIRECT3DTEXTURE9 GetDisplacementMapD3D9() = 0;
-	virtual ID3D10ShaderResourceView** GetDisplacementMapD3D10() = 0;
 	virtual ID3D11ShaderResourceView** GetDisplacementMapD3D11() = 0;
 	virtual sce::Gnm::Texture* GetDisplacementMapGnm() { return NULL; }
 	virtual GLuint					   GetDisplacementMapGL2() = 0;

@@ -74,16 +74,6 @@ NVWaveWorks_FFT_Simulation_DirectCompute_Impl::~NVWaveWorks_FFT_Simulation_Direc
     releaseAll();
 }
 
-HRESULT NVWaveWorks_FFT_Simulation_DirectCompute_Impl::initD3D9(IDirect3DDevice9* /*pD3DDevice*/)
-{
-	return S_FALSE;
-}
-
-HRESULT NVWaveWorks_FFT_Simulation_DirectCompute_Impl::initD3D10(ID3D10Device* /*pD3DDevice*/)
-{
-	return S_FALSE;
-}
-
 HRESULT NVWaveWorks_FFT_Simulation_DirectCompute_Impl::initD3D11(ID3D11Device* pD3DDevice)
 {
     HRESULT hr;
@@ -1053,16 +1043,6 @@ HRESULT NVWaveWorks_FFT_Simulation_DirectCompute_Impl::getTimings(NVWaveWorks_FF
 	return S_OK;
 }
 
-
-LPDIRECT3DTEXTURE9 NVWaveWorks_FFT_Simulation_DirectCompute_Impl::GetDisplacementMapD3D9()
-{
-	return NULL;
-}
-
-ID3D10ShaderResourceView** NVWaveWorks_FFT_Simulation_DirectCompute_Impl::GetDisplacementMapD3D10()
-{
-	return NULL;
-}
 
 ID3D11ShaderResourceView** NVWaveWorks_FFT_Simulation_DirectCompute_Impl::GetDisplacementMapD3D11()
 {

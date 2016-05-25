@@ -49,8 +49,6 @@ public:
 	GFSDK_WaveWorks_Quadtree();
 	~GFSDK_WaveWorks_Quadtree();
 
-	HRESULT initD3D9(const GFSDK_WaveWorks_Quadtree_Params& param, IDirect3DDevice9* pD3DDevice);
-	HRESULT initD3D10(const GFSDK_WaveWorks_Quadtree_Params& param, ID3D10Device* pD3DDevice);
     HRESULT initD3D11(const GFSDK_WaveWorks_Quadtree_Params& param, ID3D11Device* pD3DDevice);
 	HRESULT initGnm(const GFSDK_WaveWorks_Quadtree_Params& param);
 	HRESULT initGL2(const GFSDK_WaveWorks_Quadtree_Params& param, GLuint Program);
@@ -77,10 +75,6 @@ public:
 
 	HRESULT getStats(GFSDK_WaveWorks_Quadtree_Stats& stats) const;
 
-    static HRESULT getShaderInputCountD3D9();
-    static HRESULT getShaderInputDescD3D9(UINT inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
-    static HRESULT getShaderInputCountD3D10();
-	static HRESULT getShaderInputDescD3D10(UINT inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
     static HRESULT getShaderInputCountD3D11();
 	static HRESULT getShaderInputDescD3D11(UINT inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
     static HRESULT getShaderInputCountGnm();
@@ -177,21 +171,6 @@ private:
 	// D3D API handling
 	nv_water_d3d_api m_d3dAPI;
 
-#if WAVEWORKS_ENABLE_D3D9
-	struct D3D9Objects
-	{
-		IDirect3DDevice9* m_pd3d9Device;
-	};
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-	struct D3D10Objects
-	{
-		ID3D10Device* m_pd3d10Device;
-		ID3D10Buffer* m_pd3d10VertexShaderCB;
-	};
-#endif
-
 #if WAVEWORKS_ENABLE_D3D11
 	struct D3D11Objects
 	{
@@ -215,12 +194,6 @@ private:
 #endif
 	union
 	{
-#if WAVEWORKS_ENABLE_D3D9
-		D3D9Objects _9;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		D3D10Objects _10;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		D3D11Objects _11;
 #endif

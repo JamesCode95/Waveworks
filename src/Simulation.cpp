@@ -65,19 +65,10 @@ namespace {
 	#endif
 
 #endif
-#if WAVEWORKS_ENABLE_D3D9
-namespace CalcGradient {
-	#include "CalcGradient_ps_3_0.h"
-	#include "CalcGradient_vs_3_0.h"
-}
-namespace FoamGeneration {
-	#include "FoamGeneration_ps_3_0.h"
-	#include "FoamGeneration_vs_3_0.h"
-}
-#endif
+
 
 namespace SM4 {
-#if WAVEWORKS_ENABLE_D3D10 || WAVEWORKS_ENABLE_D3D11
+#if WAVEWORKS_ENABLE_D3D11
 namespace CalcGradient {
 	#include "CalcGradient_ps_4_0.h"
 	#include "CalcGradient_vs_4_0.h"
@@ -154,57 +145,6 @@ const DXGI_SAMPLE_DESC kNoSample = {1, 0};
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #endif
 #endif
-
-enum ShaderInputsD3D9
-{
-    ShaderInputD3D9_g_samplerDisplacementMap0 = 0,
-    ShaderInputD3D9_g_samplerDisplacementMap1,
-    ShaderInputD3D9_g_samplerDisplacementMap2,
-    ShaderInputD3D9_g_samplerDisplacementMap3,
-    ShaderInputD3D9_g_samplerGradientMap0,
-    ShaderInputD3D9_g_samplerGradientMap1,
-    ShaderInputD3D9_g_samplerGradientMap2,
-    ShaderInputD3D9_g_samplerGradientMap3,
-    ShaderInputD3D9_g_WorldEye,
-    ShaderInputD3D9_g_Pad1,
-	ShaderInputD3D9_g_UVScaleCascade0123,
-    ShaderInputD3D9_g_TexelLength_x2_PS,
-    ShaderInputD3D9_g_Cascade1Scale_PS,
-    ShaderInputD3D9_g_Cascade1TexelScale_PS,
-    ShaderInputD3D9_g_Cascade1UVOffset_PS,
-    ShaderInputD3D9_g_Cascade2Scale_PS,
-    ShaderInputD3D9_g_Cascade2TexelScale_PS,
-    ShaderInputD3D9_g_Cascade2UVOffset_PS,
-    ShaderInputD3D9_g_Cascade3Scale_PS,
-    ShaderInputD3D9_g_Cascade3TexelScale_PS,
-    ShaderInputD3D9_g_Cascade3UVOffset_PS,
-
-    NumShaderInputsD3D9
-};
-
-enum ShaderInputsD3D10
-{
-    ShaderInputD3D10_vs_buffer = 0,
-    ShaderInputD3D10_g_samplerDisplacementMap0,
-    ShaderInputD3D10_g_samplerDisplacementMap1,
-	ShaderInputD3D10_g_samplerDisplacementMap2,
-	ShaderInputD3D10_g_samplerDisplacementMap3,
-    ShaderInputD3D10_g_textureDisplacementMap0,
-    ShaderInputD3D10_g_textureDisplacementMap1,
-	ShaderInputD3D10_g_textureDisplacementMap2,
-	ShaderInputD3D10_g_textureDisplacementMap3,
-    ShaderInputD3D10_ps_buffer,
-    ShaderInputD3D10_g_samplerGradientMap0,
-    ShaderInputD3D10_g_samplerGradientMap1,
-	ShaderInputD3D10_g_samplerGradientMap2,
-	ShaderInputD3D10_g_samplerGradientMap3,
-    ShaderInputD3D10_g_textureGradientMap0,
-    ShaderInputD3D10_g_textureGradientMap1,
-	ShaderInputD3D10_g_textureGradientMap2,
-	ShaderInputD3D10_g_textureGradientMap3,
-
-    NumShaderInputsD3D10
-};
 
 enum ShaderInputsD3D11
 {
@@ -298,55 +238,6 @@ enum ShaderInputsGL2
     ShaderInputGL2_g_Cascade3UVOffset_PS,
     NumShaderInputsGL2
 };
-// NB: These should be kept synchronisd with the shader source
-#if WAVEWORKS_ENABLE_D3D9
-const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputDescsD3D9[NumShaderInputsD3D9] = {
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap0", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap1", 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap2", 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap3", 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap0", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap1", 1 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap2", 2 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap3", 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_WorldEye", 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_Pad1", 1 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_FloatConstant, "nvsf_g_UVScaleCascade0123", 2 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_TexelLength_x2_PS", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade1Scale_PS", 1 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade1TexelScale_PS", 2 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade1UVOffset_PS", 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade2Scale_PS", 4 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade2TexelScale_PS", 5 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade2UVOffset_PS", 6 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade3Scale_PS", 7 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade3TexelScale_PS", 8 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_FloatConstant, "nvsf_g_Cascade3UVOffset_PS", 9 },
-};
-#endif // WAVEWORKS_ENABLE_D3D9
-
-#if WAVEWORKS_ENABLE_D3D10
-const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputDescsD3D10[NumShaderInputsD3D10] = {
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_attr_vs_buffer", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap0", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap1", 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap2", 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Sampler, "nvsf_g_samplerDisplacementMap3", 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap0", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap1", 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap2", 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_Texture, "nvsf_g_textureDisplacementMap3", 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_ConstantBuffer, "nvsf_attr_ps_buffer", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap0", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap1", 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap2", 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Sampler, "nvsf_g_samplerGradientMap3", 3 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap0", 0 },
-    { GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap1", 1 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap2", 2 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::PixelShader_Texture, "nvsf_g_textureGradientMap3", 3 }
-};
-#endif // WAVEWORKS_ENABLE_D3D10
 
 #if WAVEWORKS_ENABLE_D3D11
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputDescsD3D11[NumShaderInputsD3D11] = {
@@ -547,44 +438,6 @@ void GFSDK_WaveWorks_Simulation::releaseAll()
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-            SAFE_RELEASE(m_d3d._9.m_pd3d9GradCalcVS);
-            SAFE_RELEASE(m_d3d._9.m_pd3d9GradCalcPS);
-			SAFE_RELEASE(m_d3d._9.m_pd3d9FoamGenPS);
-			SAFE_RELEASE(m_d3d._9.m_pd3d9FoamGenVS);
-			SAFE_RELEASE(m_d3d._9.m_pd3d9Device);
-
-            m_d3dAPI = nv_water_d3d_api_undefined;
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-            SAFE_RELEASE(m_d3d._10.m_pd3d10GradCalcVS);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10GradCalcPS);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10GradCalcPixelShaderCB);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10FoamGenVS);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10FoamGenPS);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10FoamGenPixelShaderCB);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10PointSampler);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10NoDepthStencil);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10AlwaysSolidRasterizer);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10CalcGradBlendState);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10AccumulateFoamBlendState);
-			SAFE_RELEASE(m_d3d._10.m_pd3d10WriteAccumulatedFoamBlendState);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10LinearNoMipSampler);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10GradMapSampler);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10PixelShaderCB);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10VertexShaderCB);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10Device);
-
-            m_d3dAPI = nv_water_d3d_api_undefined;
-        }
-        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -660,35 +513,6 @@ HRESULT GFSDK_WaveWorks_Simulation::initGradMapSamplers()
 #if WAVEWORKS_ENABLE_GRAPHICS
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-		}
-		break;
-#endif 
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			HRESULT hr;
-            SAFE_RELEASE(m_d3d._10.m_pd3d10GradMapSampler);
-            D3D10_SAMPLER_DESC anisoSamplerDesc;
-            anisoSamplerDesc.Filter = m_params.aniso_level > 1 ? D3D10_FILTER_ANISOTROPIC : D3D10_FILTER_MIN_MAG_MIP_LINEAR;
-            anisoSamplerDesc.AddressU = D3D10_TEXTURE_ADDRESS_WRAP;
-            anisoSamplerDesc.AddressV = D3D10_TEXTURE_ADDRESS_WRAP;
-            anisoSamplerDesc.AddressW = D3D10_TEXTURE_ADDRESS_WRAP;
-            anisoSamplerDesc.MipLODBias = 0.f;
-            anisoSamplerDesc.MaxAnisotropy = m_params.aniso_level;
-            anisoSamplerDesc.ComparisonFunc = D3D10_COMPARISON_NEVER;
-            anisoSamplerDesc.BorderColor[0] = 0.f;
-            anisoSamplerDesc.BorderColor[1] = 0.f;
-            anisoSamplerDesc.BorderColor[2] = 0.f;
-            anisoSamplerDesc.BorderColor[3] = 0.f;
-            anisoSamplerDesc.MinLOD = 0.f;
-            anisoSamplerDesc.MaxLOD = FLT_MAX;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateSamplerState(&anisoSamplerDesc, &m_d3d._10.m_pd3d10GradMapSampler));
-        }
-        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -773,129 +597,6 @@ HRESULT GFSDK_WaveWorks_Simulation::initShaders()
 #if WAVEWORKS_ENABLE_GRAPHICS
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			HRESULT hr;
-            SAFE_RELEASE(m_d3d._9.m_pd3d9GradCalcVS);
-            SAFE_RELEASE(m_d3d._9.m_pd3d9GradCalcPS);
-            SAFE_RELEASE(m_d3d._9.m_pd3d9FoamGenVS);
-            SAFE_RELEASE(m_d3d._9.m_pd3d9FoamGenPS);
-            V_RETURN(m_d3d._9.m_pd3d9Device->CreateVertexShader((DWORD*)CalcGradient::g_vs30_vs, &m_d3d._9.m_pd3d9GradCalcVS));
-            V_RETURN(m_d3d._9.m_pd3d9Device->CreatePixelShader((DWORD*)CalcGradient::g_ps30_ps, &m_d3d._9.m_pd3d9GradCalcPS));
-			V_RETURN(m_d3d._9.m_pd3d9Device->CreateVertexShader((DWORD*)FoamGeneration::g_vs30_vs, &m_d3d._9.m_pd3d9FoamGenVS));
-			V_RETURN(m_d3d._9.m_pd3d9Device->CreatePixelShader((DWORD*)FoamGeneration::g_ps30_ps, &m_d3d._9.m_pd3d9FoamGenPS));
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			HRESULT hr;
-            SAFE_RELEASE(m_d3d._10.m_pd3d10GradCalcVS);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10GradCalcPS);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10FoamGenVS);
-            SAFE_RELEASE(m_d3d._10.m_pd3d10FoamGenPS);
-			V_RETURN(m_d3d._10.m_pd3d10Device->CreateVertexShader((void*)SM4::CalcGradient::g_vs, sizeof(SM4::CalcGradient::g_vs), &m_d3d._10.m_pd3d10GradCalcVS));
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreatePixelShader((void*)SM4::CalcGradient::g_ps, sizeof(SM4::CalcGradient::g_ps), &m_d3d._10.m_pd3d10GradCalcPS));
-			V_RETURN(m_d3d._10.m_pd3d10Device->CreateVertexShader((void*)SM4::FoamGeneration::g_vs, sizeof(SM4::FoamGeneration::g_vs), &m_d3d._10.m_pd3d10FoamGenVS));
-			V_RETURN(m_d3d._10.m_pd3d10Device->CreatePixelShader((void*)SM4::FoamGeneration::g_ps, sizeof(SM4::FoamGeneration::g_ps), &m_d3d._10.m_pd3d10FoamGenPS));
-
-            D3D10_BUFFER_DESC cbDesc;
-            cbDesc.ByteWidth = sizeof(ps_calcgradient_cbuffer);
-            cbDesc.Usage = D3D10_USAGE_DEFAULT;
-            cbDesc.BindFlags = D3D10_BIND_CONSTANT_BUFFER;
-            cbDesc.CPUAccessFlags = 0;
-            cbDesc.MiscFlags = 0;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateBuffer(&cbDesc, NULL, &m_d3d._10.m_pd3d10GradCalcPixelShaderCB));
-
-            cbDesc.ByteWidth = sizeof(ps_foamgeneration_cbuffer);
-            cbDesc.Usage = D3D10_USAGE_DEFAULT;
-            cbDesc.BindFlags = D3D10_BIND_CONSTANT_BUFFER;
-            cbDesc.CPUAccessFlags = 0;
-            cbDesc.MiscFlags = 0;
-			V_RETURN(m_d3d._10.m_pd3d10Device->CreateBuffer(&cbDesc, NULL, &m_d3d._10.m_pd3d10FoamGenPixelShaderCB));
-
-            cbDesc.ByteWidth = sizeof(ps_attr_cbuffer);
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateBuffer(&cbDesc, NULL, &m_d3d._10.m_pd3d10PixelShaderCB));
-
-            cbDesc.ByteWidth = sizeof(vs_attr_cbuffer);
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateBuffer(&cbDesc, NULL, &m_d3d._10.m_pd3d10VertexShaderCB));
-
-            D3D10_SAMPLER_DESC pointSamplerDesc;
-            pointSamplerDesc.Filter = D3D10_FILTER_MIN_MAG_MIP_POINT;
-            pointSamplerDesc.AddressU = D3D10_TEXTURE_ADDRESS_WRAP;
-            pointSamplerDesc.AddressV = D3D10_TEXTURE_ADDRESS_WRAP;
-            pointSamplerDesc.AddressW = D3D10_TEXTURE_ADDRESS_WRAP;
-            pointSamplerDesc.MipLODBias = 0.f;
-            pointSamplerDesc.MaxAnisotropy = 0;
-            pointSamplerDesc.ComparisonFunc = D3D10_COMPARISON_NEVER;
-            pointSamplerDesc.BorderColor[0] = 0.f;
-            pointSamplerDesc.BorderColor[1] = 0.f;
-            pointSamplerDesc.BorderColor[2] = 0.f;
-            pointSamplerDesc.BorderColor[3] = 0.f;
-            pointSamplerDesc.MinLOD = 0.f;
-            pointSamplerDesc.MaxLOD = 0.f;	// NB: No mipping, effectively
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateSamplerState(&pointSamplerDesc, &m_d3d._10.m_pd3d10PointSampler));
-
-            D3D10_SAMPLER_DESC linearNoMipSampleDesc = pointSamplerDesc;
-            linearNoMipSampleDesc.Filter = D3D10_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateSamplerState(&linearNoMipSampleDesc, &m_d3d._10.m_pd3d10LinearNoMipSampler));
-
-            const D3D10_DEPTH_STENCILOP_DESC defaultStencilOp = {D3D10_STENCIL_OP_KEEP, D3D10_STENCIL_OP_KEEP, D3D10_STENCIL_OP_KEEP, D3D10_COMPARISON_ALWAYS};
-            D3D10_DEPTH_STENCIL_DESC dsDesc;
-            dsDesc.DepthEnable = FALSE;
-            dsDesc.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ZERO;
-            dsDesc.DepthFunc = D3D10_COMPARISON_LESS;
-            dsDesc.StencilEnable = FALSE;
-            dsDesc.StencilReadMask = D3D10_DEFAULT_STENCIL_READ_MASK;
-            dsDesc.StencilWriteMask = D3D10_DEFAULT_STENCIL_WRITE_MASK;
-            dsDesc.FrontFace = defaultStencilOp;
-            dsDesc.BackFace = defaultStencilOp;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateDepthStencilState(&dsDesc, &m_d3d._10.m_pd3d10NoDepthStencil));
-
-            D3D10_RASTERIZER_DESC rastDesc;
-            rastDesc.FillMode = D3D10_FILL_SOLID;
-            rastDesc.CullMode = D3D10_CULL_NONE;
-            rastDesc.FrontCounterClockwise = FALSE;
-            rastDesc.DepthBias = 0;
-            rastDesc.DepthBiasClamp = 0.f;
-            rastDesc.SlopeScaledDepthBias = 0.f;
-            rastDesc.DepthClipEnable = FALSE;
-            rastDesc.ScissorEnable = FALSE;
-            rastDesc.MultisampleEnable = FALSE;
-            rastDesc.AntialiasedLineEnable = FALSE;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateRasterizerState(&rastDesc, &m_d3d._10.m_pd3d10AlwaysSolidRasterizer));
-
-            D3D10_BLEND_DESC blendDesc;
-            blendDesc.AlphaToCoverageEnable = FALSE;
-            blendDesc.BlendEnable[0] = FALSE;
-            blendDesc.BlendEnable[1] = FALSE;
-            blendDesc.BlendEnable[2] = FALSE;
-            blendDesc.BlendEnable[3] = FALSE;
-            blendDesc.BlendEnable[4] = FALSE;
-            blendDesc.BlendEnable[5] = FALSE;
-            blendDesc.BlendEnable[6] = FALSE;
-            blendDesc.BlendEnable[7] = FALSE;
-			blendDesc.RenderTargetWriteMask[0] = D3D10_COLOR_WRITE_ENABLE_RED | D3D10_COLOR_WRITE_ENABLE_GREEN | D3D10_COLOR_WRITE_ENABLE_BLUE;
-            blendDesc.RenderTargetWriteMask[1] = 0x0F;
-            blendDesc.RenderTargetWriteMask[2] = 0x0F;
-            blendDesc.RenderTargetWriteMask[3] = 0x0F;
-            blendDesc.RenderTargetWriteMask[4] = 0x0F;
-            blendDesc.RenderTargetWriteMask[5] = 0x0F;
-            blendDesc.RenderTargetWriteMask[6] = 0x0F;
-            blendDesc.RenderTargetWriteMask[7] = 0x0F;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateBlendState(&blendDesc, &m_d3d._10.m_pd3d10CalcGradBlendState));
-
-			blendDesc.RenderTargetWriteMask[0] = D3D10_COLOR_WRITE_ENABLE_ALL;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateBlendState(&blendDesc, &m_d3d._10.m_pd3d10AccumulateFoamBlendState));
-
-			blendDesc.RenderTargetWriteMask[0] = D3D10_COLOR_WRITE_ENABLE_ALPHA;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateBlendState(&blendDesc, &m_d3d._10.m_pd3d10WriteAccumulatedFoamBlendState));
-
-		}
-        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -1113,14 +814,6 @@ HRESULT GFSDK_WaveWorks_Simulation::initTextureArrays()
 #if WAVEWORKS_ENABLE_GRAPHICS
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		break;
-#endif 
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
 		break;
@@ -1171,75 +864,6 @@ HRESULT GFSDK_WaveWorks_Simulation::initTextureArrays()
 
 #endif // WAVEWORKS_ENABLE_GRAPHICS
     return S_OK;
-}
-
-
-HRESULT GFSDK_WaveWorks_Simulation::initD3D9(const GFSDK_WaveWorks_Detailed_Simulation_Params& D3D9_ONLY(params), IDirect3DDevice9* D3D9_ONLY(pD3DDevice))
-{
-#if WAVEWORKS_ENABLE_D3D9
-    HRESULT hr;
-
-    if(nv_water_d3d_api_d3d9 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._9.m_pd3d9Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d9;
-        m_d3d._9.m_pd3d9Device = pD3DDevice;
-        m_d3d._9.m_pd3d9Device->AddRef();
-
-        m_params = params;
-        V_RETURN(allocateAll());
-    }
-    else
-    {
-        V_RETURN(reinit(params));
-    }
-
-    return S_OK;
-#else
-	return E_FAIL;
-#endif
-}
-
-HRESULT GFSDK_WaveWorks_Simulation::initD3D10(const GFSDK_WaveWorks_Detailed_Simulation_Params& D3D10_ONLY(params), ID3D10Device* D3D10_ONLY(pD3DDevice))
-{
-#if WAVEWORKS_ENABLE_D3D10
-    HRESULT hr;
-
-    if(nv_water_d3d_api_d3d10 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._10.m_pd3d10Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d10;
-        m_d3d._10.m_pd3d10Device = pD3DDevice;
-        m_d3d._10.m_pd3d10Device->AddRef();
-
-        m_params = params;
-        V_RETURN(allocateAll());
-    }
-    else
-    {
-        V_RETURN(reinit(params));
-    }
-
-    return S_OK;
-#else
-	return E_FAIL;
-#endif
 }
 
 HRESULT GFSDK_WaveWorks_Simulation::initD3D11(const GFSDK_WaveWorks_Detailed_Simulation_Params& D3D11_ONLY(params), GFSDK_WaveWorks_CPU_Scheduler_Interface* D3D11_ONLY(pOptionalScheduler), ID3D11Device* D3D11_ONLY(pD3DDevice))
@@ -1370,14 +994,6 @@ HRESULT GFSDK_WaveWorks_Simulation::allocateSimulation(int cascade)
 	if(pFFTSim) {
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			return pFFTSim->initD3D9(m_d3d._9.m_pd3d9Device);
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			return pFFTSim->initD3D10(m_d3d._10.m_pd3d10Device);
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			return pFFTSim->initD3D11(m_d3d._11.m_pd3d11Device);
@@ -1431,14 +1047,6 @@ HRESULT GFSDK_WaveWorks_Simulation::allocateSimulationManager()
 	if(m_pSimulationManager) {
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			return m_pSimulationManager->initD3D9(m_d3d._9.m_pd3d9Device);
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			return m_pSimulationManager->initD3D10(m_d3d._10.m_pd3d10Device);
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			return m_pSimulationManager->initD3D11(m_d3d._11.m_pd3d11Device);
@@ -1487,14 +1095,6 @@ HRESULT  GFSDK_WaveWorks_Simulation::allocateGFXTimer()
 
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		return m_pGFXTimer->initD3D9(m_d3d._9.m_pd3d9Device);
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		return m_pGFXTimer->initD3D10(m_d3d._10.m_pd3d10Device);
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 	case nv_water_d3d_api_d3d11:
 		return m_pGFXTimer->initD3D11(m_d3d._11.m_pd3d11Device);
@@ -1714,16 +1314,6 @@ HRESULT GFSDK_WaveWorks_Simulation::updateGradientMaps(Graphics_Context* pGC, GF
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			result=updateGradientMapsD3D9(pSavestateImpl);
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			result=updateGradientMapsD3D10(pSavestateImpl);
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			result=updateGradientMapsD3D11(pGC, pSavestateImpl);
@@ -1749,412 +1339,6 @@ HRESULT GFSDK_WaveWorks_Simulation::updateGradientMaps(Graphics_Context* pGC, GF
     }
 
 	return result;
-}
-
-HRESULT GFSDK_WaveWorks_Simulation::updateGradientMapsD3D10(GFSDK_WaveWorks_Savestate* D3D10_ONLY(pSavestateImpl))
-{
-#if WAVEWORKS_ENABLE_D3D10
-    HRESULT hr;
-
-    // Preserve
-    if(pSavestateImpl)
-    {
-        V_RETURN(pSavestateImpl->PreserveD3D10Viewport());
-        V_RETURN(pSavestateImpl->PreserveD3D10RenderTargets());
-        V_RETURN(pSavestateImpl->PreserveD3D10Shaders());
-        V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderConstantBuffer(0));
-        V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderSampler(0));
-        V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderResource(0));
-        V_RETURN(pSavestateImpl->PreserveD3D10DepthStencil());
-        V_RETURN(pSavestateImpl->PreserveD3D10Blend());
-        V_RETURN(pSavestateImpl->PreserveD3D10Raster());
-
-        for(int cascade = 0; cascade != m_params.num_cascades; ++cascade)
-        {
-            V_RETURN(cascade_states[cascade].m_pQuadMesh->PreserveState(NULL, pSavestateImpl));
-        }
-    }
-
-    for(int cascade = 0; cascade != m_params.num_cascades; ++cascade)
-    {
-		if(cascade_states[cascade].m_gradient_map_version == cascade_states[cascade].m_pFFTSimulation->getDisplacementMapVersion())
-            continue;
-		
-		// Clear the gradient map if necessary
-		const FLOAT kBlack[] = {0.f,0.f,0.f,0.f};
-		if(cascade_states[cascade].m_gradient_map_needs_clear[m_active_GPU_slot]) {
-			m_d3d._10.m_pd3d10Device->ClearRenderTargetView(cascade_states[cascade].m_d3d._10.m_pd3d10GradientRenderTarget[m_active_GPU_slot],kBlack);
-			cascade_states[cascade].m_gradient_map_needs_clear[m_active_GPU_slot] = false;
-		}
-
-		// Rendering folding to gradient map //////////////////////////////////
-		
-        // Render-targets + viewport
-        m_d3d._10.m_pd3d10Device->OMSetRenderTargets(1, &cascade_states[cascade].m_d3d._10.m_pd3d10GradientRenderTarget[m_active_GPU_slot], NULL);
-
-        int dmap_dim =m_params.cascades[cascade].fft_resolution;
-        D3D10_VIEWPORT new_vp;
-        new_vp.TopLeftX = 0;
-        new_vp.TopLeftY = 0;
-        new_vp.Width = dmap_dim;
-        new_vp.Height = dmap_dim;
-        new_vp.MinDepth = 0.f;
-        new_vp.MaxDepth = 0.f;
-        UINT num_new_vp = 1;
-        m_d3d._10.m_pd3d10Device->RSSetViewports(num_new_vp, &new_vp);
-
-        // Shaders
-        m_d3d._10.m_pd3d10Device->VSSetShader(m_d3d._10.m_pd3d10GradCalcVS);
-        m_d3d._10.m_pd3d10Device->GSSetShader(NULL);
-        m_d3d._10.m_pd3d10Device->PSSetShader(m_d3d._10.m_pd3d10GradCalcPS);
-
-        // Constants
-        ps_calcgradient_cbuffer PSCB;
-        PSCB.g_ChoppyScale = m_params.cascades[cascade].choppy_scale * dmap_dim / m_params.cascades[cascade].fft_period;
-		if(m_params.cascades[0].fft_period > 1000.0f) PSCB.g_ChoppyScale *= 1.0f + 0.2f * log(m_params.cascades[0].fft_period/1000.0f);
-		PSCB.g_GradMap2TexelWSScale = 0.5f*dmap_dim / m_params.cascades[cascade].fft_period ; 
-		PSCB.g_OneTexel_Left = gfsdk_make_float4(-1.0f/dmap_dim, 0, 0, 0);
-        PSCB.g_OneTexel_Right = gfsdk_make_float4( 1.0f/dmap_dim, 0, 0, 0);
-        PSCB.g_OneTexel_Back = gfsdk_make_float4( 0,-1.0f/dmap_dim, 0, 0);
-        PSCB.g_OneTexel_Front = gfsdk_make_float4( 0, 1.0f/dmap_dim, 0, 0);
-        m_d3d._10.m_pd3d10Device->UpdateSubresource(m_d3d._10.m_pd3d10GradCalcPixelShaderCB, 0, NULL, &PSCB, 0, 0);
-        m_d3d._10.m_pd3d10Device->PSSetConstantBuffers(0, 1, &m_d3d._10.m_pd3d10GradCalcPixelShaderCB);
-
-        // Textures/samplers
-        m_d3d._10.m_pd3d10Device->PSSetShaderResources(0, 1, cascade_states[cascade].m_pFFTSimulation->GetDisplacementMapD3D10());
-        m_d3d._10.m_pd3d10Device->PSSetSamplers(0, 1, &m_d3d._10.m_pd3d10PointSampler);
-
-		// Render state
-		m_d3d._10.m_pd3d10Device->OMSetDepthStencilState(m_d3d._10.m_pd3d10NoDepthStencil, 0);
-		m_d3d._10.m_pd3d10Device->OMSetBlendState(m_d3d._10.m_pd3d10CalcGradBlendState, NULL, 0xFFFFFFFF);
-		m_d3d._10.m_pd3d10Device->RSSetState(m_d3d._10.m_pd3d10AlwaysSolidRasterizer);
-		// Draw
-		V_RETURN(cascade_states[cascade].m_pQuadMesh->Draw(NULL, NVWaveWorks_Mesh::PT_TriangleStrip, 0, 0, 4, 0, 2, NULL));
-
-
-		// Accumulating energy in foam energy map //////////////////////////////////
-
-		// Clear the foam map, to ensure inter-frame deps get broken on multi-GPU
-		m_d3d._10.m_pd3d10Device->ClearRenderTargetView(cascade_states[cascade].m_d3d._10.m_pd3d10FoamEnergyRenderTarget,kBlack);
-
-        // Render-targets + viewport
-		m_d3d._10.m_pd3d10Device->OMSetRenderTargets(1, &cascade_states[cascade].m_d3d._10.m_pd3d10FoamEnergyRenderTarget, NULL);
-
-        dmap_dim = m_params.cascades[cascade].fft_resolution;
-        new_vp.TopLeftX = 0;
-        new_vp.TopLeftY = 0;
-        new_vp.Width = dmap_dim;
-        new_vp.Height = dmap_dim;
-        new_vp.MinDepth = 0.f;
-        new_vp.MaxDepth = 0.f;
-        num_new_vp = 1;
-        m_d3d._10.m_pd3d10Device->RSSetViewports(num_new_vp, &new_vp);
-
-        // Shaders
-		m_d3d._10.m_pd3d10Device->VSSetShader(m_d3d._10.m_pd3d10FoamGenVS);
-        m_d3d._10.m_pd3d10Device->GSSetShader(NULL);
-		m_d3d._10.m_pd3d10Device->PSSetShader(m_d3d._10.m_pd3d10FoamGenPS);
-
-		// Constants
-		ps_foamgeneration_cbuffer fgcb;
-		fgcb.g_SourceComponents = gfsdk_make_float4(0,0,0.0f,1.0f); // getting component W of grad map as source for energy
-		fgcb.g_UVOffsets = gfsdk_make_float4(0,1.0f,0,0); // blurring by Y
-		fgcb.nvsf_g_DissipationFactors_Accumulation = m_params.cascades[cascade].foam_generation_amount*(float)m_dFoamSimDeltaTime*50.0f; 
-		fgcb.nvsf_g_DissipationFactors_Fadeout		= pow(m_params.cascades[cascade].foam_falloff_speed,(float)m_dFoamSimDeltaTime*50.0f);
-		fgcb.nvsf_g_DissipationFactors_BlurExtents	= min(0.5f,m_params.cascades[cascade].foam_dissipation_speed*(float)m_dFoamSimDeltaTime*m_params.cascades[0].fft_period * (1000.0f/m_params.cascades[0].fft_period)/m_params.cascades[cascade].fft_period)/dmap_dim;
-		fgcb.nvsf_g_FoamGenerationThreshold			= m_params.cascades[cascade].foam_generation_threshold;
-
-		m_d3d._10.m_pd3d10Device->UpdateSubresource(m_d3d._10.m_pd3d10FoamGenPixelShaderCB, 0, NULL, &fgcb, 0, 0);	    
-		m_d3d._10.m_pd3d10Device->PSSetConstantBuffers(0, 1, &m_d3d._10.m_pd3d10FoamGenPixelShaderCB);
-
-        // Textures/samplers
-        m_d3d._10.m_pd3d10Device->PSSetShaderResources(0, 1, &cascade_states[cascade].m_d3d._10.m_pd3d10GradientMap[m_active_GPU_slot]);
-		m_d3d._10.m_pd3d10Device->PSSetSamplers(0, 1, &m_d3d._10.m_pd3d10LinearNoMipSampler);
-
-		// Render state
-		m_d3d._10.m_pd3d10Device->OMSetDepthStencilState(m_d3d._10.m_pd3d10NoDepthStencil, 0);
-		m_d3d._10.m_pd3d10Device->OMSetBlendState(m_d3d._10.m_pd3d10AccumulateFoamBlendState, NULL, 0xFFFFFFFF);
-		m_d3d._10.m_pd3d10Device->RSSetState(m_d3d._10.m_pd3d10AlwaysSolidRasterizer);
-		// Draw
-		V_RETURN(cascade_states[cascade].m_pQuadMesh->Draw(NULL, NVWaveWorks_Mesh::PT_TriangleStrip, 0, 0, 4, 0, 2, NULL));
-
-		// Clear shader resource from inputs
-		ID3D10ShaderResourceView* pNullSRV = NULL;
-		m_d3d._10.m_pd3d10Device->PSSetShaderResources(0, 1, &pNullSRV);
-
-		// Writing back energy to gradient map //////////////////////////////////
-
-        // Render-targets + viewport
-		m_d3d._10.m_pd3d10Device->OMSetRenderTargets(1, &cascade_states[cascade].m_d3d._10.m_pd3d10GradientRenderTarget[m_active_GPU_slot], NULL);
-
-        dmap_dim = m_params.cascades[cascade].fft_resolution;
-        new_vp.TopLeftX = 0;
-        new_vp.TopLeftY = 0;
-        new_vp.Width = dmap_dim;
-        new_vp.Height = dmap_dim;
-        new_vp.MinDepth = 0.f;
-        new_vp.MaxDepth = 0.f;
-        num_new_vp = 1;
-        m_d3d._10.m_pd3d10Device->RSSetViewports(num_new_vp, &new_vp);
-
-        // Shaders
-		m_d3d._10.m_pd3d10Device->VSSetShader(m_d3d._10.m_pd3d10FoamGenVS);
-        m_d3d._10.m_pd3d10Device->GSSetShader(NULL);
-		m_d3d._10.m_pd3d10Device->PSSetShader(m_d3d._10.m_pd3d10FoamGenPS);
-
-		// Constants
-		fgcb.g_SourceComponents = gfsdk_make_float4(1.0f,0,0,0); // getting component R of energy map as source for energy
-		fgcb.g_UVOffsets = gfsdk_make_float4(1.0f,0,0,0); // blurring by X
-		fgcb.nvsf_g_DissipationFactors_Accumulation = 0.0f; 
-		fgcb.nvsf_g_DissipationFactors_Fadeout		= 1.0f;
-		fgcb.nvsf_g_DissipationFactors_BlurExtents	= min(0.5f,m_params.cascades[cascade].foam_dissipation_speed*(float)m_dFoamSimDeltaTime*m_params.cascades[0].fft_period * (1000.0f/m_params.cascades[0].fft_period)/m_params.cascades[cascade].fft_period)/dmap_dim;
-
-		m_d3d._10.m_pd3d10Device->UpdateSubresource(m_d3d._10.m_pd3d10FoamGenPixelShaderCB, 0, NULL, &fgcb, 0, 0);	    
-		m_d3d._10.m_pd3d10Device->PSSetConstantBuffers(0, 1, &m_d3d._10.m_pd3d10FoamGenPixelShaderCB);
-
-        // Textures/samplers
-		m_d3d._10.m_pd3d10Device->PSSetShaderResources(0, 1, &cascade_states[cascade].m_d3d._10.m_pd3d10FoamEnergyMap);
-		m_d3d._10.m_pd3d10Device->PSSetSamplers(0, 1, &m_d3d._10.m_pd3d10LinearNoMipSampler);
-
-		// Render state
-		m_d3d._10.m_pd3d10Device->OMSetDepthStencilState(m_d3d._10.m_pd3d10NoDepthStencil, 0);
-		m_d3d._10.m_pd3d10Device->OMSetBlendState(m_d3d._10.m_pd3d10WriteAccumulatedFoamBlendState, NULL, 0xFFFFFFFF);
-		m_d3d._10.m_pd3d10Device->RSSetState(m_d3d._10.m_pd3d10AlwaysSolidRasterizer);
-		
-		// Draw
-		V_RETURN(cascade_states[cascade].m_pQuadMesh->Draw(NULL, NVWaveWorks_Mesh::PT_TriangleStrip, 0, 0, 4, 0, 2, NULL));
-
-        // Generate mips
-        m_d3d._10.m_pd3d10Device->GenerateMips(cascade_states[cascade].m_d3d._10.m_pd3d10GradientMap[m_active_GPU_slot]);
-
-        cascade_states[cascade].m_gradient_map_version = cascade_states[cascade].m_pFFTSimulation->getDisplacementMapVersion();
-    }
-
-	// Clear any lingering displacement map reference
-	ID3D10ShaderResourceView* pNullSRV = NULL;
-	m_d3d._10.m_pd3d10Device->PSSetShaderResources(0, 1, &pNullSRV);
-
-    return S_OK;
-#else
-	return E_FAIL;
-#endif
-}
-
-HRESULT GFSDK_WaveWorks_Simulation::updateGradientMapsD3D9(GFSDK_WaveWorks_Savestate* D3D9_ONLY(pSavestateImpl))
-{
-#if WAVEWORKS_ENABLE_D3D9
-    HRESULT hr;
-
-    // Preserve
-    const UINT NumPSConstants = 5;
-    if(pSavestateImpl)
-    {
-        V_RETURN(pSavestateImpl->PreserveD3D9Viewport());
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderTargets());
-        V_RETURN(pSavestateImpl->PreserveD3D9Shaders());
-
-        V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(0, NumPSConstants));
-        V_RETURN(pSavestateImpl->PreserveD3D9Texture(0));
-        V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(0, D3DSAMP_MIPFILTER));
-        V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(0, D3DSAMP_MINFILTER));
-        V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(0, D3DSAMP_MAGFILTER));
-        V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(0, D3DSAMP_ADDRESSU));
-        V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(0, D3DSAMP_ADDRESSV));
-
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderState(D3DRS_ZENABLE));
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderState(D3DRS_ZWRITEENABLE));
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderState(D3DRS_FILLMODE));
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderState(D3DRS_CULLMODE));
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderState(D3DRS_ALPHABLENDENABLE));
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderState(D3DRS_ALPHATESTENABLE));
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderState(D3DRS_COLORWRITEENABLE));
-        V_RETURN(pSavestateImpl->PreserveD3D9RenderState(D3DRS_STENCILENABLE));
-
-        for(int cascade = 0; cascade != m_params.num_cascades; ++cascade)
-        {
-            V_RETURN(cascade_states[cascade].m_pQuadMesh->PreserveState(NULL, pSavestateImpl));
-        }
-    }
-
-    for(int cascade = 0; cascade != m_params.num_cascades; ++cascade)
-    {
-        if(cascade_states[cascade].m_gradient_map_version == cascade_states[cascade].m_pFFTSimulation->getDisplacementMapVersion())
-            continue;
-
-		// DX9 FOAM
-
-		// Rendering folding to gradient map //////////////////////////////////
-        // Set targets
-        LPDIRECT3DSURFACE9 new_target_gradmap;
-        V_RETURN(cascade_states[cascade].m_d3d._9.m_pd3d9GradientMap[m_active_GPU_slot]->GetSurfaceLevel(0, &new_target_gradmap));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderTarget(0, new_target_gradmap));
-        SAFE_RELEASE(new_target_gradmap);
-
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetDepthStencilSurface(NULL));
-
-		// Clear the gradient map if necessary
-		const D3DCOLOR kBlack = 0x00000000;
-		if(cascade_states[cascade].m_gradient_map_needs_clear[m_active_GPU_slot]) {
-			V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_COLORWRITEENABLE	, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA));
-			V_RETURN(m_d3d._9.m_pd3d9Device->Clear(0,NULL,D3DCLEAR_TARGET,kBlack,0.f,0));
-			cascade_states[cascade].m_gradient_map_needs_clear[m_active_GPU_slot] = false;
-		}
-
-        // Shaders
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetVertexShader(m_d3d._9.m_pd3d9GradCalcVS));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShader(m_d3d._9.m_pd3d9GradCalcPS));
-
-        // Constants
-        int dmap_dim =m_params.cascades[cascade].fft_resolution;
-
-		gfsdk_float4 oneLeft = gfsdk_make_float4(-1.0f/dmap_dim, 0, 0, 0);
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(1, (FLOAT*)&oneLeft, 1));
-        gfsdk_float4 oneRight = gfsdk_make_float4( 1.0f/dmap_dim, 0, 0, 0);
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(2, (FLOAT*)&oneRight, 1));
-        gfsdk_float4 oneBack = gfsdk_make_float4( 0,-1.0f/dmap_dim, 0, 0);
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(3, (FLOAT*)&oneBack, 1));
-        gfsdk_float4 oneFront = gfsdk_make_float4( 0, 1.0f/dmap_dim, 0, 0);
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(4, (FLOAT*)&oneFront, 1));
-        //
-		gfsdk_F32 fGradMap2TexelWSScale = 0.5f*dmap_dim / m_params.cascades[cascade].fft_period;
-		gfsdk_F32 fChoppyScale = m_params.cascades[cascade].choppy_scale * dmap_dim / m_params.cascades[cascade].fft_period;
-		if(m_params.cascades[0].fft_period > 1000.0f) fChoppyScale *= 1.0f + 0.2f * log(m_params.cascades[0].fft_period/1000.0f);
-		gfsdk_float4 g_Scales = gfsdk_make_float4(fChoppyScale,fGradMap2TexelWSScale,0.f,0.f);
-		V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(0, (FLOAT*)&g_Scales, 1));
-
-        // Textures/samplers
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(0, cascade_states[cascade].m_pFFTSimulation->GetDisplacementMapD3D9()));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-
-        // Render state
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ZENABLE			, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ZWRITEENABLE		, FALSE)); 
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_FILLMODE			, D3DFILL_SOLID));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_CULLMODE			, D3DCULL_NONE ));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ALPHABLENDENABLE	, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ALPHATESTENABLE	, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_COLORWRITEENABLE	, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_STENCILENABLE		, FALSE));
-
-		// Draw
-		V_RETURN(cascade_states[cascade].m_pQuadMesh->Draw(NULL, NVWaveWorks_Mesh::PT_TriangleStrip, 0, 0, 4, 0, 2, NULL));
-
-		// Accumulating energy in foam energy map //////////////////////////////////
-
-        // Set targets
-        LPDIRECT3DSURFACE9 new_target_foamenergymap;
-        V_RETURN(cascade_states[cascade].m_d3d._9.m_pd3d9FoamEnergyMap->GetSurfaceLevel(0, &new_target_foamenergymap));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderTarget(0, new_target_foamenergymap));
-        SAFE_RELEASE(new_target_foamenergymap);
-
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetDepthStencilSurface(NULL));
-
-		// Clear the foam map, to ensure inter-frame deps get broken on multi-GPU
-		V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_COLORWRITEENABLE	, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA));
-		V_RETURN(m_d3d._9.m_pd3d9Device->Clear(0,NULL,D3DCLEAR_TARGET,kBlack,0.f,0));
-
-        // Shaders
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetVertexShader(m_d3d._9.m_pd3d9FoamGenVS));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShader(m_d3d._9.m_pd3d9FoamGenPS));
-
-        // Constants
-		gfsdk_float4 g_DissipationFactors;
-		g_DissipationFactors.z    = m_params.cascades[cascade].foam_generation_amount*(float)m_dFoamSimDeltaTime*50.0f; 
-			//nvsf_g_DissipationFactors_Accumulation
-		g_DissipationFactors.y	  = pow(m_params.cascades[cascade].foam_falloff_speed,(float)m_dFoamSimDeltaTime*50.0f);
-			//nvsf_g_DissipationFactors_Fadeout
-		g_DissipationFactors.x 	  = min(0.5f,m_params.cascades[cascade].foam_dissipation_speed*(float)m_dFoamSimDeltaTime*m_params.cascades[0].fft_period * (1000.0f/m_params.cascades[0].fft_period)/m_params.cascades[cascade].fft_period)/dmap_dim;
-			//g_DissipationFactors_BlurExtents
-		g_DissipationFactors.w    = m_params.cascades[cascade].foam_generation_threshold;
-			//nvsf_g_FoamGenerationThreshold
-		gfsdk_float4 g_SourceComponents = gfsdk_make_float4(0,0,0.0f,1.0f); // getting component W of grad map as source for energy
-		gfsdk_float4 g_UVOffsets = gfsdk_make_float4(0,1.0f,0,0);			 // blurring by Y
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(0, (FLOAT*)&g_DissipationFactors, 1));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(1, (FLOAT*)&g_SourceComponents, 1));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(2, (FLOAT*)&g_UVOffsets, 1));
-
-        // Textures / samplers
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(0, cascade_states[cascade].m_d3d._9.m_pd3d9GradientMap[m_active_GPU_slot]));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-
-        // Render state
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ZENABLE			, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ZWRITEENABLE		, FALSE)); 
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_FILLMODE			, D3DFILL_SOLID));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_CULLMODE			, D3DCULL_NONE ));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ALPHABLENDENABLE	, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ALPHATESTENABLE	, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_COLORWRITEENABLE	, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_STENCILENABLE		, FALSE));
-
-        // Draw
-        V_RETURN(cascade_states[cascade].m_pQuadMesh->Draw(NULL, NVWaveWorks_Mesh::PT_TriangleStrip, 0, 0, 4, 0, 2, NULL));
-
-		// Writing back energy to gradient map //////////////////////////////////
-
-        // Set targets
-        LPDIRECT3DSURFACE9 new_target_gradmap_writeback;
-        V_RETURN(cascade_states[cascade].m_d3d._9.m_pd3d9GradientMap[m_active_GPU_slot]->GetSurfaceLevel(0, &new_target_gradmap_writeback));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderTarget(0, new_target_gradmap_writeback));
-        SAFE_RELEASE(new_target_gradmap_writeback);
-
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetDepthStencilSurface(NULL));
-
-        // Shaders
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetVertexShader(m_d3d._9.m_pd3d9FoamGenVS));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShader(m_d3d._9.m_pd3d9FoamGenPS));
-
-        // Constants
-		g_DissipationFactors.z    = 0; 
-			//nvsf_g_DissipationFactors_Accumulation
-		g_DissipationFactors.y	  = 1.0f;
-			//nvsf_g_DissipationFactors_Fadeout
-		g_DissipationFactors.x 	  = min(0.5f,m_params.cascades[cascade].foam_dissipation_speed*(float)m_dFoamSimDeltaTime*m_params.cascades[0].fft_period * (1000.0f/m_params.cascades[0].fft_period)/m_params.cascades[cascade].fft_period)/dmap_dim;
-			//g_DissipationFactors_BlurExtents
-		g_DissipationFactors.w    = 0;
-			//nvsf_g_FoamGenerationThreshold
-		g_SourceComponents = gfsdk_make_float4(1.0f,0,0,0); // getting component R of energy map as source for energy
-		g_UVOffsets = gfsdk_make_float4(1.0f,0,0,0);			 // blurring by Y
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(0, (FLOAT*)&g_DissipationFactors, 1));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(1, (FLOAT*)&g_SourceComponents, 1));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(2, (FLOAT*)&g_UVOffsets, 1));
-
-        // Textures / samplers
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(0, cascade_states[cascade].m_d3d._9.m_pd3d9FoamEnergyMap));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-
-        // Render state
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ZENABLE			, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ZWRITEENABLE		, FALSE)); 
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_FILLMODE			, D3DFILL_SOLID));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_CULLMODE			, D3DCULL_NONE ));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ALPHABLENDENABLE	, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_ALPHATESTENABLE	, FALSE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_COLORWRITEENABLE	, D3DCOLORWRITEENABLE_ALPHA));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetRenderState(D3DRS_STENCILENABLE		, FALSE));
-
-        // Draw
-        V_RETURN(cascade_states[cascade].m_pQuadMesh->Draw(NULL, NVWaveWorks_Mesh::PT_TriangleStrip, 0, 0, 4, 0, 2, NULL));
-		
-        cascade_states[cascade].m_gradient_map_version = cascade_states[cascade].m_pFFTSimulation->getDisplacementMapVersion();
-    }
-
-    return S_OK;
-#else
-return E_FAIL;
-#endif
 }
 
 HRESULT GFSDK_WaveWorks_Simulation::updateGradientMapsD3D11(Graphics_Context* pGC, GFSDK_WaveWorks_Savestate* pSavestateImpl)
@@ -2877,14 +2061,6 @@ HRESULT GFSDK_WaveWorks_Simulation::setRenderState(	Graphics_Context* pGC,
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        return setRenderStateD3D9(matView, pShaderInputRegisterMappings, pSavestateImpl);
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        return setRenderStateD3D10(matView, pShaderInputRegisterMappings, pSavestateImpl);
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
 		{
@@ -2916,482 +2092,6 @@ HRESULT GFSDK_WaveWorks_Simulation::setRenderState(	Graphics_Context* pGC,
 #else// WAVEWORKS_ENABLE_GRAPHICS
 	return E_FAIL;
 #endif // WAVEWORKS_ENABLE_GRAPHICS
-}
-
-HRESULT GFSDK_WaveWorks_Simulation::setRenderStateD3D9(	const gfsdk_float4x4& D3D9_ONLY(matView),
-															const UINT* D3D9_ONLY(pShaderInputRegisterMappings),
-															GFSDK_WaveWorks_Savestate* D3D9_ONLY(pSavestateImpl)
-															)
-{
-#if WAVEWORKS_ENABLE_D3D9
-    HRESULT hr;
-
-	const UINT rm_g_samplerDisplacementMap0 = pShaderInputRegisterMappings[ShaderInputD3D9_g_samplerDisplacementMap0];
-    const UINT rm_g_samplerDisplacementMap1 = pShaderInputRegisterMappings[ShaderInputD3D9_g_samplerDisplacementMap1];
-	const UINT rm_g_samplerDisplacementMap2 = pShaderInputRegisterMappings[ShaderInputD3D9_g_samplerDisplacementMap2];
-    const UINT rm_g_samplerDisplacementMap3 = pShaderInputRegisterMappings[ShaderInputD3D9_g_samplerDisplacementMap3];
-    const UINT rm_g_samplerGradientMap0 = pShaderInputRegisterMappings[ShaderInputD3D9_g_samplerGradientMap0];
-    const UINT rm_g_samplerGradientMap1 = pShaderInputRegisterMappings[ShaderInputD3D9_g_samplerGradientMap1];
-    const UINT rm_g_samplerGradientMap2 = pShaderInputRegisterMappings[ShaderInputD3D9_g_samplerGradientMap2];
-    const UINT rm_g_samplerGradientMap3 = pShaderInputRegisterMappings[ShaderInputD3D9_g_samplerGradientMap3];
-    const UINT rm_g_WorldEye = pShaderInputRegisterMappings[ShaderInputD3D9_g_WorldEye];
-    const UINT rm_g_UVScaleCascade0123 = pShaderInputRegisterMappings[ShaderInputD3D9_g_UVScaleCascade0123];
-    const UINT rm_g_TexelLength_x2_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_TexelLength_x2_PS];
-    const UINT rm_g_Cascade1Scale_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade1Scale_PS];
-    const UINT rm_g_Cascade1TexelScale_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade1TexelScale_PS];
-    const UINT rm_g_Cascade1UVOffset_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade1UVOffset_PS];
-    const UINT rm_g_Cascade2Scale_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade2Scale_PS];
-    const UINT rm_g_Cascade2TexelScale_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade2TexelScale_PS];
-    const UINT rm_g_Cascade2UVOffset_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade2UVOffset_PS];
-    const UINT rm_g_Cascade3Scale_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade3Scale_PS];
-    const UINT rm_g_Cascade3TexelScale_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade3TexelScale_PS];
-    const UINT rm_g_Cascade3UVOffset_PS = pShaderInputRegisterMappings[ShaderInputD3D9_g_Cascade3UVOffset_PS];
-
-    const DWORD gradMapMinFilterMode = m_params.aniso_level > 1 ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
-
-    // Preserve state as necessary
-    if(pSavestateImpl)
-    {
-        if(rm_g_samplerDisplacementMap0 != nvrm_unused)
-        {
-            const UINT displacementMapSampler = D3DVERTEXTEXTURESAMPLER0 + rm_g_samplerDisplacementMap0;
-            V_RETURN(pSavestateImpl->PreserveD3D9Texture(displacementMapSampler));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MIPFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MINFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MAGFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_ADDRESSU));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_ADDRESSV));
-        }
-        if(rm_g_samplerDisplacementMap1 != nvrm_unused)
-        {
-            const UINT displacementMapSampler = D3DVERTEXTEXTURESAMPLER0 + rm_g_samplerDisplacementMap1;
-            V_RETURN(pSavestateImpl->PreserveD3D9Texture(displacementMapSampler));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MIPFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MINFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MAGFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_ADDRESSU));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_ADDRESSV));
-        }
-        if(rm_g_samplerDisplacementMap2 != nvrm_unused)
-        {
-            const UINT displacementMapSampler = D3DVERTEXTEXTURESAMPLER0 + rm_g_samplerDisplacementMap2;
-            V_RETURN(pSavestateImpl->PreserveD3D9Texture(displacementMapSampler));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MIPFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MINFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MAGFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_ADDRESSU));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_ADDRESSV));
-        }
-        if(rm_g_samplerDisplacementMap3 != nvrm_unused)
-        {
-            const UINT displacementMapSampler = D3DVERTEXTEXTURESAMPLER0 + rm_g_samplerDisplacementMap3;
-            V_RETURN(pSavestateImpl->PreserveD3D9Texture(displacementMapSampler));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MIPFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MINFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_MAGFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_ADDRESSU));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(displacementMapSampler, D3DSAMP_ADDRESSV));
-        }
-        //
-        if(rm_g_samplerGradientMap0 != nvrm_unused)
-        {
-            const UINT gradMapSampler = rm_g_samplerGradientMap0;
-            V_RETURN(pSavestateImpl->PreserveD3D9Texture(gradMapSampler));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MIPFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MINFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MAGFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_ADDRESSU));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_ADDRESSV));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MAXANISOTROPY));
-        }
-        if(rm_g_samplerGradientMap1 != nvrm_unused)
-        {
-            const UINT gradMapSampler = rm_g_samplerGradientMap1;
-            V_RETURN(pSavestateImpl->PreserveD3D9Texture(gradMapSampler));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MIPFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MINFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MAGFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_ADDRESSU));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_ADDRESSV));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MAXANISOTROPY));
-        }
-        if(rm_g_samplerGradientMap2 != nvrm_unused)
-        {
-            const UINT gradMapSampler = rm_g_samplerGradientMap2;
-            V_RETURN(pSavestateImpl->PreserveD3D9Texture(gradMapSampler));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MIPFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MINFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MAGFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_ADDRESSU));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_ADDRESSV));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MAXANISOTROPY));
-        }
-        if(rm_g_samplerGradientMap3 != nvrm_unused)
-        {
-            const UINT gradMapSampler = rm_g_samplerGradientMap3;
-            V_RETURN(pSavestateImpl->PreserveD3D9Texture(gradMapSampler));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MIPFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MINFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MAGFILTER));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_ADDRESSU));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_ADDRESSV));
-            V_RETURN(pSavestateImpl->PreserveD3D9SamplerState(gradMapSampler, D3DSAMP_MAXANISOTROPY));
-        }
-        //
-
-        if(rm_g_WorldEye != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9VertexShaderConstantF(rm_g_WorldEye, 1));
-        if(rm_g_UVScaleCascade0123 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9VertexShaderConstantF(rm_g_UVScaleCascade0123, 1));
-
-		if(rm_g_TexelLength_x2_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_TexelLength_x2_PS, 1));
-        if(rm_g_Cascade1Scale_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade1Scale_PS, 1));
-        if(rm_g_Cascade1TexelScale_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade1TexelScale_PS, 1));
-        if(rm_g_Cascade1UVOffset_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade1UVOffset_PS, 1));
-		if(rm_g_Cascade2Scale_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade2Scale_PS, 1));
-        if(rm_g_Cascade2TexelScale_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade2TexelScale_PS, 1));
-        if(rm_g_Cascade2UVOffset_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade2UVOffset_PS, 1));
-        if(rm_g_Cascade3Scale_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade3Scale_PS, 1));
-        if(rm_g_Cascade3TexelScale_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade3TexelScale_PS, 1));
-        if(rm_g_Cascade3UVOffset_PS != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D9PixelShaderConstantF(rm_g_Cascade3UVOffset_PS, 1));
-    }
-
-    // Textures
-    if(rm_g_samplerDisplacementMap0 != nvrm_unused)
-    {
-        const UINT displacementMapSampler = D3DVERTEXTEXTURESAMPLER0 + rm_g_samplerDisplacementMap0;
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(displacementMapSampler, cascade_states[0].m_pFFTSimulation->GetDisplacementMapD3D9()));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-    }
-    if(rm_g_samplerDisplacementMap1 != nvrm_unused)
-    {
-        const UINT displacementMapSampler = D3DVERTEXTEXTURESAMPLER0 + rm_g_samplerDisplacementMap1;
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(displacementMapSampler, cascade_states[1].m_pFFTSimulation->GetDisplacementMapD3D9()));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-    }
-    if(rm_g_samplerDisplacementMap2 != nvrm_unused)
-    {
-        const UINT displacementMapSampler = D3DVERTEXTEXTURESAMPLER0 + rm_g_samplerDisplacementMap2;
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(displacementMapSampler, cascade_states[2].m_pFFTSimulation->GetDisplacementMapD3D9()));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-    }
-    if(rm_g_samplerDisplacementMap3 != nvrm_unused)
-    {
-        const UINT displacementMapSampler = D3DVERTEXTEXTURESAMPLER0 + rm_g_samplerDisplacementMap3;
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(displacementMapSampler, cascade_states[3].m_pFFTSimulation->GetDisplacementMapD3D9()));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(displacementMapSampler, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-    }
-    //
-    if(rm_g_samplerGradientMap0 != nvrm_unused)
-    {
-        const UINT gradMapSampler = rm_g_samplerGradientMap0;
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(gradMapSampler, cascade_states[0].m_d3d._9.m_pd3d9GradientMap[m_active_GPU_slot]));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MINFILTER, gradMapMinFilterMode));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MAXANISOTROPY, m_params.aniso_level));
-    }
-    if(rm_g_samplerGradientMap1 != nvrm_unused)
-    {
-        const UINT gradMapSampler = rm_g_samplerGradientMap1;
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(gradMapSampler, cascade_states[1].m_d3d._9.m_pd3d9GradientMap[m_active_GPU_slot]));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MINFILTER, gradMapMinFilterMode));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MAXANISOTROPY, m_params.aniso_level));
-    }
-    if(rm_g_samplerGradientMap2 != nvrm_unused)
-    {
-        const UINT gradMapSampler = rm_g_samplerGradientMap2;
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(gradMapSampler, cascade_states[2].m_d3d._9.m_pd3d9GradientMap[m_active_GPU_slot]));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MINFILTER, gradMapMinFilterMode));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MAXANISOTROPY, m_params.aniso_level));
-    }
-    if(rm_g_samplerGradientMap3 != nvrm_unused)
-    {
-        const UINT gradMapSampler = rm_g_samplerGradientMap3;
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetTexture(gradMapSampler, cascade_states[3].m_d3d._9.m_pd3d9GradientMap[m_active_GPU_slot]));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MINFILTER, gradMapMinFilterMode));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetSamplerState(gradMapSampler, D3DSAMP_MAXANISOTROPY, m_params.aniso_level));
-    }
-    // Constants
-	gfsdk_float4 UVScaleCascade0123;
-	UVScaleCascade0123.x = 1.0f / m_params.cascades[0].fft_period;
-	UVScaleCascade0123.y = 1.0f / m_params.cascades[1].fft_period;
-	UVScaleCascade0123.z = 1.0f / m_params.cascades[2].fft_period;
-	UVScaleCascade0123.w = 1.0f / m_params.cascades[3].fft_period;
-
-	gfsdk_float4x4 inv_mat_view;
-	gfsdk_float4 vec_original = {0,0,0,1};
-	gfsdk_float4 vec_transformed;
-	mat4Inverse(inv_mat_view,matView);
-	vec4Mat4Mul(vec_transformed, vec_original, inv_mat_view);
-	gfsdk_float4 vGlobalEye = vec_transformed;
-
-	const gfsdk_float4 texel_len = gfsdk_make_float4(m_params.cascades[0].fft_period / m_params.cascades[0].fft_resolution,0,0,0);
-    const gfsdk_float4 cascade1Scale = gfsdk_make_float4(m_params.cascades[0].fft_period/m_params.cascades[1].fft_period,0,0,0);
-	const gfsdk_float4 cascade1TexelScale = gfsdk_make_float4((m_params.cascades[0].fft_period * m_params.cascades[1].fft_resolution) / (m_params.cascades[1].fft_period * m_params.cascades[0].fft_resolution),0,0,0);
-	const gfsdk_float4 cascade1UVOffset = gfsdk_make_float4(0,0,0,0);
-    const gfsdk_float4 cascade2Scale = gfsdk_make_float4(m_params.cascades[0].fft_period/m_params.cascades[2].fft_period,0,0,0);
-	const gfsdk_float4 cascade2TexelScale = gfsdk_make_float4((m_params.cascades[0].fft_period * m_params.cascades[2].fft_resolution) / (m_params.cascades[2].fft_period * m_params.cascades[0].fft_resolution),0,0,0);
-	const gfsdk_float4 cascade2UVOffset = gfsdk_make_float4(0,0,0,0);
-    const gfsdk_float4 cascade3Scale = gfsdk_make_float4(m_params.cascades[0].fft_period/m_params.cascades[3].fft_period,0,0,0);
-	const gfsdk_float4 cascade3TexelScale = gfsdk_make_float4((m_params.cascades[0].fft_period * m_params.cascades[3].fft_resolution) / (m_params.cascades[3].fft_period * m_params.cascades[0].fft_resolution),0,0,0);
-	const gfsdk_float4 cascade3UVOffset = gfsdk_make_float4(0,0,0,0);
-
-    if(rm_g_WorldEye != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetVertexShaderConstantF(rm_g_WorldEye, (FLOAT*)&vGlobalEye, 1));
-    if(rm_g_UVScaleCascade0123 != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetVertexShaderConstantF(rm_g_UVScaleCascade0123, (FLOAT*)&UVScaleCascade0123, 1));
-	if(rm_g_TexelLength_x2_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_TexelLength_x2_PS, (FLOAT*)&texel_len, 1));
-    //
-    if(rm_g_Cascade1Scale_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade1Scale_PS, (FLOAT*)&cascade1Scale, 1));
-    if(rm_g_Cascade1TexelScale_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade1TexelScale_PS, (FLOAT*)&cascade1TexelScale, 1));
-    if(rm_g_Cascade1UVOffset_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade1UVOffset_PS, (FLOAT*)&cascade1UVOffset, 1));
-    if(rm_g_Cascade2Scale_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade2Scale_PS, (FLOAT*)&cascade2Scale, 1));
-    if(rm_g_Cascade2TexelScale_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade2TexelScale_PS, (FLOAT*)&cascade2TexelScale, 1));
-    if(rm_g_Cascade2UVOffset_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade2UVOffset_PS, (FLOAT*)&cascade2UVOffset, 1));
-    if(rm_g_Cascade3Scale_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade3Scale_PS, (FLOAT*)&cascade3Scale, 1));
-    if(rm_g_Cascade3TexelScale_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade3TexelScale_PS, (FLOAT*)&cascade3TexelScale, 1));
-    if(rm_g_Cascade3UVOffset_PS != nvrm_unused)
-        V_RETURN(m_d3d._9.m_pd3d9Device->SetPixelShaderConstantF(rm_g_Cascade3UVOffset_PS, (FLOAT*)&cascade3UVOffset, 1));
-
-    return S_OK;
-#else
-return E_FAIL;
-#endif
-}
-
-HRESULT GFSDK_WaveWorks_Simulation::setRenderStateD3D10(	const gfsdk_float4x4& D3D10_ONLY(matView),
-															const UINT* D3D10_ONLY(pShaderInputRegisterMappings),
-															GFSDK_WaveWorks_Savestate* D3D10_ONLY(pSavestateImpl)
-															)
-{
-#if WAVEWORKS_ENABLE_D3D10
-    HRESULT hr;
-    const UINT rm_vs_buffer = pShaderInputRegisterMappings[ShaderInputD3D10_vs_buffer];
-    const UINT rm_g_samplerDisplacementMap0 = pShaderInputRegisterMappings[ShaderInputD3D10_g_samplerDisplacementMap0];
-    const UINT rm_g_samplerDisplacementMap1 = pShaderInputRegisterMappings[ShaderInputD3D10_g_samplerDisplacementMap1];
-	const UINT rm_g_samplerDisplacementMap2 = pShaderInputRegisterMappings[ShaderInputD3D10_g_samplerDisplacementMap2];
-	const UINT rm_g_samplerDisplacementMap3 = pShaderInputRegisterMappings[ShaderInputD3D10_g_samplerDisplacementMap3];
-    const UINT rm_g_textureDisplacementMap0 = pShaderInputRegisterMappings[ShaderInputD3D10_g_textureDisplacementMap0];
-    const UINT rm_g_textureDisplacementMap1 = pShaderInputRegisterMappings[ShaderInputD3D10_g_textureDisplacementMap1];
-	const UINT rm_g_textureDisplacementMap2 = pShaderInputRegisterMappings[ShaderInputD3D10_g_textureDisplacementMap2];
-	const UINT rm_g_textureDisplacementMap3 = pShaderInputRegisterMappings[ShaderInputD3D10_g_textureDisplacementMap3];
-    const UINT rm_ps_buffer = pShaderInputRegisterMappings[ShaderInputD3D10_ps_buffer];
-    const UINT rm_g_samplerGradientMap0 = pShaderInputRegisterMappings[ShaderInputD3D10_g_samplerGradientMap0];
-    const UINT rm_g_samplerGradientMap1 = pShaderInputRegisterMappings[ShaderInputD3D10_g_samplerGradientMap1];
-	const UINT rm_g_samplerGradientMap2 = pShaderInputRegisterMappings[ShaderInputD3D10_g_samplerGradientMap2];
-	const UINT rm_g_samplerGradientMap3 = pShaderInputRegisterMappings[ShaderInputD3D10_g_samplerGradientMap3];
-    const UINT rm_g_textureGradientMap0 = pShaderInputRegisterMappings[ShaderInputD3D10_g_textureGradientMap0];
-    const UINT rm_g_textureGradientMap1 = pShaderInputRegisterMappings[ShaderInputD3D10_g_textureGradientMap1];
-	const UINT rm_g_textureGradientMap2 = pShaderInputRegisterMappings[ShaderInputD3D10_g_textureGradientMap2];
-	const UINT rm_g_textureGradientMap3 = pShaderInputRegisterMappings[ShaderInputD3D10_g_textureGradientMap3];
-
-    // Preserve state as necessary
-    if(pSavestateImpl)
-    {
-        // Samplers/textures
-		//VS
-        if(rm_g_samplerDisplacementMap0 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderSampler(rm_g_samplerDisplacementMap0));
-        if(rm_g_samplerDisplacementMap1 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderSampler(rm_g_samplerDisplacementMap1));
-        if(rm_g_samplerDisplacementMap2 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderSampler(rm_g_samplerDisplacementMap2));
-        if(rm_g_samplerDisplacementMap3 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderSampler(rm_g_samplerDisplacementMap3));
-
-		if(rm_g_textureDisplacementMap0 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderResource(rm_g_textureDisplacementMap0));
-        if(rm_g_textureDisplacementMap1 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderResource(rm_g_textureDisplacementMap1));
-        if(rm_g_textureDisplacementMap2 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderResource(rm_g_textureDisplacementMap2));
-        if(rm_g_textureDisplacementMap3 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderResource(rm_g_textureDisplacementMap3));
-
-		// PS
-        if(rm_g_samplerGradientMap0 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderSampler(rm_g_samplerGradientMap0));
-        if(rm_g_samplerGradientMap1 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderSampler(rm_g_samplerGradientMap1));
-        if(rm_g_samplerGradientMap2 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderSampler(rm_g_samplerGradientMap2));
-        if(rm_g_samplerGradientMap3 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderSampler(rm_g_samplerGradientMap3));
-
-        if(rm_g_textureGradientMap0 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderResource(rm_g_textureGradientMap0));
-        if(rm_g_textureGradientMap1 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderResource(rm_g_textureGradientMap1));
-        if(rm_g_textureGradientMap2 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderResource(rm_g_textureGradientMap2));
-        if(rm_g_textureGradientMap3 != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderResource(rm_g_textureGradientMap3));
- 
-        // Constants
-        if(rm_vs_buffer != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10VertexShaderConstantBuffer(rm_vs_buffer));
-        if(rm_ps_buffer != nvrm_unused)
-            V_RETURN(pSavestateImpl->PreserveD3D10PixelShaderConstantBuffer(rm_ps_buffer));
-    }
-
-    // Vertex textures/samplers
-    if(rm_g_samplerDisplacementMap0 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->VSSetSamplers(rm_g_samplerDisplacementMap0, 1, &m_d3d._10.m_pd3d10LinearNoMipSampler);
-    if(rm_g_samplerDisplacementMap1 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->VSSetSamplers(rm_g_samplerDisplacementMap1, 1, &m_d3d._10.m_pd3d10LinearNoMipSampler);
-    if(rm_g_samplerDisplacementMap2 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->VSSetSamplers(rm_g_samplerDisplacementMap2, 1, &m_d3d._10.m_pd3d10LinearNoMipSampler);
-    if(rm_g_samplerDisplacementMap3 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->VSSetSamplers(rm_g_samplerDisplacementMap3, 1, &m_d3d._10.m_pd3d10LinearNoMipSampler);
-    //
-    if(rm_g_textureDisplacementMap0 != nvrm_unused)
-		m_d3d._10.m_pd3d10Device->VSSetShaderResources(rm_g_textureDisplacementMap0, 1, cascade_states[0].m_pFFTSimulation->GetDisplacementMapD3D10());
-    if(rm_g_textureDisplacementMap1 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->VSSetShaderResources(rm_g_textureDisplacementMap1, 1, cascade_states[1].m_pFFTSimulation->GetDisplacementMapD3D10());
-    if(rm_g_textureDisplacementMap2 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->VSSetShaderResources(rm_g_textureDisplacementMap2, 1, cascade_states[2].m_pFFTSimulation->GetDisplacementMapD3D10());
-    if(rm_g_textureDisplacementMap3 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->VSSetShaderResources(rm_g_textureDisplacementMap3, 1, cascade_states[3].m_pFFTSimulation->GetDisplacementMapD3D10());
-
-	
-	// Pixel textures/samplers
-    if(rm_g_samplerGradientMap0 != nvrm_unused)
-		m_d3d._10.m_pd3d10Device->PSSetSamplers(rm_g_samplerGradientMap0, 1, &m_d3d._10.m_pd3d10GradMapSampler);
-    if(rm_g_samplerGradientMap1 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->PSSetSamplers(rm_g_samplerGradientMap1, 1, &m_d3d._10.m_pd3d10GradMapSampler);
-    if(rm_g_samplerGradientMap2 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->PSSetSamplers(rm_g_samplerGradientMap2, 1, &m_d3d._10.m_pd3d10GradMapSampler);
-    if(rm_g_samplerGradientMap3 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->PSSetSamplers(rm_g_samplerGradientMap3, 1, &m_d3d._10.m_pd3d10GradMapSampler);
-	//
-    if(rm_g_textureGradientMap0 != nvrm_unused)
-		m_d3d._10.m_pd3d10Device->PSSetShaderResources(rm_g_textureGradientMap0, 1, &cascade_states[0].m_d3d._10.m_pd3d10GradientMap[m_active_GPU_slot]);
-    if(rm_g_textureGradientMap1 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->PSSetShaderResources(rm_g_textureGradientMap1, 1, &cascade_states[1].m_d3d._10.m_pd3d10GradientMap[m_active_GPU_slot]);
-    if(rm_g_textureGradientMap2 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->PSSetShaderResources(rm_g_textureGradientMap2, 1, &cascade_states[2].m_d3d._10.m_pd3d10GradientMap[m_active_GPU_slot]);
-    if(rm_g_textureGradientMap3 != nvrm_unused)
-        m_d3d._10.m_pd3d10Device->PSSetShaderResources(rm_g_textureGradientMap3, 1, &cascade_states[3].m_d3d._10.m_pd3d10GradientMap[m_active_GPU_slot]);
-	
-    // Constants
-    vs_attr_cbuffer VSCB;
-    vs_attr_cbuffer* pVSCB = NULL;
-    if(rm_vs_buffer != nvrm_unused)
-    {
-        pVSCB = &VSCB;
-
-        pVSCB->g_UVScaleCascade0123[0] = 1.0f / m_params.cascades[0].fft_period;
-        pVSCB->g_UVScaleCascade0123[1] = 1.0f / m_params.cascades[1].fft_period;
-        pVSCB->g_UVScaleCascade0123[2] = 1.0f / m_params.cascades[2].fft_period;
-        pVSCB->g_UVScaleCascade0123[3] = 1.0f / m_params.cascades[3].fft_period;
-
-		gfsdk_float4x4 inv_mat_view;
-		gfsdk_float4 vec_original = {0,0,0,1};
-		gfsdk_float4 vec_transformed;
-		mat4Inverse(inv_mat_view,matView);
-		vec4Mat4Mul(vec_transformed, vec_original, inv_mat_view);
-		gfsdk_float4 vGlobalEye = vec_transformed;
-
-        pVSCB->g_WorldEye[0] = vGlobalEye.x;
-        pVSCB->g_WorldEye[1] = vGlobalEye.y;
-        pVSCB->g_WorldEye[2] = vGlobalEye.z;
-    }
-
-	ps_attr_cbuffer PSCB;
-    ps_attr_cbuffer* pPSCB = NULL;
-	const FLOAT texel_len = m_params.cascades[0].fft_period / m_params.cascades[0].fft_resolution;
-    const float cascade1Scale = m_params.cascades[0].fft_period/m_params.cascades[1].fft_period;
-    const float cascade1UVOffset = 0.f; // half-pixel not required in D3D10
-    const float cascade2Scale = m_params.cascades[0].fft_period/m_params.cascades[2].fft_period;
-    const float cascade2UVOffset = 0.f; // half-pixel not required in D3D10
-    const float cascade3Scale = m_params.cascades[0].fft_period/m_params.cascades[3].fft_period;
-    const float cascade3UVOffset = 0.f; // half-pixel not required in D3D10
-
-    if(rm_ps_buffer != nvrm_unused)
-    {
-        pPSCB = &PSCB;
-		pPSCB->g_TexelLength_x2_PS = texel_len;
-    }
-
-    if(NULL != pPSCB)
-    {
-        pPSCB->g_Cascade1Scale_PS = cascade1Scale;
-        pPSCB->g_Cascade1UVOffset_PS = cascade1UVOffset;
-        pPSCB->g_Cascade2Scale_PS = cascade2Scale;
-        pPSCB->g_Cascade2UVOffset_PS = cascade2UVOffset;
-        pPSCB->g_Cascade3Scale_PS = cascade3Scale;
-        pPSCB->g_Cascade3UVOffset_PS = cascade3UVOffset;
-        pPSCB->g_Cascade1TexelScale_PS = (m_params.cascades[0].fft_period * m_params.cascades[1].fft_resolution) / (m_params.cascades[1].fft_period * m_params.cascades[0].fft_resolution);
-		pPSCB->g_Cascade2TexelScale_PS = (m_params.cascades[0].fft_period * m_params.cascades[2].fft_resolution) / (m_params.cascades[2].fft_period * m_params.cascades[0].fft_resolution);
-		pPSCB->g_Cascade3TexelScale_PS = (m_params.cascades[0].fft_period * m_params.cascades[3].fft_resolution) / (m_params.cascades[3].fft_period * m_params.cascades[0].fft_resolution);
-    }
-
-    if(pVSCB)
-    {
-        m_d3d._10.m_pd3d10Device->UpdateSubresource(m_d3d._10.m_pd3d10VertexShaderCB, 0, NULL, pVSCB, 0, 0);
-        m_d3d._10.m_pd3d10Device->VSSetConstantBuffers(rm_vs_buffer, 1, &m_d3d._10.m_pd3d10VertexShaderCB);
-    }
-
-    if(pPSCB)
-    {
-        m_d3d._10.m_pd3d10Device->UpdateSubresource(m_d3d._10.m_pd3d10PixelShaderCB, 0, NULL, pPSCB, 0, 0);
-        m_d3d._10.m_pd3d10Device->PSSetConstantBuffers(rm_ps_buffer, 1, &m_d3d._10.m_pd3d10PixelShaderCB);
-    }
-
-    return S_OK;
-#else
-return E_FAIL;
-#endif
 }
 
 HRESULT GFSDK_WaveWorks_Simulation::setRenderStateD3D11(	ID3D11DeviceContext* D3D11_ONLY(pDC),
@@ -4270,16 +2970,6 @@ HRESULT GFSDK_WaveWorks_Simulation::kick(gfsdk_U64* pKickID, Graphics_Context* p
     return S_OK;
 }
 
-HRESULT GFSDK_WaveWorks_Simulation::getShaderInputCountD3D9()
-{
-    return NumShaderInputsD3D9;
-}
-
-HRESULT GFSDK_WaveWorks_Simulation::getShaderInputCountD3D10()
-{
-    return NumShaderInputsD3D10;
-}
-
 HRESULT GFSDK_WaveWorks_Simulation::getShaderInputCountD3D11()
 {
     return NumShaderInputsD3D11;
@@ -4298,34 +2988,6 @@ HRESULT GFSDK_WaveWorks_Simulation::getShaderInputCountGL2()
 HRESULT GFSDK_WaveWorks_Simulation::getTextureUnitCountGL2(bool useTextureArrays)
 {
 	return useTextureArrays? 2:8;
-}
-
-HRESULT GFSDK_WaveWorks_Simulation::getShaderInputDescD3D9(UINT D3D9_ONLY(inputIndex), GFSDK_WaveWorks_ShaderInput_Desc* D3D9_ONLY(pDesc))
-{
-#if WAVEWORKS_ENABLE_D3D9
-    if(inputIndex >= NumShaderInputsD3D9)
-        return E_FAIL;
-
-    *pDesc = ShaderInputDescsD3D9[inputIndex];
-
-    return S_OK;
-#else // WAVEWORKS_ENABLE_D3D9
-	return E_FAIL;
-#endif
-}
-
-HRESULT GFSDK_WaveWorks_Simulation::getShaderInputDescD3D10(UINT D3D10_ONLY(inputIndex), GFSDK_WaveWorks_ShaderInput_Desc* D3D10_ONLY(pDesc))
-{
-#if WAVEWORKS_ENABLE_D3D10
-    if(inputIndex >= NumShaderInputsD3D10)
-        return E_FAIL;
-
-    *pDesc = ShaderInputDescsD3D10[inputIndex];
-
-    return S_OK;
-#else // WAVEWORKS_ENABLE_D3D10
-	return E_FAIL;
-#endif
 }
 
 HRESULT GFSDK_WaveWorks_Simulation::getShaderInputDescD3D11(UINT D3D11_ONLY(inputIndex), GFSDK_WaveWorks_ShaderInput_Desc* D3D11_ONLY(pDesc))
@@ -4424,36 +3086,7 @@ HRESULT GFSDK_WaveWorks_Simulation::allocateRenderingResources(int cascade)
 	{
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			{
-				V_RETURN(m_d3d._9.m_pd3d9Device->CreateTexture(dmap_dim, dmap_dim, 0, D3DUSAGE_RENDERTARGET|D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &cascade_states[cascade].m_d3d._9.m_pd3d9GradientMap[gpu_slot], NULL));
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			{
-				D3D10_TEXTURE2D_DESC gradMapTD;
-				gradMapTD.Width = dmap_dim;
-				gradMapTD.Height = dmap_dim;
-				gradMapTD.MipLevels = 0;
-				gradMapTD.ArraySize = 1;
-				gradMapTD.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-				gradMapTD.SampleDesc = kNoSample;
-				gradMapTD.Usage = D3D10_USAGE_DEFAULT;
-				gradMapTD.BindFlags = D3D10_BIND_SHADER_RESOURCE | D3D10_BIND_RENDER_TARGET;
-				gradMapTD.CPUAccessFlags = 0;
-				gradMapTD.MiscFlags = D3D10_RESOURCE_MISC_GENERATE_MIPS;
 
-				ID3D10Texture2D* pD3D10Texture = NULL;
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateTexture2D(&gradMapTD, NULL, &pD3D10Texture));
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateShaderResourceView(pD3D10Texture, NULL, &cascade_states[cascade].m_d3d._10.m_pd3d10GradientMap[gpu_slot]));
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateRenderTargetView(pD3D10Texture, NULL, &cascade_states[cascade].m_d3d._10.m_pd3d10GradientRenderTarget[gpu_slot]));
-				SAFE_RELEASE(pD3D10Texture);
-			}
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
@@ -4561,37 +3194,6 @@ HRESULT GFSDK_WaveWorks_Simulation::allocateRenderingResources(int cascade)
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			V_RETURN(m_d3d._9.m_pd3d9Device->CreateTexture(dmap_dim, dmap_dim, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, &cascade_states[cascade].m_d3d._9.m_pd3d9FoamEnergyMap, NULL));
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-            D3D10_TEXTURE2D_DESC foamenergyTD;
-            foamenergyTD.Width = dmap_dim;
-            foamenergyTD.Height = dmap_dim;
-            foamenergyTD.MipLevels = 1;
-            foamenergyTD.ArraySize = 1;
-			foamenergyTD.Format = DXGI_FORMAT_R16_FLOAT;
-            foamenergyTD.SampleDesc = kNoSample;
-            foamenergyTD.Usage = D3D10_USAGE_DEFAULT;
-            foamenergyTD.BindFlags = D3D10_BIND_SHADER_RESOURCE | D3D10_BIND_RENDER_TARGET;
-            foamenergyTD.CPUAccessFlags = 0;
-            foamenergyTD.MiscFlags = 0;
-
-            ID3D10Texture2D* pD3D10FoamEnergyTexture = NULL;
-            V_RETURN(m_d3d._10.m_pd3d10Device->CreateTexture2D(&foamenergyTD, NULL, &pD3D10FoamEnergyTexture));
-			V_RETURN(m_d3d._10.m_pd3d10Device->CreateShaderResourceView(pD3D10FoamEnergyTexture, NULL, &cascade_states[cascade].m_d3d._10.m_pd3d10FoamEnergyMap));
-			V_RETURN(m_d3d._10.m_pd3d10Device->CreateRenderTargetView(pD3D10FoamEnergyTexture, NULL, &cascade_states[cascade].m_d3d._10.m_pd3d10FoamEnergyRenderTarget));
-            SAFE_RELEASE(pD3D10FoamEnergyTexture);
-		
-		}
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -4673,21 +3275,6 @@ void GFSDK_WaveWorks_Simulation::releaseRenderingResources(int cascade)
 	{
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			{
-				SAFE_RELEASE(cascade_states[cascade].m_d3d._9.m_pd3d9GradientMap[gpu_slot]);
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			{
-				SAFE_RELEASE(cascade_states[cascade].m_d3d._10.m_pd3d10GradientMap[gpu_slot]);
-				SAFE_RELEASE(cascade_states[cascade].m_d3d._10.m_pd3d10GradientRenderTarget[gpu_slot]);
-			}
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
@@ -4718,20 +3305,6 @@ void GFSDK_WaveWorks_Simulation::releaseRenderingResources(int cascade)
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-            SAFE_RELEASE(cascade_states[cascade].m_d3d._9.m_pd3d9FoamEnergyMap);
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			SAFE_RELEASE(cascade_states[cascade].m_d3d._10.m_pd3d10FoamEnergyMap);
-			SAFE_RELEASE(cascade_states[cascade].m_d3d._10.m_pd3d10FoamEnergyRenderTarget);
-		}
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -4771,11 +3344,6 @@ HRESULT GFSDK_WaveWorks_Simulation::initQuadMesh(int GFX_ONLY(cascade))
 
     // Vertices
     float tex_adjust = 0.f;
-    if(nv_water_d3d_api_d3d9 == m_d3dAPI)
-    {
-        // Half-texel offset required in D3D9
-        tex_adjust = 0.5f / m_params.cascades[cascade].fft_resolution;
-    }
 
     float vertices[] = {-1.0f,  1.0f, 0,	tex_adjust,      tex_adjust,     
                         -1.0f, -1.0f, 0,	tex_adjust,      tex_adjust+1.0f,
@@ -4798,42 +3366,6 @@ HRESULT GFSDK_WaveWorks_Simulation::initQuadMesh(int GFX_ONLY(cascade))
     // Init mesh
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			HRESULT hr;
-
-            const D3DVERTEXELEMENT9 quad_decl[] =
-            {
-                {0,  0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-                {0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
-                D3DDECL_END()
-            };
-
-            V_RETURN(NVWaveWorks_Mesh::CreateD3D9(m_d3d._9.m_pd3d9Device, quad_decl, VertexStride, vertices, 4, indices, 4, &cascade_states[cascade].m_pQuadMesh));
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			HRESULT hr;
-
-            const D3D10_INPUT_ELEMENT_DESC quad_layout[] = {
-                { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D10_INPUT_PER_VERTEX_DATA, 0 },
-                { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D10_INPUT_PER_VERTEX_DATA, 0 },
-            };
-            const UINT num_layout_elements = sizeof(quad_layout)/sizeof(quad_layout[0]);
-
-            V_RETURN(NVWaveWorks_Mesh::CreateD3D10(	m_d3d._10.m_pd3d10Device,
-													quad_layout, num_layout_elements,
-													SM4::CalcGradient::g_vs, sizeof(SM4::CalcGradient::g_vs),
-													VertexStride, vertices, 4, indices, 4,
-													&cascade_states[cascade].m_pQuadMesh
-													));
-        }
-        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {

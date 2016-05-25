@@ -69,20 +69,6 @@ void NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl::releaseAll()
 
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			SAFE_RELEASE(m_d3d._9.m_pd3d9Device);
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			SAFE_RELEASE(m_d3d._10.m_pd3d10Device);
-        }
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -99,76 +85,6 @@ void NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl::releaseAll()
 
 	SAFE_DELETE_ARRAY(m_pCudaDeviceInfos);
 	m_numCudaDevices = 0;
-}
-
-HRESULT NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl::initD3D9(IDirect3DDevice9* pD3DDevice)
-{
-#if WAVEWORKS_ENABLE_D3D9
-    if(nv_water_d3d_api_d3d9 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._9.m_pd3d9Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d9;
-        m_d3d._9.m_pd3d9Device = pD3DDevice;
-        m_d3d._9.m_pd3d9Device->AddRef();
-
-		CUDA_V_RETURN(cudaD3D9GetDevices(&m_numCudaDevices, NULL, 0, pD3DDevice, cudaD3D9DeviceListAll));
-		int* pCudaDevices = (int*)_alloca(m_numCudaDevices * sizeof(int));
-		CUDA_V_RETURN(cudaD3D9GetDevices(&m_numCudaDevices, pCudaDevices, m_numCudaDevices, pD3DDevice, cudaD3D9DeviceListAll));
-		m_pCudaDeviceInfos = new CudaDeviceInfo[m_numCudaDevices];
-		memset(m_pCudaDeviceInfos, 0, m_numCudaDevices * sizeof(CudaDeviceInfo));
-		for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-		{
-			m_pCudaDeviceInfos[cuda_dev_index].m_cudaDevice = pCudaDevices[cuda_dev_index];
-		}
-    }
-
-    return S_OK;
-#else
-    return E_FAIL;
-#endif
-}
-
-HRESULT NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl::initD3D10(ID3D10Device* pD3DDevice)
-{
-#if WAVEWORKS_ENABLE_D3D10
-    if(nv_water_d3d_api_d3d10 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._10.m_pd3d10Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d10;
-        m_d3d._10.m_pd3d10Device = pD3DDevice;
-        m_d3d._10.m_pd3d10Device->AddRef();
-
-		CUDA_V_RETURN(cudaD3D10GetDevices(&m_numCudaDevices, NULL, 0, pD3DDevice, cudaD3D10DeviceListAll));
-		int* pCudaDevices = (int*)_alloca(m_numCudaDevices * sizeof(int));
-		CUDA_V_RETURN(cudaD3D10GetDevices(&m_numCudaDevices, pCudaDevices, m_numCudaDevices, pD3DDevice, cudaD3D10DeviceListAll));
-		m_pCudaDeviceInfos = new CudaDeviceInfo[m_numCudaDevices];
-		memset(m_pCudaDeviceInfos, 0, m_numCudaDevices * sizeof(CudaDeviceInfo));
-		for(unsigned int cuda_dev_index = 0; cuda_dev_index != m_numCudaDevices; ++cuda_dev_index)
-		{
-			m_pCudaDeviceInfos[cuda_dev_index].m_cudaDevice = pCudaDevices[cuda_dev_index];
-		}
-    }
-
-    return S_OK;
-#else
-    return E_FAIL;
-#endif
 }
 
 HRESULT NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl::initD3D11(ID3D11Device* pD3DDevice)
@@ -392,24 +308,6 @@ HRESULT NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl::kick(Graphics_Context* /*p
 		// Multiple devices, we will have to do it the 'long' way
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			{
-				unsigned int cuda_device_count = 0;
-				CUDA_V_RETURN(cudaD3D9GetDevices(&cuda_device_count, &cuda_device, 1, m_d3d._9.m_pd3d9Device, cudaD3D9DeviceListCurrentFrame));
-				CUDA_V_RETURN(cudaSetDevice(cuda_device));
-				break;
-			}
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			{
-				unsigned int cuda_device_count = 0;
-				CUDA_V_RETURN(cudaD3D10GetDevices(&cuda_device_count, &cuda_device, 1, m_d3d._10.m_pd3d10Device, cudaD3D10DeviceListCurrentFrame));
-				CUDA_V_RETURN(cudaSetDevice(cuda_device));
-				break;
-			}
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
@@ -494,34 +392,6 @@ HRESULT NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl::mapInteropResources(const 
 {
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-			const int num_resources = m_Simulations.size();
-			IDirect3DResource9** pInteropResources = (IDirect3DResource9**)alloca(sizeof(IDirect3DResource9*)*num_resources);
-			int i = 0;
-			for(NVWaveWorks_FFT_Simulation_CUDA_Impl** pSim = m_Simulations.begin(); pSim != m_Simulations.end(); ++pSim, ++i)
-			{
-				pInteropResources[i] = (*pSim)->getD3D9InteropResource(m_activeCudaDeviceIndex);
-			}
-			CUDA_V_RETURN(cudaD3D9MapResources(num_resources, pInteropResources));	// @TODO: why no cu_stream?
-			break;
-		}
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			const int num_resources = m_Simulations.size();
-			ID3D10Resource** pInteropResources = (ID3D10Resource**)alloca(sizeof(ID3D10Resource*)*num_resources);
-			int i = 0;
-			for(NVWaveWorks_FFT_Simulation_CUDA_Impl** pSim = m_Simulations.begin(); pSim != m_Simulations.end(); ++pSim, ++i)
-			{
-				pInteropResources[i] = (*pSim)->getD3D10InteropResource(m_activeCudaDeviceIndex);
-			}
-			CUDA_V_RETURN(cudaD3D10MapResources(num_resources, pInteropResources));	// @TODO: why no cu_stream?
-			break;
-		}
-#endif
 #if WAVEWORKS_ENABLE_D3D11 || WAVEWORKS_ENABLE_GL
 	case nv_water_d3d_api_d3d11:
 	case nv_water_d3d_api_gl2:
@@ -553,34 +423,6 @@ HRESULT NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl::unmapInteropResources(cons
 {
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-			const int num_resources = m_Simulations.size();
-			IDirect3DResource9** pInteropResources = (IDirect3DResource9**)alloca(sizeof(IDirect3DResource9*)*num_resources);
-			int i = 0;
-			for(NVWaveWorks_FFT_Simulation_CUDA_Impl** pSim = m_Simulations.begin(); pSim != m_Simulations.end(); ++pSim, ++i)
-			{
-				pInteropResources[i] = (*pSim)->getD3D9InteropResource(m_activeCudaDeviceIndex);
-			}
-			CUDA_V_RETURN(cudaD3D9UnmapResources(num_resources, pInteropResources));	// @TODO: why no cu_stream?
-			break;
-		}
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			const int num_resources = m_Simulations.size();
-			ID3D10Resource** pInteropResources = (ID3D10Resource**)alloca(sizeof(ID3D10Resource*)*num_resources);
-			int i = 0;
-			for(NVWaveWorks_FFT_Simulation_CUDA_Impl** pSim = m_Simulations.begin(); pSim != m_Simulations.end(); ++pSim, ++i)
-			{
-				pInteropResources[i] = (*pSim)->getD3D10InteropResource(m_activeCudaDeviceIndex);
-			}
-			CUDA_V_RETURN(cudaD3D10UnmapResources(num_resources, pInteropResources));	// @TODO: why no cu_stream?
-			break;
-		}
-#endif
 #if WAVEWORKS_ENABLE_D3D11 || WAVEWORKS_ENABLE_GL
 	case nv_water_d3d_api_d3d11:
 	case nv_water_d3d_api_gl2:

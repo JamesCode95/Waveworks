@@ -94,10 +94,6 @@ GFSDK_WAVEWORKS_DECL(gfsdk_cstr) GFSDK_WaveWorks_GetBuildString();
 // Use these calls to globally initialize/release on D3D device create/destroy.
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_InitNoGraphics(const GFSDK_WaveWorks_Malloc_Hooks* pOptionalMallocHooks, const GFSDK_WaveWorks_API_GUID& apiGUID);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_ReleaseNoGraphics();
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_InitD3D9(IDirect3DDevice9* pD3DDevice, const GFSDK_WaveWorks_Malloc_Hooks* pOptionalMallocHooks, const GFSDK_WaveWorks_API_GUID& apiGUID);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_ReleaseD3D9(IDirect3DDevice9* pD3DDevice);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_InitD3D10(ID3D10Device* pD3DDevice, const GFSDK_WaveWorks_Malloc_Hooks* pOptionalMallocHooks, const GFSDK_WaveWorks_API_GUID& apiGUID);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_ReleaseD3D10(ID3D10Device* pD3DDevice);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_InitD3D11(ID3D11Device* pD3DDevice, const GFSDK_WaveWorks_Malloc_Hooks* pOptionalMallocHooks, const GFSDK_WaveWorks_API_GUID& apiGUID);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_ReleaseD3D11(ID3D11Device* pD3DDevice);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_InitGL2(const GFSDK_WAVEWORKS_GLFunctions* pGLFuncs, const GFSDK_WaveWorks_Malloc_Hooks* pOptionalMallocHooks, const GFSDK_WaveWorks_API_GUID& apiGUID);
@@ -113,11 +109,7 @@ GFSDK_WAVEWORKS_DECL(gfsdk_bool) GFSDK_WaveWorks_GLAttribIsShaderInput(gfsdk_cst
 
 // In order to preserve D3D state across certain calls, create a save-state object, pass it to the call
 // and then once the call is done, use it to restore the previous D3D state
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_Savestate_CreateD3D9(GFSDK_WaveWorks_StatePreserveFlags PreserveFlags, IDirect3DDevice9* pD3DDevice, GFSDK_WaveWorks_SavestateHandle* pResult);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_Savestate_CreateD3D10(GFSDK_WaveWorks_StatePreserveFlags PreserveFlags, ID3D10Device* pD3DDevice, GFSDK_WaveWorks_SavestateHandle* pResult);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_Savestate_CreateD3D11(GFSDK_WaveWorks_StatePreserveFlags PreserveFlags, ID3D11Device* pD3DDevice, GFSDK_WaveWorks_SavestateHandle* pResult);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_Savestate_RestoreD3D9(GFSDK_WaveWorks_SavestateHandle hSavestate);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_Savestate_RestoreD3D10(GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_Savestate_RestoreD3D11(GFSDK_WaveWorks_SavestateHandle hSavestate, ID3D11DeviceContext* pDC);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_Savestate_Destroy(GFSDK_WaveWorks_SavestateHandle hSavestate);
 
@@ -239,15 +231,11 @@ struct GFSDK_WaveWorks_Simulation_GL_Pool
 // These functions can be used to check whether a particular graphics device supports a particular detail level,
 // *before* initialising the graphics device
 GFSDK_WAVEWORKS_DECL(gfsdk_bool) GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_NoGraphics(GFSDK_WaveWorks_Simulation_DetailLevel detailLevel);
-GFSDK_WAVEWORKS_DECL(gfsdk_bool) GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_D3D9(IDirect3D9* pD3D9, const _D3DADAPTER_IDENTIFIER9& adapterIdentifier, GFSDK_WaveWorks_Simulation_DetailLevel detailLevel);
-GFSDK_WAVEWORKS_DECL(gfsdk_bool) GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_D3D10(IDXGIAdapter* adapter, GFSDK_WaveWorks_Simulation_DetailLevel detailLevel);
 GFSDK_WAVEWORKS_DECL(gfsdk_bool) GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_D3D11(IDXGIAdapter* adapter, GFSDK_WaveWorks_Simulation_DetailLevel detailLevel);
 GFSDK_WAVEWORKS_DECL(gfsdk_bool) GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_GL2(GFSDK_WaveWorks_Simulation_DetailLevel detailLevel);
 
 // Simulation lifetime management
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_CreateNoGraphics(const GFSDK_WaveWorks_Simulation_Settings& settings, const GFSDK_WaveWorks_Simulation_Params& params, GFSDK_WaveWorks_SimulationHandle* pResult);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_CreateD3D9(const GFSDK_WaveWorks_Simulation_Settings& settings, const GFSDK_WaveWorks_Simulation_Params& params, IDirect3DDevice9* pD3DDevice, GFSDK_WaveWorks_SimulationHandle* pResult);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_CreateD3D10(const GFSDK_WaveWorks_Simulation_Settings& settings, const GFSDK_WaveWorks_Simulation_Params& params, ID3D10Device* pD3DDevice, GFSDK_WaveWorks_SimulationHandle* pResult);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_CreateD3D11(const GFSDK_WaveWorks_Simulation_Settings& settings, const GFSDK_WaveWorks_Simulation_Params& params, ID3D11Device* pD3DDevice, GFSDK_WaveWorks_SimulationHandle* pResult);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_CreateGL2(const GFSDK_WaveWorks_Simulation_Settings& settings, const GFSDK_WaveWorks_Simulation_Params& params, void *pGLContext, GFSDK_WaveWorks_SimulationHandle* pResult);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_Destroy(GFSDK_WaveWorks_SimulationHandle hSim);
@@ -266,10 +254,6 @@ GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_SetT
 // Retrieve information about the WaveWorks shader inputs for a given platform. This information can be used to
 // query compiled shaders via a reflection interface to obtain register or constant buffer indices for subsequent
 // calls to SetRenderState
-GFSDK_WAVEWORKS_DECL(gfsdk_U32                 ) GFSDK_WaveWorks_Simulation_GetShaderInputCountD3D9();
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_GetShaderInputDescD3D9(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
-GFSDK_WAVEWORKS_DECL(gfsdk_U32                 ) GFSDK_WaveWorks_Simulation_GetShaderInputCountD3D10();
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_GetShaderInputDescD3D10(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
 GFSDK_WAVEWORKS_DECL(gfsdk_U32                 ) GFSDK_WaveWorks_Simulation_GetShaderInputCountD3D11();
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_GetShaderInputDescD3D11(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
 GFSDK_WAVEWORKS_DECL(gfsdk_U32                 ) GFSDK_WaveWorks_Simulation_GetShaderInputCountGL2();
@@ -280,8 +264,6 @@ GFSDK_WAVEWORKS_DECL(gfsdk_U32                 ) GFSDK_WaveWorks_Simulation_GetT
 
 // Set WaveWorks shader inputs ready for rendering - use GetStagingCursor() to identify the kick which produced the simulation
 // results that are about to be set
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_SetRenderStateD3D9(GFSDK_WaveWorks_SimulationHandle hSim, const gfsdk_float4x4& matView, const gfsdk_U32 * pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_SetRenderStateD3D10(GFSDK_WaveWorks_SimulationHandle hSim, const gfsdk_float4x4& matView, const gfsdk_U32 * pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_SetRenderStateD3D11(GFSDK_WaveWorks_SimulationHandle hSim, ID3D11DeviceContext* pDC, const gfsdk_float4x4& matView, const gfsdk_U32 * pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_SetRenderStateGL2(GFSDK_WaveWorks_SimulationHandle hSim, const gfsdk_float4x4& matView, const gfsdk_U32 * pShaderInputRegisterMappings, const GFSDK_WaveWorks_Simulation_GL_Pool& glPool);
 
@@ -302,8 +284,6 @@ GFSDK_WAVEWORKS_DECL(gfsdk_F32                 ) GFSDK_WaveWorks_Simulation_GetC
 // If necessary, this call will block until the CPU part of the pipeline is able to accept further in-flight work. If the CPU part of the pipeline
 // is already completely full, this means waiting for an in-flight kick to exit the CPU pipeline (kicks are processed in FIFO order)
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_KickNoGraphics(GFSDK_WaveWorks_SimulationHandle hSim, gfsdk_U64* pKickID);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_KickD3D9(GFSDK_WaveWorks_SimulationHandle hSim, gfsdk_U64* pKickID, GFSDK_WaveWorks_SavestateHandle hSavestate);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_KickD3D10(GFSDK_WaveWorks_SimulationHandle hSim, gfsdk_U64* pKickID, GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_KickD3D11(GFSDK_WaveWorks_SimulationHandle hSim, gfsdk_U64* pKickID, ID3D11DeviceContext* pDC, GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_KickGL2(GFSDK_WaveWorks_SimulationHandle hSim, gfsdk_U64* pKickID);
 
@@ -318,8 +298,6 @@ GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_GetS
 // Returns gfsdk_waveworks_result_NONE if there are no in-flight kicks in the CPU part of the simulation pipeline
 // Returns gfsdk_waveworks_result_WOULD_BLOCK if there are in-flight kicks in the CPU part of the pipeline, but they're not ready for staging
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_AdvanceStagingCursorNoGraphics(GFSDK_WaveWorks_SimulationHandle hSim, bool block);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_AdvanceStagingCursorD3D9(GFSDK_WaveWorks_SimulationHandle hSim, bool block, GFSDK_WaveWorks_SavestateHandle hSavestate);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_AdvanceStagingCursorD3D10(GFSDK_WaveWorks_SimulationHandle hSim, bool block, GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_AdvanceStagingCursorD3D11(GFSDK_WaveWorks_SimulationHandle hSim, bool block, ID3D11DeviceContext* pDC, GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result    ) GFSDK_WaveWorks_Simulation_AdvanceStagingCursorGL2(GFSDK_WaveWorks_SimulationHandle hSim, bool block);
 
@@ -391,8 +369,6 @@ struct GFSDK_WaveWorks_Quadtree_Stats
 };
 
 // Quadtree lifetime management
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_CreateD3D9(const GFSDK_WaveWorks_Quadtree_Params& params, IDirect3DDevice9* pD3DDevice, GFSDK_WaveWorks_QuadtreeHandle* pResult);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_CreateD3D10(const GFSDK_WaveWorks_Quadtree_Params& params, ID3D10Device* pD3DDevice, GFSDK_WaveWorks_QuadtreeHandle* pResult);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_CreateD3D11(const GFSDK_WaveWorks_Quadtree_Params& params, ID3D11Device* pD3DDevice, GFSDK_WaveWorks_QuadtreeHandle* pResult);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_CreateGL2(const GFSDK_WaveWorks_Quadtree_Params& params, unsigned int Program, GFSDK_WaveWorks_QuadtreeHandle* pResult);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_Destroy(GFSDK_WaveWorks_QuadtreeHandle hQuadtree);
@@ -403,10 +379,6 @@ GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_UpdateP
 // Retrieve information about the WaveWorks shader inputs for a given platform. This information can be used to
 // query compiled shaders via a reflection interface to obtain register or constant buffer indices for subsequent
 // calls to Draw
-GFSDK_WAVEWORKS_DECL(gfsdk_U32                ) GFSDK_WaveWorks_Quadtree_GetShaderInputCountD3D9();
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_GetShaderInputDescD3D9(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
-GFSDK_WAVEWORKS_DECL(gfsdk_U32                ) GFSDK_WaveWorks_Quadtree_GetShaderInputCountD3D10();
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_GetShaderInputDescD3D10(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
 GFSDK_WAVEWORKS_DECL(gfsdk_U32                ) GFSDK_WaveWorks_Quadtree_GetShaderInputCountD3D11();
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_GetShaderInputDescD3D11(gfsdk_U32 inputIndex, GFSDK_WaveWorks_ShaderInput_Desc* pDesc);
 GFSDK_WAVEWORKS_DECL(gfsdk_U32                ) GFSDK_WaveWorks_Quadtree_GetShaderInputCountGL2();
@@ -420,8 +392,6 @@ GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_AllocPa
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_FreePatch(GFSDK_WaveWorks_QuadtreeHandle hQuadtree, gfsdk_S32 x, gfsdk_S32 y, gfsdk_U32 lod);
 
 // Draw the water surface using the specified quadtree with the specified view and projection matrices
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_DrawD3D9(GFSDK_WaveWorks_QuadtreeHandle hQuadtree, const gfsdk_float4x4& matView, const gfsdk_float4x4& matProj, const gfsdk_U32 * pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate);
-GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_DrawD3D10(GFSDK_WaveWorks_QuadtreeHandle hQuadtree, const gfsdk_float4x4& matView, const gfsdk_float4x4& matProj, const gfsdk_U32 * pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_DrawD3D11(GFSDK_WaveWorks_QuadtreeHandle hQuadtree, ID3D11DeviceContext* pDC, const gfsdk_float4x4& matView, const gfsdk_float4x4& matProj, const gfsdk_U32 * pShaderInputRegisterMappings, GFSDK_WaveWorks_SavestateHandle hSavestate);
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result   ) GFSDK_WaveWorks_Quadtree_DrawGL2(GFSDK_WaveWorks_QuadtreeHandle hQuadtree, const gfsdk_float4x4& matView, const gfsdk_float4x4& matProj, const gfsdk_U32 * pShaderInputRegisterMappings);
 

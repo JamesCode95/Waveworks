@@ -41,8 +41,6 @@ public:
 	NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl();
 	~NVWaveWorks_FFT_Simulation_Manager_CUDA_Impl();
 
-    virtual HRESULT initD3D9(IDirect3DDevice9* pD3DDevice);
-    virtual HRESULT initD3D10(ID3D10Device* pD3DDevice);
     virtual HRESULT initD3D11(ID3D11Device* pD3DDevice);
 	virtual HRESULT initGL2(void* pGLContext);
 	virtual HRESULT initNoGraphics();
@@ -112,20 +110,6 @@ private:
 	// D3D API handling
 	nv_water_d3d_api m_d3dAPI;
 
-#if WAVEWORKS_ENABLE_D3D9
-    struct D3D9Objects
-    {
-		IDirect3DDevice9* m_pd3d9Device;
-    };
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-    struct D3D10Objects
-    {
-		ID3D10Device* m_pd3d10Device;
-    };
-#endif
-
 #if WAVEWORKS_ENABLE_D3D11
     struct D3D11Objects
     {
@@ -140,14 +124,6 @@ private:
 #endif
     union
     {
-#if WAVEWORKS_ENABLE_D3D9
-        D3D9Objects _9;
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-        D3D10Objects _10;
-#endif
-
 #if WAVEWORKS_ENABLE_D3D11
 		D3D11Objects _11;
 #endif

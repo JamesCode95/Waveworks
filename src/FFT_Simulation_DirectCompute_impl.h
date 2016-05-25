@@ -43,8 +43,6 @@ public:
 	~NVWaveWorks_FFT_Simulation_DirectCompute_Impl();
 
 	// Mandatory NVWaveWorks_FFT_Simulation interface
-    HRESULT initD3D9(IDirect3DDevice9* pD3DDevice);
-    HRESULT initD3D10(ID3D10Device* pD3DDevice);
     HRESULT initD3D11(ID3D11Device* pD3DDevice);
 	HRESULT initNoGraphics() { return S_OK; }
 	HRESULT reinit(const GFSDK_WaveWorks_Detailed_Simulation_Params::Cascade& params);
@@ -52,8 +50,6 @@ public:
 	HRESULT addArchivedDisplacements(float coord, const gfsdk_float2* inSamplePoints, gfsdk_float4* outDisplacements, UINT numSamples);
 	HRESULT getTimings(NVWaveWorks_FFT_Simulation_Timings&) const;
 	gfsdk_U64 getDisplacementMapVersion() const { return m_DisplacementMapVersion; }
-	LPDIRECT3DTEXTURE9 GetDisplacementMapD3D9();
-	ID3D10ShaderResourceView** GetDisplacementMapD3D10();
 	ID3D11ShaderResourceView** GetDisplacementMapD3D11();
 	GLuint GetDisplacementMapGL2();
 

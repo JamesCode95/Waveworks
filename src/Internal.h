@@ -174,7 +174,6 @@
 #else // TARGET_PLATFORM_XBONE
 #include <dxgi.h>
 #include <d3d11.h>
-#include <d3d9.h>
 
 // Check we're building against a recent-enough WinSDK
 #include <winsdkver.h>
@@ -402,18 +401,6 @@ void handle_hr_error(HRESULT hr, const char_type* file, int line);
 #define WAVEWORKS_ALLOW_GFX 1
 #endif
 
-#if D3D_SDK_VERSION
-#define WAVEWORKS_ENABLE_D3D9 WAVEWORKS_ALLOW_GFX
-#else
-#define WAVEWORKS_ENABLE_D3D9 0
-#endif
-
-#ifdef D3D10_SDK_VERSION
-#define WAVEWORKS_ENABLE_D3D10 WAVEWORKS_ALLOW_GFX
-#else
-#define WAVEWORKS_ENABLE_D3D10 0
-#endif
-
 #ifdef D3D11_SDK_VERSION
 #define WAVEWORKS_ENABLE_D3D11 WAVEWORKS_ALLOW_GFX
 #else
@@ -440,7 +427,7 @@ void handle_hr_error(HRESULT hr, const char_type* file, int line);
 #endif
 #endif
 
-#define WAVEWORKS_ENABLE_GRAPHICS (WAVEWORKS_ENABLE_D3D9 || WAVEWORKS_ENABLE_D3D10 || WAVEWORKS_ENABLE_D3D11 || WAVEWORKS_ENABLE_GNM || WAVEWORKS_ENABLE_GL)
+#define WAVEWORKS_ENABLE_GRAPHICS (WAVEWORKS_ENABLE_D3D11 || WAVEWORKS_ENABLE_GNM || WAVEWORKS_ENABLE_GL)
 
 #ifndef SUPPORT_CUDA
 	typedef struct
@@ -466,14 +453,6 @@ void handle_hr_error(HRESULT hr, const char_type* file, int line);
 	#include <cufft.h>
 
 	#pragma warning( pop )
-
-	#if WAVEWORKS_ENABLE_D3D9
-	#include <cuda_d3d9_interop.h>
-	#endif
-
-	#if WAVEWORKS_ENABLE_D3D10
-	#include <cuda_d3d10_interop.h>
-	#endif
 
 	#if WAVEWORKS_ENABLE_D3D11
 	#include <cuda_d3d11_interop.h>
@@ -568,8 +547,6 @@ enum nv_water_d3d_api
 {
 	nv_water_d3d_api_undefined = 0,
 	nv_water_d3d_api_none,				// Meaning: initialise and run without graphics e.g. server-mode
-	nv_water_d3d_api_d3d9,
-	nv_water_d3d_api_d3d10,
 	nv_water_d3d_api_d3d11,
 	nv_water_d3d_api_gnm,
 	nv_water_d3d_api_gl2
@@ -778,18 +755,6 @@ extern GFSDK_WAVEWORKS_GLFunctions		  NVSDK_GLFunctions;
 #define GL_MAP_INVALIDATE_BUFFER_BIT      0x0008
 #define GL_MAP_UNSYNCHRONIZED_BIT         0x0020
 
-
-#if WAVEWORKS_ENABLE_D3D9
-#define D3D9_ONLY(x) x
-#else
-#define D3D9_ONLY(x)
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-#define D3D10_ONLY(x) x
-#else
-#define D3D10_ONLY(x)
-#endif
 
 #if WAVEWORKS_ENABLE_D3D11
 #define D3D11_ONLY(x) x

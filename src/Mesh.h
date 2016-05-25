@@ -62,29 +62,6 @@ public:
 		GLint Offset;
 	} GL_VERTEX_ATTRIBUTE_DESC;
 
-	static HRESULT CreateD3D9(	IDirect3DDevice9* pD3DDev,
-								const D3DVERTEXELEMENT9* pVertexElements,
-								UINT VertexStride,
-								const void* pVertData,
-								UINT NumVerts,
-								const DWORD* pIndexData,
-								UINT NumIndices,
-								NVWaveWorks_Mesh** ppMesh
-								);
-
-	static HRESULT CreateD3D10(	ID3D10Device* pD3DDev,
-								const D3D10_INPUT_ELEMENT_DESC *pInputElementDescs,
-								UINT NumElements,
-								const void *pShaderBytecodeWithInputSignature,
-								SIZE_T BytecodeLength,
-								UINT VertexStride,
-								const void* pVertData,
-								UINT NumVerts,
-								const DWORD* pIndexData,
-								UINT NumIndices,
-								NVWaveWorks_Mesh** ppMesh
-								);
-
 	static HRESULT CreateD3D11(	ID3D11Device* pD3DDev,
 								const D3D11_INPUT_ELEMENT_DESC *pInputElementDescs,
 								UINT NumElements,

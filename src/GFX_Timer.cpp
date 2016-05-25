@@ -182,20 +182,6 @@ namespace
 		UINT64 m_freqResult;
 		HRESULT m_status;
 
-#if WAVEWORKS_ENABLE_D3D9
-		struct D3D9Objects
-		{
-			IDirect3DQuery9* m_pDisjointTimerQuery;
-			IDirect3DQuery9* m_pTimerFreqQuery;
-		};
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-		struct D3D10Objects
-		{
-			ID3D10Query* m_pDisjointTimerQuery;
-		};
-#endif
 
 #if WAVEWORKS_ENABLE_D3D11
 		struct D3D11Objects
@@ -206,12 +192,6 @@ namespace
 
 		union
 		{
-#if WAVEWORKS_ENABLE_D3D9
-			D3D9Objects _9;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-			D3D10Objects _10;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 			D3D11Objects _11;
 #endif
@@ -223,20 +203,6 @@ namespace
 		int m_refCount;
 		UINT64 m_timestampResult;
 		HRESULT m_status;
-
-#if WAVEWORKS_ENABLE_D3D9
-		struct D3D9Objects
-		{
-			IDirect3DQuery9* m_pTimerQuery;
-		};
-#endif
-
-#if WAVEWORKS_ENABLE_D3D10
-		struct D3D10Objects
-		{
-			ID3D10Query* m_pTimerQuery;
-		};
-#endif
 
 #if WAVEWORKS_ENABLE_D3D11
 		struct D3D11Objects
@@ -252,12 +218,6 @@ namespace
 #endif
 		union
 		{
-#if WAVEWORKS_ENABLE_D3D9
-			D3D9Objects _9;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-			D3D10Objects _10;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 			D3D11Objects _11;
 #endif
@@ -289,65 +249,6 @@ NVWaveWorks_GFX_Timer_Impl::NVWaveWorks_GFX_Timer_Impl()
 NVWaveWorks_GFX_Timer_Impl::~NVWaveWorks_GFX_Timer_Impl()
 {
 	releaseAll();
-}
-
-HRESULT NVWaveWorks_GFX_Timer_Impl::initD3D9(IDirect3DDevice9* D3D9_ONLY(pD3DDevice))
-{
-#if WAVEWORKS_ENABLE_D3D9
-    HRESULT hr;
-
-    if(nv_water_d3d_api_d3d9 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._9.m_pd3d9Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d9;
-        m_d3d._9.m_pd3d9Device = pD3DDevice;
-        m_d3d._9.m_pd3d9Device->AddRef();
-
-        V_RETURN(allocateAllResources());
-    }
-
-    return S_OK;
-#else
-	return E_FAIL;
-#endif
-}
-
-
-HRESULT NVWaveWorks_GFX_Timer_Impl::initD3D10(ID3D10Device* D3D10_ONLY(pD3DDevice))
-{
-#if WAVEWORKS_ENABLE_D3D10
-    HRESULT hr;
-
-    if(nv_water_d3d_api_d3d10 != m_d3dAPI)
-    {
-        releaseAll();
-    }
-    else if(m_d3d._10.m_pd3d10Device != pD3DDevice)
-    {
-        releaseAll();
-    }
-
-    if(nv_water_d3d_api_undefined == m_d3dAPI)
-    {
-        m_d3dAPI = nv_water_d3d_api_d3d10;
-        m_d3d._10.m_pd3d10Device = pD3DDevice;
-        m_d3d._10.m_pd3d10Device->AddRef();
-
-        V_RETURN(allocateAllResources());
-    }
-
-    return S_OK;
-#else
-	return E_FAIL;
-#endif
 }
 
 HRESULT NVWaveWorks_GFX_Timer_Impl::initD3D11(ID3D11Device* D3D11_ONLY(pD3DDevice))
@@ -432,20 +333,6 @@ void NVWaveWorks_GFX_Timer_Impl::releaseAll()
 #if WAVEWORKS_ENABLE_GRAPHICS
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			SAFE_RELEASE(m_d3d._9.m_pd3d9Device);
-        }
-        break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			SAFE_RELEASE(m_d3d._10.m_pd3d10Device);
-        }
-        break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -474,39 +361,7 @@ void NVWaveWorks_GFX_Timer_Impl::releaseAllResources()
 #if WAVEWORKS_ENABLE_GRAPHICS
     switch(m_d3dAPI)
     {
-#if WAVEWORKS_ENABLE_D3D9
-    case nv_water_d3d_api_d3d9:
-        {
-			for(int i = 0; i != m_pDisjointTimersPool->getNumQueries(); ++i)
-			{
-				DisjointQueryData& dqd = m_pDisjointTimersPool->getQueryData(i);
-				SAFE_RELEASE(dqd.m_d3d._9.m_pDisjointTimerQuery);
-				SAFE_RELEASE(dqd.m_d3d._9.m_pTimerFreqQuery);
-			}
-			for(int i = 0; i != m_pTimersPool->getNumQueries(); ++i)
-			{
-				TimerQueryData& tqd = m_pTimersPool->getQueryData(i);
-				SAFE_RELEASE(tqd.m_d3d._9.m_pTimerQuery);
-			}
-		}
-		break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-    case nv_water_d3d_api_d3d10:
-        {
-			for(int i = 0; i != m_pDisjointTimersPool->getNumQueries(); ++i)
-			{
-				DisjointQueryData& dqd = m_pDisjointTimersPool->getQueryData(i);
-				SAFE_RELEASE(dqd.m_d3d._10.m_pDisjointTimerQuery);
-			}
-			for(int i = 0; i != m_pTimersPool->getNumQueries(); ++i)
-			{
-				TimerQueryData& tqd = m_pTimersPool->getQueryData(i);
-				SAFE_RELEASE(tqd.m_d3d._10.m_pTimerQuery);
-			}
-		}
-		break;
-#endif
+
 #if WAVEWORKS_ENABLE_D3D11
     case nv_water_d3d_api_d3d11:
         {
@@ -559,28 +414,6 @@ HRESULT NVWaveWorks_GFX_Timer_Impl::issueTimerQuery(Graphics_Context* pGC, int& 
 #if WAVEWORKS_ENABLE_GRAPHICS
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			{
-				HRESULT hr;
-				TimerQueryData& tqd = m_pTimersPool->addInactiveQuery();
-				V_RETURN(m_d3d._9.m_pd3d9Device->CreateQuery(D3DQUERYTYPE_TIMESTAMP , &tqd.m_d3d._9.m_pTimerQuery));
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			{
-				HRESULT hr;
-				TimerQueryData& tqd = m_pTimersPool->addInactiveQuery();
-
-				D3D10_QUERY_DESC query_desc;
-				query_desc.Query = D3D10_QUERY_TIMESTAMP;
-				query_desc.MiscFlags = 0;
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateQuery(&query_desc, &tqd.m_d3d._10.m_pTimerQuery));
-			}
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
@@ -624,22 +457,7 @@ HRESULT NVWaveWorks_GFX_Timer_Impl::issueTimerQuery(Graphics_Context* pGC, int& 
 #if WAVEWORKS_ENABLE_GRAPHICS
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-			const TimerQueryData& tqd = m_pTimersPool->getQueryData(ix);
-			tqd.m_d3d._9.m_pTimerQuery->Issue(D3DISSUE_END);
-		}
-		break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			const TimerQueryData& tqd = m_pTimersPool->getQueryData(ix);
-			tqd.m_d3d._10.m_pTimerQuery->End();
-		}
-		break;
-#endif
+
 #if WAVEWORKS_ENABLE_D3D11
 	case nv_water_d3d_api_d3d11:
 		{
@@ -693,16 +511,6 @@ HRESULT NVWaveWorks_GFX_Timer_Impl::getTimerQuery(Graphics_Context* pGC, int ix,
 #if WAVEWORKS_ENABLE_GRAPHICS
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			hr = tqd.m_d3d._9.m_pTimerQuery->GetData(&result, sizeof(result), 0);
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			hr = tqd.m_d3d._10.m_pTimerQuery->GetData(&result, sizeof(result), 0);
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
@@ -836,28 +644,7 @@ HRESULT NVWaveWorks_GFX_Timer_Impl::beginDisjoint(Graphics_Context* pGC)
 #if WAVEWORKS_ENABLE_GRAPHICS
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			{
-				HRESULT hr;
-				DisjointQueryData& dqd = m_pDisjointTimersPool->addInactiveQuery();
-				V_RETURN(m_d3d._9.m_pd3d9Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT , &dqd.m_d3d._9.m_pDisjointTimerQuery));
-				V_RETURN(m_d3d._9.m_pd3d9Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ  , &dqd.m_d3d._9.m_pTimerFreqQuery));
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			{
-				HRESULT hr;
-				DisjointQueryData& dqd = m_pDisjointTimersPool->addInactiveQuery();
-				D3D10_QUERY_DESC query_desc;
-				query_desc.Query = D3D10_QUERY_TIMESTAMP_DISJOINT;
-				query_desc.MiscFlags = 0;
-				V_RETURN(m_d3d._10.m_pd3d10Device->CreateQuery(&query_desc, &dqd.m_d3d._10.m_pDisjointTimerQuery));
-			}
-			break;
-#endif
+
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
@@ -902,22 +689,6 @@ HRESULT NVWaveWorks_GFX_Timer_Impl::beginDisjoint(Graphics_Context* pGC)
 #if WAVEWORKS_ENABLE_GRAPHICS
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-			const DisjointQueryData& dqd = m_pDisjointTimersPool->getQueryData(m_CurrentDisjointTimerQuery);
-			dqd.m_d3d._9.m_pDisjointTimerQuery->Issue(D3DISSUE_BEGIN);
-		}
-		break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			const DisjointQueryData& dqd = m_pDisjointTimersPool->getQueryData(m_CurrentDisjointTimerQuery);
-			dqd.m_d3d._10.m_pDisjointTimerQuery->Begin();
-		}
-		break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 	case nv_water_d3d_api_d3d11:
 		{
@@ -959,23 +730,7 @@ HRESULT NVWaveWorks_GFX_Timer_Impl::endDisjoint(Graphics_Context* pGC)
 #if WAVEWORKS_ENABLE_GRAPHICS
 	switch(m_d3dAPI)
 	{
-#if WAVEWORKS_ENABLE_D3D9
-	case nv_water_d3d_api_d3d9:
-		{
-			const DisjointQueryData& dqd = m_pDisjointTimersPool->getQueryData(m_CurrentDisjointTimerQuery);
-			dqd.m_d3d._9.m_pTimerFreqQuery->Issue(D3DISSUE_END);
-			dqd.m_d3d._9.m_pDisjointTimerQuery->Issue(D3DISSUE_END);
-		}
-		break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-	case nv_water_d3d_api_d3d10:
-		{
-			const DisjointQueryData& dqd = m_pDisjointTimersPool->getQueryData(m_CurrentDisjointTimerQuery);
-			dqd.m_d3d._10.m_pDisjointTimerQuery->End();
-		}
-		break;
-#endif
+
 #if WAVEWORKS_ENABLE_D3D11
 	case nv_water_d3d_api_d3d11:
 		{
@@ -1039,28 +794,6 @@ HRESULT NVWaveWorks_GFX_Timer_Impl::getDisjointQuery(Graphics_Context* pGC, int 
 #if WAVEWORKS_ENABLE_GRAPHICS
 		switch(m_d3dAPI)
 		{
-#if WAVEWORKS_ENABLE_D3D9
-		case nv_water_d3d_api_d3d9:
-			{
-				hr = dqd.m_d3d._9.m_pDisjointTimerQuery->GetData(&WasDisjoint, sizeof(WasDisjoint), 0);
-				if(S_OK == hr)
-				{
-					hr = dqd.m_d3d._9.m_pTimerFreqQuery->GetData(&RawF, sizeof(RawF), 0);
-				}
-			}
-			break;
-#endif
-#if WAVEWORKS_ENABLE_D3D10
-		case nv_water_d3d_api_d3d10:
-			{
-				D3D10_QUERY_DATA_TIMESTAMP_DISJOINT result;
-				hr = dqd.m_d3d._10.m_pDisjointTimerQuery->GetData(&result, sizeof(result), 0);
-
-				RawF = result.Frequency;
-				WasDisjoint = result.Disjoint;
-			}
-			break;
-#endif
 #if WAVEWORKS_ENABLE_D3D11
 		case nv_water_d3d_api_d3d11:
 			{
