@@ -611,8 +611,12 @@ int main(void)
 		if(!GFSDK_WaveWorks_Simulation_DetailLevelIsSupported_GL2((GFSDK_WaveWorks_Simulation_DetailLevel)detail_level))
 			break;
 	}
-	if(0 == detail_level)
+	if (0 == detail_level)
+	{
+		fprintf(stdout, "Fatal Error: No supported detail levels. \n");
 		return false;
+	}
+
 	g_max_detail_level = (GFSDK_WaveWorks_Simulation_DetailLevel)(detail_level - 1);
 
 	// initializing simulation

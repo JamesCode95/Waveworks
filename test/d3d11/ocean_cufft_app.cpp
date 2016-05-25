@@ -186,7 +186,6 @@ const FLOAT kWaterScale = 50.f;
 //--------------------------------------------------------------------------------------
 // Forward declarations 
 //--------------------------------------------------------------------------------------
-//bool    CALLBACK IsD3D9DeviceAcceptable( D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext );
 bool    CALLBACK IsD3D11DeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo, DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext );
 bool    CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* pUserContext );
 HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext );
@@ -275,7 +274,6 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
     DXUTSetCallbackKeyboard( KeyboardProc );
     DXUTSetCallbackFrameMove( OnFrameMove );
 
-//	DXUTSetCallbackD3D9DeviceAcceptable( IsD3D9DeviceAcceptable );
     DXUTSetCallbackD3D11DeviceAcceptable( IsD3D11DeviceAcceptable );
     DXUTSetCallbackD3D11DeviceCreated( OnD3D11CreateDevice );
     DXUTSetCallbackD3D11SwapChainResized( OnD3D11ResizedSwapChain );
@@ -446,15 +444,6 @@ void AddGUISet()
 	g_HUD.AddSlider(IDC_TESSELLATION_LOD_SLIDER, 10, iY += 20, 130, 24, 0, 200, int(g_TessellationLOD));
 }
 
-//--------------------------------------------------------------------------------------
-// Called during device initialization, this code checks the device for some 
-// minimum set of capabilities, and rejects those that don't pass by returning E_FAIL.
-//--------------------------------------------------------------------------------------
-// bool CALLBACK IsD3D9DeviceAcceptable(	D3DCAPS9* pCaps, D3DFORMAT AdapterFormat, 
-// 										D3DFORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
-// {
-// 	return false;
-// }
 
 bool CALLBACK IsD3D11DeviceAcceptable(const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
                                        DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
