@@ -48,7 +48,6 @@
 #include "orbis\GNM_Util.h"
 #endif
 #include "InternalLogger.h"
-#include "Logger.h"
 
 // Misc helper macros which can be used to bracket entrypoints to:
 // - catch any and all exceptions, to keep them out of the app

@@ -84,7 +84,7 @@ SET(APP_FILES
 	${SAMP_SOURCE_DIR}/terrain.cpp
 	${SAMP_SOURCE_DIR}/terrain.h
 	
-	${COMMON_SOURCE_DIR}/Logger.h
+	${TL_INCLUDE_DIR}/GFSDK_Logger.h
 	${COMMON_SOURCE_DIR}/LoggerImpl.h
 	${COMMON_SOURCE_DIR}/LoggerImpl.cpp
 

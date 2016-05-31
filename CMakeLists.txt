@@ -128,4 +128,6 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${FINAL_OUTPUT_DIR})
 INCLUDE(compiler/cmake/NvWaveWorks.cmake)
 INCLUDE(compiler/cmake/test_d3d11.cmake)
 INCLUDE(compiler/cmake/sample_d3d11.cmake)
-INCLUDE(compiler/cmake/sample_opengl.cmake)
+
+# TODO: Switch between CUDA/DirectCompute
+#INCLUDE(compiler/cmake/sample_opengl.cmake)

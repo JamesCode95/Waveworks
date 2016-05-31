@@ -27,26 +27,28 @@ void InternalLogger::setLoggingLevel(nv::LogSeverity newLevel)
 	LoggingLevel = newLevel;
 }
 
-void InternalLogger::log(const char* text, nv::LogSeverity severity, const char* filename, int linenumber)
+void InternalLogger::log(nv::LogSeverity severity, const wchar_t* filename, int linenumber, const wchar_t* format, ...)
 {
 	if (getLoggingLevel() > severity)
 		return;
 
-	std::ostringstream out;
+	wchar_t buffer[1024];
 
-	out << filename << "(" << linenumber << "): " << "[" << nv::LogSeverityStrings[(int)severity] << "] " << text << std::endl;
-
-	OutputDebugStringA(out.str().c_str());
-}
-
-void InternalLogger::log(const wchar_t* text, nv::LogSeverity severity, const wchar_t* filename, int linenumber)
-{
-	if (getLoggingLevel() > severity)
-		return;
+	va_list args;
+	va_start(args, format);
+#if NV_GCC_FAMILY
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+	_vsnwprintf_s(buffer, sizeof(buffer), format, args);
+#if NV_GCC_FAMILY
+#pragma GCC diagnostic pop
+#endif
+	va_end(args);
 
 	std::wstringstream out;
 
-	out << filename << "(" << linenumber << "): " << "[" << nv::LogSeverityStrings[(int)severity] << "] " << text << std::endl;
+	out << filename << "(" << linenumber << "): " << "[" << nv::LogSeverityStrings[(int)severity] << "] " << buffer << std::endl;
 
 	OutputDebugStringW(out.str().c_str());
 }

@@ -31,7 +31,7 @@
 #include "ocean_surface.h"
 
 #include "GFSDK_WaveWorks_D3D_Util.h"
-#include "../common/Logger.h"
+#include "GFSDK_Logger.h"
 #include "../common/LoggerImpl.h"
 
 #pragma warning(disable:4127)
@@ -73,7 +73,7 @@ OceanSurface::~OceanSurface()
 
 HRESULT OceanSurface::initQuadTree(const GFSDK_WaveWorks_Quadtree_Params& params)
 {
-	NV_LOG("Initing the QuadTree");
+	NV_LOG(L"Initing the QuadTree");
 
 	if(NULL == m_hOceanQuadTree)
 	{

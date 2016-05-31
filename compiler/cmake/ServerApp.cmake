@@ -1,23 +1,16 @@
 #
-# Build test_d3d11
+# Build serverapp
 #
 
 SET(GW_DEPS_ROOT $ENV{GW_DEPS_ROOT})
 
-FIND_PACKAGE(DXUT REQUIRED)
-FIND_PACKAGE(FX11 REQUIRED)
-FIND_PACKAGE(DirectXTK REQUIRED)
-
-MESSAGE("FX11 ${FX11_SDK_PATH}")
-
-SET(TEST_SOURCE_DIR ${PROJECT_SOURCE_DIR}/test/d3d11)
+SET(TEST_SOURCE_DIR ${PROJECT_SOURCE_DIR}/test/serverapp)
+SET(LIB_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 SET(COMMON_SOURCE_DIR ${PROJECT_SOURCE_DIR}/common)
 SET(SHARED_CS_DIR ${PROJECT_SOURCE_DIR}/test/client-server)
 SET(TL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
-
-	FIND_PACKAGE(DirectX REQUIRED)
 
 	SET(WW_PLATFORM_INCLUDES
 	)
@@ -29,9 +22,9 @@ IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 	# Use generator expressions to set config specific preprocessor definitions
 	SET(WW_COMPILE_DEFS
 		# Common to all configurations
-		_LIB;NVWAVEWORKS_LIB_DLL_EXPORTS;WIN32;
+		WIN32;_WINDOWS;_CONSOLE;
 
-		$<$<CONFIG:debug>:PROFILE;_DEV;>
+		$<$<CONFIG:debug>:PROFILE;>
 		$<$<CONFIG:release>:NDEBUG;>
 	)
 
@@ -75,9 +68,7 @@ ELSEIF(TARGET_BUILD_PLATFORM STREQUAL "Unix")
 ENDIF()
 
 SET(APP_FILES
-	${TEST_SOURCE_DIR}/ocean_cufft_app.cpp
-	${TEST_SOURCE_DIR}/ocean_surface.cpp
-	${TEST_SOURCE_DIR}/ocean_surface.h
+	${TEST_SOURCE_DIR}/serverapp.cpp
 	
 	${TL_INCLUDE_DIR}/GFSDK_Logger.h
 	${COMMON_SOURCE_DIR}/LoggerImpl.h
@@ -85,69 +76,35 @@ SET(APP_FILES
 )
 
 SET(SHARED_CS_FILES
-	${SHARED_CS_DIR}/client.cpp
-	${SHARED_CS_DIR}/client.h
 	${SHARED_CS_DIR}/message_types.h
 	${SHARED_CS_DIR}/socket_wrapper.h
 	${SHARED_CS_DIR}/socket_wrapper.cpp
 )
 
-SET(FX_FILES
-	${TEST_SOURCE_DIR}/ocean_marker.fx
-	${TEST_SOURCE_DIR}/ocean_surface.fx
-	${TEST_SOURCE_DIR}/skybox.fx
-)
-
-SET(FXO_FILES
-	${PROJECT_SOURCE_DIR}/test/media/ocean_marker_d3d11.fxo
-	${PROJECT_SOURCE_DIR}/test/media/ocean_surface_d3d11.fxo
-	${PROJECT_SOURCE_DIR}/test/media/skybox_d3d11.fxo
-)
-
-INCLUDE(cmake/CompileFXToFXO.cmake)
-
-#ADD_CUSTOM_TARGET(fx ALL)
-
-ADD_CUSTOM_TARGET(d3d11fx ALL)
-
-#FUNCTION(CompileFXToFXO FILE OUTPUT_FILE TARGET INCLUDE_DIR OPTIONS)
-CompileFXToFXO(${TEST_SOURCE_DIR}/ocean_marker.fx ${PROJECT_SOURCE_DIR}/media/test/ocean_marker_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
-CompileFXToFXO(${TEST_SOURCE_DIR}/ocean_surface.fx ${PROJECT_SOURCE_DIR}/media/test/ocean_surface_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
-CompileFXToFXO(${TEST_SOURCE_DIR}/skybox.fx ${PROJECT_SOURCE_DIR}/media/test/skybox_d3d11.fxo d3d11fx ${TL_INCLUDE_DIR} /O3 /Tfx_5_0)
-
-ADD_EXECUTABLE(TestD3D11 WIN32
+ADD_EXECUTABLE(ServerApp WIN32
 	${WW_PLATFORM_SRC_FILES}
 	
 	${APP_FILES}
 	${SHARED_CS_FILES}
-	${FX_FILES}
 
 )
 
 SOURCE_GROUP("app" FILES ${APP_FILES})
-SOURCE_GROUP("fx" FILES ${FX_FILES})
-#SOURCE_GROUP("header" FILES ${H_FILES})
-#SOURCE_GROUP("hlsl" FILES ${HLSL_FILES})
-#SOURCE_GROUP("cuda" FILES ${CUDA_FILES})
-
+SOURCE_GROUP("shared-client-server-code" FILES ${SHARED_CS_FILES})
 
 
 # Target specific compile options
 
 
-TARGET_INCLUDE_DIRECTORIES(TestD3D11 
+TARGET_INCLUDE_DIRECTORIES(ServerApp 
 	PRIVATE ${WW_PLATFORM_INCLUDES}
 
 	PRIVATE ${TL_INCLUDE_DIR}
-	PRIVATE ${SHADER_CS_DIR}
 	PRIVATE ${SHARED_CS_DIR}
-	
-	PRIVATE ${DXUT_INCLUDE_DIRS}
-	PRIVATE ${FX11_INCLUDE_DIRS}
-	PRIVATE ${DXTK_INCLUDE_DIRS}
+	PRIVATE ${LIB_SOURCE_DIR}
 )
 
-TARGET_COMPILE_DEFINITIONS(TestD3D11 
+TARGET_COMPILE_DEFINITIONS(ServerApp 
 
 	# Common to all configurations
 	PRIVATE ${WW_COMPILE_DEFS}
@@ -159,7 +116,7 @@ TARGET_COMPILE_DEFINITIONS(TestD3D11
 
 IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 	# Add linked libraries
-	TARGET_LINK_LIBRARIES(TestD3D11 PUBLIC WaveWorks Ws2_32.lib comctl32.lib Usp10.lib ${CUDA_LIBRARIES} ${DirectX_DXGUID_LIBRARY} ${DirectX_D3D11_LIBRARY} ${DXUT_LIBRARIES} ${FX11_LIBRARIES} ${DXTK_LIBRARIES})
+	TARGET_LINK_LIBRARIES(ServerApp PUBLIC WaveWorks Ws2_32.lib comctl32.lib ${CUDA_LIBRARIES})
 
 	IF(CMAKE_CL_64)
 		SET(LIBPATH_SUFFIX "win64")
@@ -167,17 +124,17 @@ IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 		SET(LIBPATH_SUFFIX "Win32")
 	ENDIF(CMAKE_CL_64)				
 
-	SET_TARGET_PROPERTIES(TestD3D11 PROPERTIES 
+	SET_TARGET_PROPERTIES(ServerApp PROPERTIES 
 		LINK_FLAGS_DEBUG "/MAP /DEBUG"
 		LINK_FLAGS_RELEASE "/MAP /INCREMENTAL:NO"
 	)
 
 ELSEIF(TARGET_BUILD_PLATFORM STREQUAL "PS4")
-#	TARGET_LINK_LIBRARIES(TestD3D11 PUBLIC LowLevel LowLevelAABB LowLevelCloth LowLevelDynamics LowLevelParticles TestD3D11Common PxFoundation PxPvdSDK PxTask SceneQuery SimulationController)
+#	TARGET_LINK_LIBRARIES(ServerApp PUBLIC LowLevel LowLevelAABB LowLevelCloth LowLevelDynamics LowLevelParticles ServerAppCommon PxFoundation PxPvdSDK PxTask SceneQuery SimulationController)
 
 ELSEIF(TARGET_BUILD_PLATFORM STREQUAL "XBoxOne")
 
-#	TARGET_LINK_LIBRARIES(TestD3D11 PUBLIC LowLevel LowLevelAABB LowLevelCloth LowLevelDynamics LowLevelParticles TestD3D11Common PxFoundation PxPvdSDK PxTask SceneQuery SimulationController)
+#	TARGET_LINK_LIBRARIES(ServerApp PUBLIC LowLevel LowLevelAABB LowLevelCloth LowLevelDynamics LowLevelParticles ServerAppCommon PxFoundation PxPvdSDK PxTask SceneQuery SimulationController)
 
 ELSEIF(TARGET_BUILD_PLATFORM STREQUAL "Unix")
 ENDIF()

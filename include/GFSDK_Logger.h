@@ -18,8 +18,8 @@ namespace nv
 	{
 	public:
 		// ‘filename’ is NULL and ‘linenumber’ is 0 in release builds of GameWorks	
-		virtual void log(const char* text, LogSeverity severity, const char* filename, int linenumber) = 0;
-		virtual void log(const wchar_t* text, LogSeverity severity, const wchar_t* filename, int linenumber) = 0;
+//		virtual void log(LogSeverity severity, const char* filename, int linenumber, const char* text, ...) = 0;
+		virtual void log(LogSeverity severity, const wchar_t* filename, int linenumber, const wchar_t* text, ...) = 0;
 	};
 }
 

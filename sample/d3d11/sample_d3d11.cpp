@@ -46,7 +46,7 @@
 #include <locale>
 #include <codecvt>
 #include <xlocbuf>
-#include "../common/Logger.h"
+#include "GFSDK_Logger.h"
 #include "../common/LoggerImpl.h"
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
@@ -209,11 +209,11 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
-	NV_LOG("Testing!");
+	NV_LOG(L"Testing!");
 
-	GFSDK_WaveWorks_SetUserLogger(static_cast<nv::ILogger*>(g_Logger));
+	GFSDK_WaveWorks_SetUserLogger(static_cast<nv::ILogger*>(LoggerWWSamples::GetInstance()));
 
-	NV_LOG("User logger set!");
+	NV_LOG(L"User logger set!");
 
 	//TODO: Take from cmdline
 	auto mediaPath = "..\\..\\media\\sample";
