@@ -43,8 +43,8 @@ struct DistanceField
 
 	// --------------------------------- Accessors -----------------------------------
 	ID3D11ShaderResourceView*	GetDataTextureSRV() const	{ return m_pTopDownDataSRV; } 
-	void	GetWorldToTopDownTextureMatrix( XMMATRIX worldToTopDownMatrix );
 
+	void GetWorldToTopDownTextureMatrix(XMMATRIX &worldToTopDownMatrix);
 	// --------------------------------- Rendering routines -----------------------------------
 	void GenerateDataTexture(ID3D11DeviceContext* pDC );
 

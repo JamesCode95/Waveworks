@@ -46,14 +46,14 @@
 #include <locale>
 #include <codecvt>
 #include <xlocbuf>
+#include "../common/Logger.h"
+#include "../common/LoggerImpl.h"
 
 //#define DEBUG_VS   // Uncomment this line to debug vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug pixel shaders 
 
 // Disable warning "conditional expression is constant"
 #pragma warning(disable:4127)
-
-extern HRESULT LoadFile(LPCTSTR FileName, ID3DBlob** ppBuffer);
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -208,6 +208,12 @@ INT WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR cmdline, int )
 #if defined(DEBUG) | defined(_DEBUG)
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
+
+	NV_LOG("Testing!");
+
+	GFSDK_WaveWorks_SetUserLogger(static_cast<nv::ILogger*>(g_Logger));
+
+	NV_LOG("User logger set!");
 
 	//TODO: Take from cmdline
 	auto mediaPath = "..\\..\\media\\sample";
@@ -494,10 +500,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	SAFE_RELEASE(pD3D11Resource);
 
 	// Terrain and sky fx
-	ID3DBlob* pEffectBuffer = NULL;
 	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("sample_d3d11.fxo")));
-	V_RETURN(D3DX11CreateEffectFromFile(path, 0, pd3dDevice, &g_pEffect));// pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pEffect));
-	SAFE_RELEASE(pEffectBuffer);
+	V_RETURN(D3DX11CreateEffectFromFile(path, 0, pd3dDevice, &g_pEffect));
 
     // Initialize shoreline interaction.
     g_pDistanceField = new DistanceField( &g_Terrain );
@@ -708,7 +712,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
 	oceanFX->GetVariableByName("g_ZNear")->AsScalar()->SetFloat(scene_z_near);
 	oceanFX->GetVariableByName("g_ZFar")->AsScalar()->SetFloat(scene_z_far);
-	XMFLOAT3 light_pos = XMFLOAT3(140000.0f,65000.0f,40000.0f);
+	XMFLOAT4 light_pos = XMFLOAT4(140000.0f,65000.0f,40000.0f,0);
 	g_pEffect->GetVariableByName("g_LightPosition")->AsVector()->SetFloatVector((FLOAT*)&light_pos);
 	g_pEffect->GetVariableByName("g_ScreenSizeInv")->AsVector()->SetFloatVector((FLOAT*)&ScreenSizeInv);
 	oceanFX->GetVariableByName("g_ScreenSizeInv")->AsVector()->SetFloatVector((FLOAT*)&ScreenSizeInv);
@@ -722,7 +726,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
 
 	
-	RenderLogo(pDC);
+	//RenderLogo(pDC);
 
 	if(g_bShowUI) {
 		

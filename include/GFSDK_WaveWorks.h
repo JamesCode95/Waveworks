@@ -85,11 +85,19 @@ struct GFSDK_WaveWorks_Malloc_Hooks
 #endif
 
 
+namespace nv
+{
+	class ILogger;
+}
+
 /*===========================================================================
   Globals/init
   ===========================================================================*/
 
 GFSDK_WAVEWORKS_DECL(gfsdk_cstr) GFSDK_WaveWorks_GetBuildString();
+
+GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_SetUserLogger(nv::ILogger* userLogger);
+
 
 // Use these calls to globally initialize/release on D3D device create/destroy.
 GFSDK_WAVEWORKS_DECL(gfsdk_waveworks_result) GFSDK_WaveWorks_InitNoGraphics(const GFSDK_WaveWorks_Malloc_Hooks* pOptionalMallocHooks, const GFSDK_WaveWorks_API_GUID& apiGUID);

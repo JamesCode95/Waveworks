@@ -31,9 +31,10 @@
 #include "ocean_surface.h"
 
 #include "GFSDK_WaveWorks_D3D_Util.h"
+#include "../common/Logger.h"
+#include "../common/LoggerImpl.h"
 
 #pragma warning(disable:4127)
-
 
 OceanSurface::OceanSurface()
 {
@@ -72,8 +73,10 @@ OceanSurface::~OceanSurface()
 
 HRESULT OceanSurface::initQuadTree(const GFSDK_WaveWorks_Quadtree_Params& params)
 {
+	NV_LOG("Initing the QuadTree");
+
 	if(NULL == m_hOceanQuadTree)
-{
+	{
 		return GFSDK_WaveWorks_Quadtree_CreateD3D11(params, m_pd3dDevice, &m_hOceanQuadTree);
 	}
 	else
@@ -148,13 +151,10 @@ HRESULT OceanSurface::init()
 
 	if(NULL == m_pOceanFX)
 	{
-		ID3DBlob* pEffectBuffer = NULL;
-
 		TCHAR path[MAX_PATH];
 
 		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("ocean_surface_d3d11.fxo")));
-		V_RETURN(D3DX11CreateEffectFromFile(path, 0, m_pd3dDevice, &m_pOceanFX));// pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pEffect));
-		SAFE_RELEASE(pEffectBuffer);
+		V_RETURN(D3DX11CreateEffectFromFile(path, 0, m_pd3dDevice, &m_pOceanFX));
 
 
 		// Hook up the shader mappings
@@ -197,7 +197,7 @@ HRESULT OceanSurface::init()
 		pShadedShoreReflectionHS->Release();
 		pShadedShoreReflectionDS->Release();
 
-		m_pRenderSurfaceWireframeWithShorelinePass = m_pRenderSurfaceTechnique->GetPassByName("Pass_Wireframe_WithShoreline");
+		//m_pRenderSurfaceWireframeWithShorelinePass = m_pRenderSurfaceTechnique->GetPassByName("Pass_Wireframe_WithShoreline");
 	}
 		
 	if(NULL == m_pQuadLayout)
@@ -309,7 +309,7 @@ void OceanSurface::renderShaded(	ID3D11DeviceContext* pDC,
 		m_pOceanFX->GetVariableByName("g_BaseGerstnerWavelength")->AsScalar()->SetFloat( wavelength );
 		m_pOceanFX->GetVariableByName("g_BaseGerstnerSpeed")->AsScalar()->SetFloat( speed );
 		m_pOceanFX->GetVariableByName("g_BaseGerstnerParallelness")->AsScalar()->SetFloat( parallelness );
-		m_pOceanFX->GetVariableByName("g_WindDirection")->AsVector()->SetFloatVector( &windDir.x );
+		m_pOceanFX->GetVariableByName("g_WindDirection")->AsVector()->SetFloatVector( (FLOAT*) &windDir );
 		m_pOceanFX->GetVariableByName("g_DataTexture")->AsShaderResource()->SetResource( pDistanceFieldModule->GetDataTextureSRV() );
 		m_pOceanFX->GetVariableByName("g_Time")->AsScalar()->SetFloat( totalTime );
 

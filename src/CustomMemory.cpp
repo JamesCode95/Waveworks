@@ -4,6 +4,7 @@
 #if defined(TARGET_PLATFORM_LINUX)
 #include <malloc.h>
 #endif
+#include "InternalLogger.h"
 
 #if (defined(TARGET_PLATFORM_MACOSX) || defined(TARGET_PLATFORM_ANDROID))
 #define _THROW0()
@@ -67,8 +68,9 @@ GFSDK_WAVEWORKS_FREE					NVSDK_free				= free;
 void* internalMalloc( size_t size )
 {
     void* p = NVSDK_malloc( size );
-    if( !p )
-        diagnostic_message( TEXT("WaveWorks: MEMORY ALLOCATION ERROR. Check memory allocation callback pointer\n") );
+	if (!p)
+		NV_ERROR(TEXT("WaveWorks: MEMORY ALLOCATION ERROR. Check memory allocation callback pointer\n"));
+//        diagnostic_message( TEXT("WaveWorks: MEMORY ALLOCATION ERROR. Check memory allocation callback pointer\n") );
     return p;
 }
 

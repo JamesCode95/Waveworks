@@ -50,7 +50,7 @@ public:
 	ID3DX11Effect*			m_pOceanFX;
 	ID3DX11EffectTechnique* m_pRenderSurfaceTechnique;
 	ID3DX11EffectPass*		m_pRenderSurfaceShadedWithShorelinePass;
-	ID3DX11EffectPass*		m_pRenderSurfaceWireframeWithShorelinePass;
+//	ID3DX11EffectPass*		m_pRenderSurfaceWireframeWithShorelinePass;
 
 	ID3D11InputLayout*		m_pQuadLayout;
 	ID3D11InputLayout*		m_pRayContactLayout;

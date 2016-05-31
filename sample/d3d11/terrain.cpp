@@ -955,7 +955,7 @@ HRESULT CTerrain::LoadTextures()
 	V_RETURN(DirectX::CreateDDSTextureFromFile(pDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &foam_intensity_textureSRV));
 	SAFE_RELEASE(pD3D11Resource);
 
-	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("foam.dds")));
+	V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("foam24bit.dds")));
 	V_RETURN(DirectX::CreateDDSTextureFromFile(pDevice, static_cast<const wchar_t *>(path), &pD3D11Resource, &foam_diffuse_textureSRV));
 	SAFE_RELEASE(pD3D11Resource);
 

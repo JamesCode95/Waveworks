@@ -50,6 +50,7 @@
 #include "orbis\GNM_Util.h"
 using namespace sce;
 #endif
+#include "InternalLogger.h"
 
 namespace {
 #if WAVEWORKS_ENABLE_GRAPHICS
@@ -2078,7 +2079,7 @@ HRESULT GFSDK_WaveWorks_Simulation::setRenderState(	Graphics_Context* pGC,
 		{
 			if(NULL == pGlPool)
 			{
-				WaveWorks_Internal::diagnostic_message(TEXT("ERROR: a valid gl pool is required when setting simulation state for gl rendering\n"));
+				NV_ERROR(TEXT("ERROR: a valid gl pool is required when setting simulation state for gl rendering\n"));
 				return E_FAIL;
 			}
 
@@ -3601,10 +3602,10 @@ GLuint GFSDK_WaveWorks_Simulation::compileGLShader(const char* GL_ONLY(text), GL
 		GLsizei logSize;
 		NVSDK_GLFunctions.glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize); CHECK_GL_ERRORS;
 		char* pLog = new char[logSize];
-		diagnostic_message(TEXT("\nGL shader [%i] compilation error"),type);
-		diagnostic_message(TEXT("\n...\n") ASCII_STR_FMT TEXT("\n...\n"),text);
+		NV_ERROR(TEXT("\nGL shader [%i] compilation error"),type);
+//		NV_LOG("\n...\n") ASCII_STR_FMT TEXT("\n...\n"),text);
 		NVSDK_GLFunctions.glGetShaderInfoLog(shader, logSize, NULL, pLog); CHECK_GL_ERRORS;
-		diagnostic_message(TEXT("\ninfolog: ") ASCII_STR_FMT, pLog);
+		NV_ERROR(TEXT("\ninfolog: %s"), pLog);
 		NVSDK_GLFunctions.glDeleteShader(shader); CHECK_GL_ERRORS;
 		return 0;
 	}
@@ -3682,9 +3683,9 @@ GLuint GFSDK_WaveWorks_Simulation::loadGLProgram(const char* GL_ONLY(vstext), co
 		GLsizei logSize;
 		NVSDK_GLFunctions.glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logSize); CHECK_GL_ERRORS;
 		char* pLog = new char[logSize];
-		diagnostic_message(TEXT("gl program link error\n"));
+		NV_ERROR(TEXT("gl program link error\n"));
 		NVSDK_GLFunctions.glGetProgramInfoLog(program, logSize, NULL, pLog); CHECK_GL_ERRORS;
-		diagnostic_message(TEXT("\ninfolog: ") ASCII_STR_FMT TEXT("\n"),pLog);
+		NV_ERROR(TEXT("\ninfolog: %s"), pLog);
 		return 0;
 	}
 	return program;

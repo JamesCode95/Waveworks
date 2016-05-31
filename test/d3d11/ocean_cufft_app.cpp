@@ -56,8 +56,6 @@
 // Disable warning "conditional expression is constant"
 #pragma warning(disable:4127)
 
-extern HRESULT LoadFile(LPCTSTR FileName, ID3DBlob** ppBuffer);
-
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -572,11 +570,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	// Skybox
     {
 		TCHAR path[MAX_PATH];
+
 		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("skybox_d3d11.fxo")));
-        ID3DBlob* pEffectBuffer = NULL;
-        V_RETURN(LoadFile(path, &pEffectBuffer));
-        V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pSkyboxFX));
-        pEffectBuffer->Release();
+		V_RETURN(D3DX11CreateEffectFromFile(path, 0, pd3dDevice, &g_pSkyboxFX));
     }
 
 	g_pSkyBoxTechnique = g_pSkyboxFX->GetTechniqueByName("SkyboxTech");
@@ -622,11 +618,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	// Readback marker
     {
 		TCHAR path[MAX_PATH];
-		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("ocean_marker_d3d11.fxo")))
-        ID3DBlob* pEffectBuffer = NULL;
-        V_RETURN(LoadFile(path, &pEffectBuffer));
-        V_RETURN(D3DX11CreateEffectFromMemory(pEffectBuffer->GetBufferPointer(), pEffectBuffer->GetBufferSize(), 0, pd3dDevice, &g_pMarkerFX));
-        pEffectBuffer->Release();
+
+		V_RETURN(DXUTFindDXSDKMediaFileCch(path, MAX_PATH, TEXT("ocean_marker_d3d11.fxo")));
+		V_RETURN(D3DX11CreateEffectFromFile(path, 0, pd3dDevice, &g_pMarkerFX));
     }
 
 	g_pMarkerTechnique = g_pMarkerFX->GetTechniqueByName("RenderMarkerTech");

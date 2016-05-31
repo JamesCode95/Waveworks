@@ -47,6 +47,8 @@
 #if WAVEWORKS_ENABLE_GNM
 #include "orbis\GNM_Util.h"
 #endif
+#include "InternalLogger.h"
+#include "Logger.h"
 
 // Misc helper macros which can be used to bracket entrypoints to:
 // - catch any and all exceptions, to keep them out of the app
@@ -67,13 +69,13 @@
 
 #define ENTRYPOINT_BEGIN_API(x)             BEGIN_TRY_BLOCK {  \
 												if(g_InitialisedAPI != nv_water_d3d_api_##x) { \
-													WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called but the library was not initialised for ") TSTR(#x) TEXT("\n")); \
+													NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called but the library was not initialised for ") TSTR(#x)); \
 													return gfsdk_waveworks_result_FAIL; \
 												}
 
 #define CUSTOM_ENTRYPOINT_BEGIN(r)			BEGIN_TRY_BLOCK {  \
 												if(g_InitialisedAPI == nv_water_d3d_api_undefined) { \
-													WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called but the library was not initialised\n")); \
+													NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called but the library was not initialised\n")); \
 													return r; \
 												}
 #define ENTRYPOINT_BEGIN					CUSTOM_ENTRYPOINT_BEGIN(gfsdk_waveworks_result_FAIL)
@@ -258,7 +260,7 @@ namespace
 #if !defined(TARGET_PLATFORM_PS4)
 		if( !mallocHooks.pMalloc || !mallocHooks.pFree || !mallocHooks.pAlignedMalloc || !mallocHooks.pAlignedFree)
 		{
-			diagnostic_message(TEXT("SetMemoryManagementCallbacks received invalid pointer to memory allocation routines") );
+			NV_ERROR(TEXT("SetMemoryManagementCallbacks received invalid pointer to memory allocation routines"));
 			return gfsdk_waveworks_result_FAIL;
 		}
 
@@ -269,7 +271,7 @@ namespace
 #else
 		if( !mallocHooks.pOnionAlloc || !mallocHooks.pOnionFree || !mallocHooks.pGarlicAlloc || !mallocHooks.pGarlicFree)
 		{
-			diagnostic_message(TEXT("SetMemoryManagementCallbacks received invalid pointer to memory allocation routines") );
+			NV_ERROR(TEXT("SetMemoryManagementCallbacks received invalid pointer to memory allocation routines"));
 			return gfsdk_waveworks_result_FAIL;
 		}
 
@@ -300,7 +302,7 @@ namespace
 					if(g_CanUseCUDA)
 						break;			// We detected CUDA, keep going
 
-					WaveWorks_Internal::diagnostic_message(TEXT("ERROR: %s failed because the hardware does not support the detail_level specified in the simulation settings\n"), szEntrypointFnName);
+					NV_ERROR(TEXT("ERROR: %s failed because the hardware does not support the detail_level specified in the simulation settings\n"), szEntrypointFnName);
 					return gfsdk_waveworks_result_FAIL;
 
 				#else
@@ -436,6 +438,13 @@ const char* GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_GetBuildString()
 	const char* kNVWaveWorks_build_string = "FixBuildString!";
 	return kNVWaveWorks_build_string;
 #endif
+}
+
+gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV  GFSDK_WaveWorks_SetUserLogger(nv::ILogger* userLogger)
+{
+	g_UserLogger = userLogger;
+
+	return gfsdk_waveworks_result_OK;
 }
 
 gfsdk_bool GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_GLAttribIsShaderInput(gfsdk_cstr attribName, const GFSDK_WaveWorks_ShaderInput_Desc& inputDesc)
@@ -617,13 +626,16 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_InitD3D11(ID3D1
 	ENTRYPOINT_BEGIN_NO_INIT_CHECK
 
 #if WAVEWORKS_ENABLE_D3D11
+
+	NV_LOG(TEXT("Initing D3D11"));
+
 	if(g_InitialisedAPI != nv_water_d3d_api_undefined) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state\n"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
 	if(!equal(apiGUID,GFSDK_WAVEWORKS_API_GUID)) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
@@ -682,22 +694,22 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_InitGnm(const G
 #if WAVEWORKS_ENABLE_GNM
 
 	if(g_InitialisedAPI != nv_water_d3d_api_undefined) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
 	if(!equal(apiGUID,GFSDK_WAVEWORKS_API_GUID)) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
 	if(!pRequiredMallocHooks) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid pRequiredMallocHooks\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid pRequiredMallocHooks"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
 	if(!pRequiredGnmxWrap) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid pRequiredGnmxWrap\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid pRequiredGnmxWrap"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
@@ -724,12 +736,12 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_InitGL2(const G
 
 #if WAVEWORKS_ENABLE_GL
 	if(g_InitialisedAPI != nv_water_d3d_api_undefined) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
 	if(!equal(apiGUID,GFSDK_WAVEWORKS_API_GUID)) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID"));
 		return gfsdk_waveworks_result_FAIL;
 	}
  
@@ -869,12 +881,12 @@ gfsdk_waveworks_result GFSDK_WAVEWORKS_CALL_CONV GFSDK_WaveWorks_InitNoGraphics(
 	ENTRYPOINT_BEGIN_NO_INIT_CHECK
 
 	if(g_InitialisedAPI != nv_water_d3d_api_undefined) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with the library already in an initialised state"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
 	if(!equal(apiGUID,GFSDK_WAVEWORKS_API_GUID)) {
-		WaveWorks_Internal::diagnostic_message(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID\n"));
+		NV_ERROR(TEXT("ERROR: ") __DEF_FUNCTION__ TEXT(" was called with an invalid API GUID"));
 		return gfsdk_waveworks_result_FAIL;
 	}
 
@@ -1738,7 +1750,7 @@ namespace
 {
 	void msg_and_break(const char_type* errMsg)
 	{
-		WaveWorks_Internal::diagnostic_message(errMsg);
+		NV_ERROR(errMsg);
 		DebugBreak();
 	}
 }
@@ -1772,7 +1784,7 @@ void check_gl_errors(const char_type* file, gfsdk_S32 line)
 	GLenum error;
 	while (( error = NVSDK_GLFunctions.glGetError() ) != 0)
     {
-		WaveWorks_Internal::diagnostic_message(TEXT("\r\n%s(%i): OpenGL error : %i\n"), file, line, error);
+		NV_ERROR(TEXT("\r\n%s(%i): OpenGL error : %i\n"), file, line, error);
 	}
 }
 #endif // WAVEWORKS_ENABLE_GL

@@ -286,7 +286,12 @@ float DistanceField::FindNearestPixel( float* pTextureData, const int cx, const 
 	return originPositive ? -minDistance/kMaxDistance : minDistance/kMaxDistance;
 }
 
-void DistanceField::GetWorldToTopDownTextureMatrix( XMMATRIX worldToTopDownMatrix )
+void DistanceField::GetWorldToTopDownTextureMatrix( XMMATRIX &worldToTopDownMatrix )
 {
+// 	XMMATRIX wtvMat, vtpMat;
+// 
+// 	XMLoadFloat4x4(&m_worldToViewMatrix);
+// 	XMLoadFloat4x4(&m_viewToProjectionMatrix);
+
 	worldToTopDownMatrix = XMLoadFloat4x4(&m_worldToViewMatrix) * XMLoadFloat4x4(&m_viewToProjectionMatrix);
 }
