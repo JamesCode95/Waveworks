@@ -3,6 +3,7 @@
 #
 
 FIND_PACKAGE(CUDA REQUIRED)
+FIND_PACKAGE(FXC REQUIRED)
 
 
 SET(WW_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -132,17 +133,6 @@ SET(DISTRO_INCLUDE_FILES
 
 SET(HLSL_FILES
 	
-	${SHADER_SRC_DIR}/CalcGradient.fx
-	${SHADER_SRC_DIR}/CalcGradient_SM3.fx
-	${SHADER_SRC_DIR}/CalcGradient_SM4.fx
-	
-	${SHADER_SRC_DIR}/FoamGeneration.fx
-	${SHADER_SRC_DIR}/FoamGeneration_SM3.fx
-	${SHADER_SRC_DIR}/FoamGeneration_SM4.fx
-	
-	${SHADER_SRC_DIR}/Quadtree_SM4_sig.fx
-	${SHADER_SRC_DIR}/Quadtree_SM5_sig.fx
-	
 	${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl
 )
 
@@ -151,6 +141,14 @@ SET(CUDA_FILES
 )
 
 SET(FX_FILES
+	${SHADER_SRC_DIR}/CalcGradient.fx
+	${SHADER_SRC_DIR}/CalcGradient_SM3.fx
+	${SHADER_SRC_DIR}/CalcGradient_SM4.fx
+	
+	${SHADER_SRC_DIR}/FoamGeneration.fx
+	${SHADER_SRC_DIR}/FoamGeneration_SM3.fx
+	${SHADER_SRC_DIR}/FoamGeneration_SM4.fx
+
 	${SHADER_SRC_DIR}/Quadtree_SM4_sig.fx
 	${SHADER_SRC_DIR}/Quadtree_SM5_sig.fx
 	${SHADER_SRC_DIR}/FoamGeneration_SM4.fx
@@ -169,6 +167,10 @@ SET(GENERATED_HLSL_FILES
 	${GEN_SRC_DIR}/ComputeH0_cs_5_0.h
 	${GEN_SRC_DIR}/ComputeRows_cs_5_0.h
 	${GEN_SRC_DIR}/ComputeColumns_cs_5_0.h
+	${GEN_SRC_DIR}/CalcGradient_ps_4_0.h
+	${GEN_SRC_DIR}/CalcGradient_vs_4_0.h
+	${GEN_SRC_DIR}/CalcGradient_ps_3_0.h
+	${GEN_SRC_DIR}/CalcGradient_vs_3_0.h
 )
 
 
@@ -181,6 +183,12 @@ INCLUDE(cmake/CompileFXToH.cmake)
 # Compile the .fx files to .h files so they can be loaded easily.
 ADD_CUSTOM_TARGET(fx ALL)
 
+CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM4.fx ${GEN_SRC_DIR}/CalcGradient_ps_4_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} ps /Tps_4_0)
+CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM4.fx ${GEN_SRC_DIR}/CalcGradient_vs_4_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} vs /Tvs_4_0)
+
+CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM3.fx ${GEN_SRC_DIR}/CalcGradient_ps_3_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} ps /Tps_3_0)
+CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM3.fx ${GEN_SRC_DIR}/CalcGradient_vs_3_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} vs /Tvs_3_0)
+
 CompileFXToH(${SHADER_SRC_DIR}/Quadtree_SM4_sig.fx ${GEN_SRC_DIR}/Quadtree_SM4_sig.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} GFSDK_WAVEWORKS_VERTEX_INPUT_Sig /Tvs_4_0)
 CompileFXToH(${SHADER_SRC_DIR}/Quadtree_SM5_sig.fx ${GEN_SRC_DIR}/Quadtree_SM5_sig.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} GFSDK_WAVEWORKS_VERTEX_INPUT_Sig /Tvs_5_0)
 
@@ -192,11 +200,6 @@ CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM4.fx ${GEN_SRC_DIR}/FoamGenerati
 CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM3.fx ${GEN_SRC_DIR}/FoamGeneration_ps_3_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} ps /Tps_3_0)
 CompileFXToH(${SHADER_SRC_DIR}/FoamGeneration_SM3.fx ${GEN_SRC_DIR}/FoamGeneration_vs_3_0.h fx ${SHADER_SRC_DIR} ${DISTRO_INCLUDE_DIR} vs /Tvs_3_0)
 
-CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM4.fx ${GEN_SRC_DIR}/CalcGradient_ps_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_4_0)
-CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM4.fx ${GEN_SRC_DIR}/CalcGradient_vs_4_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_4_0)
-
-CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM3.fx ${GEN_SRC_DIR}/CalcGradient_ps_3_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ps /Tps_3_0)
-CompileFXToH(${SHADER_SRC_DIR}/CalcGradient_SM3.fx ${GEN_SRC_DIR}/CalcGradient_vs_3_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} vs /Tvs_3_0)
 
 CompileFXToH(${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl ${GEN_SRC_DIR}/ComputeH0_cs_5_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ComputeH0 /Tcs_5_0 /Vng_ComputeH0)
 CompileFXToH(${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl ${GEN_SRC_DIR}/ComputeRows_cs_5_0.h fx ${SHADER_SRC_DIR} ${GEN_SRC_DIR} ComputeRows /Tcs_5_0 /Vng_ComputeRows)

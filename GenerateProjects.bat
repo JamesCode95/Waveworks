@@ -4,8 +4,6 @@ REM Make sure the various variables that we need are set
 
 IF NOT DEFINED GW_DEPS_ROOT GOTO GW_DEPS_ROOT_UNDEFINED
 
-IF NOT DEFINED CUDA_BIN_PATH GOTO CUDA_ROOT_UNDEFINED
-
 REM Generate projects here
 
 rmdir /s /q compiler\vc12win64-cmake\

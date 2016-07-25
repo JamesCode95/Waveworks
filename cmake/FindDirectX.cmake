@@ -220,10 +220,5 @@ if (WIN32)
         find_combined       (D2D1_1  D2D1_1 D2D1)
     endif ()
 
-    find_program (DirectX_FXC_EXECUTABLE fxc
-        HINTS "${ProgramFiles}/Windows Kits/8.1/bin/x86" "${ProgramFiles}/Windows Kits/8.0/bin/x86" ${DirectX_BIN_SEARCH_PATH} 
-		
-        DOC "Path to fxc.exe executable."
-    )
-
+	
 endif ()
