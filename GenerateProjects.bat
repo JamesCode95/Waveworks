@@ -9,11 +9,11 @@ IF NOT DEFINED PM_PACKAGES_ROOT GOTO PM_PACKAGES_ROOT_UNDEFINED
 
 REM Generate projects here
 
-REM rmdir /s /q compiler\vc12win64-cmake\
-REM mkdir compiler\vc12win64-cmake\
-REM pushd compiler\vc12win64-cmake\
-REM cmake ..\.. -G "Visual Studio 12 2013" -Ax64 -DTARGET_BUILD_PLATFORM=Windows -DWW_OUTPUT_DIR=bin\vc12win64-cmake\
-REM popd
+rmdir /s /q compiler\vc12win64-cmake\
+mkdir compiler\vc12win64-cmake\
+pushd compiler\vc12win64-cmake\
+cmake ..\.. -G "Visual Studio 12 2013" -Ax64 -DTARGET_BUILD_PLATFORM=Windows -DWW_OUTPUT_DIR=bin\vc12win64-cmake\
+popd
 
 rmdir /s /q compiler\vc14win64-cmake\
 mkdir compiler\vc14win64-cmake\
