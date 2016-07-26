@@ -2,21 +2,24 @@ REM @echo off
 
 REM Make sure the various variables that we need are set
 
-IF NOT DEFINED GW_DEPS_ROOT GOTO GW_DEPS_ROOT_UNDEFINED
+call %~dp0\packman\windows\packman.cmd pull WaveWorksDependencies.xml
+
+
+IF NOT DEFINED PM_PACKAGES_ROOT GOTO PM_PACKAGES_ROOT_UNDEFINED
 
 REM Generate projects here
 
-rmdir /s /q compiler\vc12win64-cmake\
-mkdir compiler\vc12win64-cmake\
-pushd compiler\vc12win64-cmake\
-cmake ..\.. -G "Visual Studio 12 2013" -Ax64 -DTARGET_BUILD_PLATFORM=Windows -DWW_OUTPUT_DIR=bin\vc12win64-cmake\
-popd
-
-REM rmdir /s /q compiler\vc14win64-cmake\
-REM mkdir compiler\vc14win64-cmake\
-REM pushd compiler\vc14win64-cmake\
-REM cmake ..\.. -G "Visual Studio 14 2015" -Ax64 -DTARGET_BUILD_PLATFORM=Windows -DWW_OUTPUT_DIR=bin\vc14win64-cmake\
+REM rmdir /s /q compiler\vc12win64-cmake\
+REM mkdir compiler\vc12win64-cmake\
+REM pushd compiler\vc12win64-cmake\
+REM cmake ..\.. -G "Visual Studio 12 2013" -Ax64 -DTARGET_BUILD_PLATFORM=Windows -DWW_OUTPUT_DIR=bin\vc12win64-cmake\
 REM popd
+
+rmdir /s /q compiler\vc14win64-cmake\
+mkdir compiler\vc14win64-cmake\
+pushd compiler\vc14win64-cmake\
+cmake ..\.. -G "Visual Studio 14 2015" -Ax64 -DTARGET_BUILD_PLATFORM=Windows -DWW_OUTPUT_DIR=bin\vc14win64-cmake\
+popd
 
 REM rmdir /s /q compiler\vc12-ps4-cmake\
 REM mkdir compiler\vc12-ps4-cmake\
@@ -38,13 +41,10 @@ REM popd
 
 GOTO :End
 
-:GW_DEPS_ROOT_UNDEFINED
-ECHO GW_DEPS_ROOT has to be defined, pointing to the root of the dependency tree.
+:PM_PACKAGES_ROOT_UNDEFINED
+ECHO PM_PACKAGES_ROOT has to be defined, if it's not it means PackMan has not successfully bootstrapped and run as part of this batch file.
 PAUSE
 GOTO END
 
-:CUDA_ROOT_UNDEFINED
-ECHO CUDA_BIN_PATH has to be defined, pointing to the bin folder of your local CUDA install.
-PAUSE
 
 :End

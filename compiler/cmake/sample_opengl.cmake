@@ -2,7 +2,6 @@
 # Build sample_opengl
 #
 
-SET(GW_DEPS_ROOT $ENV{GW_DEPS_ROOT})
 
 FIND_PACKAGE(AntTweakBar REQUIRED)
 

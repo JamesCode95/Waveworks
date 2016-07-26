@@ -9,7 +9,7 @@ else()
 endif()
 
 find_path(DXTK_SDK_PATH Inc/DirectXHelpers.h
-	HINTS ${GW_DEPS_ROOT}/DirectXTK/
+	HINTS ${GW_DEPS_ROOT}/DirectXTK/${DirectXTK_FIND_VERSION}
 	)
    
 MESSAGE("DXTK SDK ${DXTK_SDK_PATH}")

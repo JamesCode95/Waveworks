@@ -1,0 +1,8 @@
+<project toolsVersion="3.0" packageSource="s3">
+	<platform name="win">
+		<dependency name="DXUT" version="1.0"/>
+		<dependency name="FX11" version="1.0"/>
+		<dependency name="DirectXTK" version="1.0"/>
+		<dependency name="AntTweakBar" version="1.0"/>
+	</platform>
+</project>

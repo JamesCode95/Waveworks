@@ -9,7 +9,7 @@ else()
 endif()
 
 find_path(DXUT_SDK_PATH Core/DXUT.h
-	HINTS ${GW_DEPS_ROOT}/DXUT
+	HINTS ${GW_DEPS_ROOT}/DXUT/${DXUT_FIND_VERSION}
 	)
    
 # Need to be smart and get the proper VS library here

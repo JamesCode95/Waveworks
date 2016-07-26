@@ -9,7 +9,7 @@ else()
 endif()
 
 find_path(ATB_PATH AntTweakBar.h
-	HINTS ${GW_DEPS_ROOT}/AntTweakBar
+	HINTS ${GW_DEPS_ROOT}/AntTweakBar/${AntTweakBar_FIND_VERSION}
 	)
    
 MESSAGE("ATB SDK ${ATB_PATH}")
