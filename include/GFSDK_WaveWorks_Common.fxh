@@ -34,30 +34,30 @@
  *
  */
 #if defined(GFSDK_WAVEWORKS_SM4) || defined(GFSDK_WAVEWORKS_SM5)
-	#define SampleTex2D(nvsf_texture,nvsf_sampler,nvsf_coords) nvsf_texture.Sample(nvsf_sampler,nvsf_coords)
-	#define SampleTex2Dlod(nvsf_texture,nvsf_sampler,nvsf_coords,nvsf_lod) nvsf_texture.SampleLevel(nvsf_sampler,nvsf_coords,nvsf_lod)
+	#define SampleTex2D(texture,sampler,coords) texture.Sample(sampler,coords)
+	#define SampleTex2Dlod(texture,sampler,coords,lod) texture.SampleLevel(sampler,coords,lod)
 	#define BEGIN_CBUFFER(name,slot) cbuffer name : register(b##slot) {
 	#define END_CBUFFER };
 	#define SEMANTIC(x) : x
 #elif defined(GFSDK_WAVEWORKS_SM3)
-	#define SampleTex2D(nvsf_texture,nvsf_sampler,nvsf_coords) tex2D(nvsf_sampler,nvsf_coords)
-	#define SampleTex2Dlod(nvsf_texture,nvsf_sampler,nvsf_coords,nvsf_lod) tex2Dlod(nvsf_sampler,float4(nvsf_coords,0,nvsf_lod))
+	#define SampleTex2D(texture,sampler,coords) tex2D(sampler,coords)
+	#define SampleTex2Dlod(texture,sampler,coords,lod) tex2Dlod(sampler,float4(coords,0,lod))
 	#define BEGIN_CBUFFER(name,slot)
 	#define END_CBUFFER
 	#define SV_Target COLOR
 	#define SV_Position POSITION
 	#define SEMANTIC(x) : x
 #elif defined(GFSDK_WAVEWORKS_GNM)
-	#define SampleTex2D(nvsf_texture,nvsf_sampler,nvsf_coords) nvsf_texture.Sample(nvsf_sampler,nvsf_coords)
-	#define SampleTex2Dlod(nvsf_texture,nvsf_sampler,nvsf_coords,nvsf_lod) nvsf_texture.SampleLOD(nvsf_sampler,nvsf_coords,nvsf_lod)
+	#define SampleTex2D(texture,sampler,coords) texture.Sample(sampler,coords)
+	#define SampleTex2Dlod(texture,sampler,coords,lod) texture.SampleLOD(sampler,coords,lod)
 	#define BEGIN_CBUFFER(name,slot) ConstantBuffer name : register(b##slot) {
 	#define END_CBUFFER };
 	#define SV_Target S_TARGET_OUTPUT
 	#define SV_Position S_POSITION
 	#define SEMANTIC(x) : x
 #elif defined(GFSDK_WAVEWORKS_GL)
-	#define SampleTex2D(nvsf_texture,nvsf_sampler,nvsf_coords) texture(nvsf_sampler,nvsf_coords)
-	#define SampleTex2Dlod(nvsf_texture,nvsf_sampler,nvsf_coords,nvsf_lod) textureLod(nvsf_sampler,nvsf_coords,nvsf_lod)
+	#define SampleTex2D(texture,sampler,coords) texture(sampler,coords)
+	#define SampleTex2Dlod(texture,sampler,coords,lod) textureLod(sampler,coords,lod)
 	#define BEGIN_CBUFFER(name,slot)
 	#define END_CBUFFER
 	#define SEMANTIC(x)

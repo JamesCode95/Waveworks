@@ -96,24 +96,24 @@ enum ShaderInputsGL2
 
 #if WAVEWORKS_ENABLE_D3D11
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputD3D11Descs[NumShaderInputsD3D11] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_geom_buffer", 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::HullShader_ConstantBuffer, "nvsf_eyepos_buffer", 0 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "geom_buffer", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::HullShader_ConstantBuffer, "eyepos_buffer", 0 }
 };
 #endif
 
 #if WAVEWORKS_ENABLE_GNM
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputGnmDescs[NumShaderInputsGnm] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "nvsf_geom_buffer", 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::HullShader_ConstantBuffer, "nvsf_eyepos_buffer", 0 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::VertexShader_ConstantBuffer, "geom_buffer", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::HullShader_ConstantBuffer, "eyepos_buffer", 0 }
 };
 #endif
 
 #if WAVEWORKS_ENABLE_GL
 const GFSDK_WaveWorks_ShaderInput_Desc ShaderInputGL2Descs[NumShaderInputsGL2] = {
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_matLocalWorld", 0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_vsEyePos",      0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "nvsf_g_MorphParam",    0 },
-	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_AttribLocation,               "nvsf_vPos",            0 }
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "g_matLocalWorld", 0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "g_vsEyePos",      0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_VertexShader_UniformLocation, "g_MorphParam",    0 },
+	{ GFSDK_WaveWorks_ShaderInput_Desc::GL_AttribLocation,               "vPos",            0 }
 };
 #endif
 struct vs_cbuffer

@@ -43,39 +43,39 @@
 // Global variables
 //------------------------------------------------------------------------------------
 
-BEGIN_CBUFFER(nvsf_globals,0)
-DECLARE_ATTR_CONSTANT(float4,nvsf_g_DissipationFactors,0); // x - the blur extents, y - the fadeout multiplier, z - the accumulation multiplier, w - foam generation threshold
-DECLARE_ATTR_CONSTANT(float4,nvsf_g_SourceComponents  ,1); // xyzw - weights of energy map components to be sampled
-DECLARE_ATTR_CONSTANT(float4,nvsf_g_UVOffsets         ,2); // xy - defines either horizontal offsets either vertical offsets
+BEGIN_CBUFFER(globals,0)
+DECLARE_ATTR_CONSTANT(float4,g_DissipationFactors,0); // x - the blur extents, y - the fadeout multiplier, z - the accumulation multiplier, w - foam generation threshold
+DECLARE_ATTR_CONSTANT(float4,g_SourceComponents  ,1); // xyzw - weights of energy map components to be sampled
+DECLARE_ATTR_CONSTANT(float4,g_UVOffsets         ,2); // xy - defines either horizontal offsets either vertical offsets
 END_CBUFFER
 
-DECLARE_ATTR_SAMPLER(nvsf_g_textureEnergyMap,nvsf_g_samplerEnergyMap,0);
+DECLARE_ATTR_SAMPLER(g_textureEnergyMap,g_samplerEnergyMap,0);
 
 #ifdef GFSDK_WAVEWORKS_GL
-varying float2 nvsf_vInterpTexCoord;
+varying float2 vInterpTexCoord;
 #endif
 
 #ifndef GFSDK_WAVEWORKS_OMIT_VS
 
 #ifdef GFSDK_WAVEWORKS_GL
-attribute float4 nvsf_vInPos;
-attribute float2 nvsf_vInTexCoord;
-#define nvsf_vOutPos gl_Position
+attribute float4 vInPos;
+attribute float2 vInTexCoord;
+#define vOutPos gl_Position
 void main()
 #else
 void vs(
-	float4 nvsf_vInPos SEMANTIC(POSITION),
-	float2 nvsf_vInTexCoord SEMANTIC(TEXCOORD0),
-	out float2 nvsf_vInterpTexCoord SEMANTIC(TEXCOORD0),
-	out float4 nvsf_vOutPos SEMANTIC(SV_Position)
+	float4 vInPos SEMANTIC(POSITION),
+	float2 vInTexCoord SEMANTIC(TEXCOORD0),
+	out float2 vInterpTexCoord SEMANTIC(TEXCOORD0),
+	out float4 vOutPos SEMANTIC(SV_Position)
 )
 #endif
 {
     // No need to do matrix transform.
-    nvsf_vOutPos = nvsf_vInPos;
+    vOutPos = vInPos;
     
 	// Pass through general texture coordinate.
-    nvsf_vInterpTexCoord = nvsf_vInTexCoord;
+    vInterpTexCoord = vInTexCoord;
 }
 
 #endif // !GFSDK_WAVEWORKS_OMIT_VS
@@ -89,33 +89,33 @@ void vs(
 #ifndef GFSDK_WAVEWORKS_OMIT_PS
 
 #ifdef GFSDK_WAVEWORKS_GL
-#define nvsf_Output gl_FragColor
+#define Output gl_FragColor
 void main()
 #else
 void ps(
-	float2 nvsf_vInterpTexCoord SEMANTIC(TEXCOORD0),
-	out float4 nvsf_Output SEMANTIC(SV_Target)
+	float2 vInterpTexCoord SEMANTIC(TEXCOORD0),
+	out float4 Output SEMANTIC(SV_Target)
 )
 #endif
 {
 
-	float2 nvsf_UVoffset = nvsf_g_UVOffsets.xy*nvsf_g_DissipationFactors.x;
+	float2 UVoffset = g_UVOffsets.xy*g_DissipationFactors.x;
 
 	// blur with variable size kernel is done by doing 4 bilinear samples, 
 	// each sample is slightly offset from the center point
-	float nvsf_foamenergy1	= dot(nvsf_g_SourceComponents, SampleTex2D(nvsf_g_textureEnergyMap, nvsf_g_samplerEnergyMap, nvsf_vInterpTexCoord.xy + nvsf_UVoffset));
-	float nvsf_foamenergy2	= dot(nvsf_g_SourceComponents, SampleTex2D(nvsf_g_textureEnergyMap, nvsf_g_samplerEnergyMap, nvsf_vInterpTexCoord.xy - nvsf_UVoffset));
-	float nvsf_foamenergy3	= dot(nvsf_g_SourceComponents, SampleTex2D(nvsf_g_textureEnergyMap, nvsf_g_samplerEnergyMap, nvsf_vInterpTexCoord.xy + nvsf_UVoffset*2.0));
-	float nvsf_foamenergy4	= dot(nvsf_g_SourceComponents, SampleTex2D(nvsf_g_textureEnergyMap, nvsf_g_samplerEnergyMap, nvsf_vInterpTexCoord.xy - nvsf_UVoffset*2.0));
+	float foamenergy1	= dot(g_SourceComponents, SampleTex2D(g_textureEnergyMap, g_samplerEnergyMap, vInterpTexCoord.xy + UVoffset));
+	float foamenergy2	= dot(g_SourceComponents, SampleTex2D(g_textureEnergyMap, g_samplerEnergyMap, vInterpTexCoord.xy - UVoffset));
+	float foamenergy3	= dot(g_SourceComponents, SampleTex2D(g_textureEnergyMap, g_samplerEnergyMap, vInterpTexCoord.xy + UVoffset*2.0));
+	float foamenergy4	= dot(g_SourceComponents, SampleTex2D(g_textureEnergyMap, g_samplerEnergyMap, vInterpTexCoord.xy - UVoffset*2.0));
 	
-	float nvsf_folding = max(0,SampleTex2D(nvsf_g_textureEnergyMap, nvsf_g_samplerEnergyMap, nvsf_vInterpTexCoord.xy).z);
+	float folding = max(0,SampleTex2D(g_textureEnergyMap, g_samplerEnergyMap, vInterpTexCoord.xy).z);
 
-	float nvsf_energy = nvsf_g_DissipationFactors.y*((nvsf_foamenergy1 + nvsf_foamenergy2 + nvsf_foamenergy3 + nvsf_foamenergy4)*0.25 + max(0,(1.0-nvsf_folding-nvsf_g_DissipationFactors.w))*nvsf_g_DissipationFactors.z);
+	float energy = g_DissipationFactors.y*((foamenergy1 + foamenergy2 + foamenergy3 + foamenergy4)*0.25 + max(0,(1.0-folding-g_DissipationFactors.w))*g_DissipationFactors.z);
 
-	nvsf_energy = min(1.0,nvsf_energy);
+	energy = min(1.0,energy);
 
 	// Output
-	nvsf_Output = float4(nvsf_energy,nvsf_energy,nvsf_energy,nvsf_energy);
+	Output = float4(energy,energy,energy,energy);
 }
 
 #endif // !GFSDK_WAVEWORKS_OMIT_PS

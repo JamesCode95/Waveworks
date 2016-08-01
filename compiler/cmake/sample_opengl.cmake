@@ -3,14 +3,15 @@
 #
 
 
-FIND_PACKAGE(AntTweakBar REQUIRED)
+FIND_PACKAGE(AntTweakBar 1.0 REQUIRED)
 
 SET(SAMP_SOURCE_DIR ${PROJECT_SOURCE_DIR}/sample/opengl)
 SET(TL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+SET(SHADER_DIR ${PROJECT_SOURCE_DIR}/src/shader)
 
 IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 
-	FIND_PACKAGE(DirectX REQUIRED)
+#	FIND_PACKAGE(DirectX REQUIRED)
 
 	SET(WW_PLATFORM_INCLUDES
 	)
@@ -79,16 +80,25 @@ SET(APP_FILES
 	${SAMP_SOURCE_DIR}/water.glsl
 )
 
+SET(SHADER_H_FILES
+	${SHADER_DIR}/CalcGradient_glsl_vs.h
+	${SHADER_DIR}/CalcGradient_glsl_ps.h
+	
+	${SHADER_DIR}/FoamGeneration_glsl_vs.h
+	${SHADER_DIR}/FoamGeneration_glsl_ps.h
+)
+
 
 ADD_EXECUTABLE(SampleOpenGL WIN32
 	${WW_PLATFORM_SRC_FILES}
 	
 	${APP_FILES}
-
+	${SHADER_H_FILES}
 )
 
-SOURCE_GROUP("app" FILES ${APP_FILES})
 
+SOURCE_GROUP("app" FILES ${APP_FILES})
+SOURCE_GROUP("glsl" FILES ${SHADER_H_FILES})
 
 
 # Target specific compile options

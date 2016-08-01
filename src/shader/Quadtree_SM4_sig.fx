@@ -35,5 +35,5 @@
 
 float4 GFSDK_WAVEWORKS_VERTEX_INPUT_Sig(GFSDK_WAVEWORKS_VERTEX_INPUT In) : SV_Position
 {
-	return In.nvsf_vPos;
+	return In.vPos;
 }

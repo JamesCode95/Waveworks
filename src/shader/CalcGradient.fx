@@ -43,41 +43,41 @@
 // Global variables
 //------------------------------------------------------------------------------------
 
-BEGIN_CBUFFER(nvsf_globals,0)
-DECLARE_ATTR_CONSTANT(float4,nvsf_g_Scales,        0); // was: float nvsf_g_ChoppyScale, nvsf_g_GradMap2TexelWSScale
-DECLARE_ATTR_CONSTANT(float4,nvsf_g_OneTexel_Left, 1);
-DECLARE_ATTR_CONSTANT(float4,nvsf_g_OneTexel_Right,2);
-DECLARE_ATTR_CONSTANT(float4,nvsf_g_OneTexel_Back, 3);
-DECLARE_ATTR_CONSTANT(float4,nvsf_g_OneTexel_Front,4);
+BEGIN_CBUFFER(globals,0)
+DECLARE_ATTR_CONSTANT(float4,g_Scales,        0); // was: float g_ChoppyScale, g_GradMap2TexelWSScale
+DECLARE_ATTR_CONSTANT(float4,g_OneTexel_Left, 1);
+DECLARE_ATTR_CONSTANT(float4,g_OneTexel_Right,2);
+DECLARE_ATTR_CONSTANT(float4,g_OneTexel_Back, 3);
+DECLARE_ATTR_CONSTANT(float4,g_OneTexel_Front,4);
 END_CBUFFER
 
-DECLARE_ATTR_SAMPLER(nvsf_g_textureDisplacementMap,nvsf_g_samplerDisplacementMap,0);
+DECLARE_ATTR_SAMPLER(g_textureDisplacementMap,g_samplerDisplacementMap,0);
 
 #ifdef GFSDK_WAVEWORKS_GL
-varying float2 nvsf_vInterpTexCoord;
+varying float2 vInterpTexCoord;
 #endif
 
 #ifndef GFSDK_WAVEWORKS_OMIT_VS
 
 #ifdef GFSDK_WAVEWORKS_GL
-attribute float4 nvsf_vInPos;
-attribute float2 nvsf_vInTexCoord;
-#define nvsf_vOutPos gl_Position
+attribute float4 vInPos;
+attribute float2 vInTexCoord;
+#define vOutPos gl_Position
 void main()
 #else
 void vs(
-	float4 nvsf_vInPos SEMANTIC(POSITION),
-	float2 nvsf_vInTexCoord SEMANTIC(TEXCOORD0),
-	out float2 nvsf_vInterpTexCoord SEMANTIC(TEXCOORD0),
-	out float4 nvsf_vOutPos SEMANTIC(SV_Position)
+	float4 vInPos SEMANTIC(POSITION),
+	float2 vInTexCoord SEMANTIC(TEXCOORD0),
+	out float2 vInterpTexCoord SEMANTIC(TEXCOORD0),
+	out float4 vOutPos SEMANTIC(SV_Position)
 )
 #endif
 {
     // No need to do matrix transform.
-    nvsf_vOutPos = nvsf_vInPos;
+    vOutPos = vInPos;
     
 	// Pass through general texture coordinate.
-    nvsf_vInterpTexCoord = nvsf_vInTexCoord;
+    vInterpTexCoord = vInTexCoord;
 }
 
 #endif // !GFSDK_WAVEWORKS_OMIT_VS
@@ -86,32 +86,32 @@ void vs(
 #ifndef GFSDK_WAVEWORKS_OMIT_PS
 
 #ifdef GFSDK_WAVEWORKS_GL
-#define nvsf_Output gl_FragColor
+#define Output gl_FragColor
 void main()
 #else
 void ps(
-	float2 nvsf_vInterpTexCoord SEMANTIC(TEXCOORD0),
-	out float4 nvsf_Output SEMANTIC(SV_Target)
+	float2 vInterpTexCoord SEMANTIC(TEXCOORD0),
+	out float4 Output SEMANTIC(SV_Target)
 )
 #endif
 {
 	// Sample neighbour texels
-	float3 nvsf_displace_left	= SampleTex2D(nvsf_g_textureDisplacementMap, nvsf_g_samplerDisplacementMap, nvsf_vInterpTexCoord.xy + nvsf_g_OneTexel_Left.xy).rgb;
-	float3 nvsf_displace_right	= SampleTex2D(nvsf_g_textureDisplacementMap, nvsf_g_samplerDisplacementMap, nvsf_vInterpTexCoord.xy + nvsf_g_OneTexel_Right.xy).rgb;
-	float3 nvsf_displace_back	= SampleTex2D(nvsf_g_textureDisplacementMap, nvsf_g_samplerDisplacementMap, nvsf_vInterpTexCoord.xy + nvsf_g_OneTexel_Back.xy).rgb;
-	float3 nvsf_displace_front	= SampleTex2D(nvsf_g_textureDisplacementMap, nvsf_g_samplerDisplacementMap, nvsf_vInterpTexCoord.xy + nvsf_g_OneTexel_Front.xy).rgb;
+	float3 displace_left	= SampleTex2D(g_textureDisplacementMap, g_samplerDisplacementMap, vInterpTexCoord.xy + g_OneTexel_Left.xy).rgb;
+	float3 displace_right	= SampleTex2D(g_textureDisplacementMap, g_samplerDisplacementMap, vInterpTexCoord.xy + g_OneTexel_Right.xy).rgb;
+	float3 displace_back	= SampleTex2D(g_textureDisplacementMap, g_samplerDisplacementMap, vInterpTexCoord.xy + g_OneTexel_Back.xy).rgb;
+	float3 displace_front	= SampleTex2D(g_textureDisplacementMap, g_samplerDisplacementMap, vInterpTexCoord.xy + g_OneTexel_Front.xy).rgb;
 	
 	// -------- Do not store the actual normal value, instead, it preserves two differential values.
-	float2 nvsf_gradient = float2(-(nvsf_displace_right.z - nvsf_displace_left.z) / max(0.01,1.0 + nvsf_g_Scales.y*(nvsf_displace_right.x - nvsf_displace_left.x)), -(nvsf_displace_front.z - nvsf_displace_back.z) / max(0.01,1.0+nvsf_g_Scales.y*(nvsf_displace_front.y - nvsf_displace_back.y)));
-	//float2 nvsf_gradient = {-(nvsf_displace_right.z - nvsf_displace_left.z), -(nvsf_displace_front.z - nvsf_displace_back.z) };
+	float2 gradient = float2(-(displace_right.z - displace_left.z) / max(0.01,1.0 + g_Scales.y*(displace_right.x - displace_left.x)), -(displace_front.z - displace_back.z) / max(0.01,1.0+g_Scales.y*(displace_front.y - displace_back.y)));
+	//float2 gradient = {-(displace_right.z - displace_left.z), -(displace_front.z - displace_back.z) };
 	
 	// Calculate Jacobian corelation from the partial differential of displacement field
-	float2 nvsf_Dx = (nvsf_displace_right.xy - nvsf_displace_left.xy) * nvsf_g_Scales.x;
-	float2 nvsf_Dy = (nvsf_displace_front.xy - nvsf_displace_back.xy) * nvsf_g_Scales.x;
-	float nvsf_J = (1.0f + nvsf_Dx.x) * (1.0f + nvsf_Dy.y) - nvsf_Dx.y * nvsf_Dy.x;
+	float2 Dx = (displace_right.xy - displace_left.xy) * g_Scales.x;
+	float2 Dy = (displace_front.xy - displace_back.xy) * g_Scales.x;
+	float J = (1.0f + Dx.x) * (1.0f + Dy.y) - Dx.y * Dy.x;
 
 	// Output
-	nvsf_Output = float4(nvsf_gradient, nvsf_J, 0);
+	Output = float4(gradient, J, 0);
 }
 
 #endif // !GFSDK_WAVEWORKS_OMIT_PS

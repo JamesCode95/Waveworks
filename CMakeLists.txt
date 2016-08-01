@@ -125,4 +125,4 @@ INCLUDE(compiler/cmake/test_d3d11.cmake)
 INCLUDE(compiler/cmake/sample_d3d11.cmake)
 
 # TODO: Switch between CUDA/DirectCompute
-#INCLUDE(compiler/cmake/sample_opengl.cmake)
+INCLUDE(compiler/cmake/sample_opengl.cmake)

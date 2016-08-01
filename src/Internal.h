@@ -414,7 +414,7 @@ void handle_hr_error(HRESULT hr, const char_type* file, int line);
 #endif
 
 #ifdef TARGET_PLATFORM_WINDOWS
-//#define WAVEWORKS_ENABLE_GL WAVEWORKS_ALLOW_GFX
+#define WAVEWORKS_ENABLE_GL WAVEWORKS_ALLOW_GFX
 #else
 #ifdef TARGET_PLATFORM_MACOSX
 #define WAVEWORKS_ENABLE_GL WAVEWORKS_ALLOW_GFX
