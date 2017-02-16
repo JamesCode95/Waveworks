@@ -2,7 +2,7 @@
 # Build NvWaveWorks (PROJECT not SOLUTION)
 #
 
-FIND_PACKAGE(CUDA REQUIRED)
+# FIND_PACKAGE(CUDA REQUIRED)
 FIND_PACKAGE(FXC REQUIRED)
 
 
@@ -77,10 +77,10 @@ SET(CPP_FILES
 	${WW_SOURCE_DIR}/Entrypoints.cpp
 	
 	${WW_SOURCE_DIR}/FFT_Simulation_CPU.cpp
-	${WW_SOURCE_DIR}/FFT_Simulation_CUDA.cpp
+	# ${WW_SOURCE_DIR}/FFT_Simulation_CUDA.cpp
 	${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute.cpp
 	${WW_SOURCE_DIR}/FFT_Simulation_Manager_CPU.cpp
-	${WW_SOURCE_DIR}/FFT_Simulation_Manager_CUDA.cpp
+	# ${WW_SOURCE_DIR}/FFT_Simulation_Manager_CUDA.cpp
 	${WW_SOURCE_DIR}/FFT_Simulation_Manager_DirectCompute.cpp
 	
 	${WW_SOURCE_DIR}/GFX_Timer.cpp
@@ -98,11 +98,11 @@ SET(H_FILES
 	${WW_SOURCE_DIR}/FFT_API_Support.h
 	${WW_SOURCE_DIR}/FFT_Simulation.h
 	${WW_SOURCE_DIR}/FFT_Simulation_CPU_impl.h
-	${WW_SOURCE_DIR}/FFT_Simulation_CUDA_impl.h
+	# ${WW_SOURCE_DIR}/FFT_Simulation_CUDA_impl.h
 	${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_impl.h
 	${WW_SOURCE_DIR}/FFT_Simulation_Manager.h
 	${WW_SOURCE_DIR}/FFT_Simulation_Manager_CPU_impl.h
-	${WW_SOURCE_DIR}/FFT_Simulation_Manager_CUDA_impl.h
+	# ${WW_SOURCE_DIR}/FFT_Simulation_Manager_CUDA_impl.h
 	${WW_SOURCE_DIR}/FFT_Simulation_Manager_DirectCompute_impl.h
 	${WW_SOURCE_DIR}/Float16_Util.h
 	${WW_SOURCE_DIR}/GFX_Timer_impl.h
@@ -136,9 +136,9 @@ SET(HLSL_FILES
 	${WW_SOURCE_DIR}/FFT_Simulation_DirectCompute_shader.hlsl
 )
 
-SET(CUDA_FILES
-	${WW_SOURCE_DIR}/FFT_Simulation_CUDA_kernel.cu
-)
+# SET(CUDA_FILES
+	# ${WW_SOURCE_DIR}/FFT_Simulation_CUDA_kernel.cu
+# )
 
 SET(FX_FILES
 	${SHADER_SRC_DIR}/CalcGradient.fx
@@ -257,7 +257,7 @@ SOURCE_GROUP("fx" FILES ${FX_FILES})
 
 TARGET_INCLUDE_DIRECTORIES(WaveWorks 
 	PRIVATE ${WW_PLATFORM_INCLUDES}
-	PRIVATE ${CUDA_INCLUDE_DIRS}
+	# PRIVATE ${CUDA_INCLUDE_DIRS}
 	PRIVATE ${GEN_SRC_DIR}
 	PRIVATE ${COMMON_SOURCE_DIR}
 	
@@ -277,7 +277,7 @@ TARGET_COMPILE_DEFINITIONS(WaveWorks
 
 IF(TARGET_BUILD_PLATFORM STREQUAL "Windows")
 	# Add linked libraries
-	TARGET_LINK_LIBRARIES(WaveWorks PUBLIC ${CUDA_LIBRARIES} dxguid.lib )
+	TARGET_LINK_LIBRARIES(WaveWorks PUBLIC dxguid.lib )
 
 	IF(CMAKE_CL_64)
 		SET(LIBPATH_SUFFIX "win64")
